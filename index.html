@@ -391,15 +391,32 @@ function deleteFinance(id){if(!confirm("Bu finans kaydını silmek istediğine e
 
 let financeMonth=today().slice(0,7),compareMonth="";
 function monthName(ym){const [y,m]=ym.split("-").map(Number);return new Date(y,m-1,1).toLocaleDateString("tr-TR",{month:"long",year:"numeric"})}
-function monthTotals(ym){const rows=data.finance.filter(x=>(x.date||"").startsWith(ym));return {income:rows.filter(x=>x.type==="Gelir").reduce((s,x)=>s+Number(x.amount),0),expense:rows.filter(x=>x.type==="Gider").reduce((s,x)=>s+Number(x.amount),0),rows}}
+function monthTotals(ym){
+ const rows=data.finance.filter(x=>(x.date||"").startsWith(ym));
+ return {income:rows.filter(x=>x.type==="Gelir").reduce((s,x)=>s+Number(x.amount),0),expense:rows.filter(x=>x.type==="Gider").reduce((s,x)=>s+Number(x.amount),0),rows};
+}
+function monthBusinessTotals(ym){
+ const appts=data.appointments.filter(a=>(a.date||"").startsWith(ym)&&a.status!=="İptal Edildi");
+ const customerIds=new Set(appts.map(a=>String(a.customerId||a.customer||"")).filter(Boolean));
+ return {appointments:appts.length,customers:customerIds.size};
+}
+function changeValue(cur,prev){
+ const diff=cur-prev;
+ if(prev===0)return diff===0?"0%":(diff>0?"Yeni":"−");
+ return `${diff>=0?"+":""}${((diff/prev)*100).toFixed(0)}%`;
+}
 function finance(){
  const cur=monthTotals(financeMonth),net=cur.income-cur.expense;
  const prev=new Date(Number(financeMonth.slice(0,4)),Number(financeMonth.slice(5))-2,1);const prevYm=`${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,"0")}`;
  const autoCompare=compareMonth||prevYm, cmp=monthTotals(autoCompare);
+ const curBiz=monthBusinessTotals(financeMonth),cmpBiz=monthBusinessTotals(autoCompare);
+ const netCmp=cmp.income-cmp.expense;
  document.getElementById("finance").innerHTML=shell("FİNANS",`
- <div class="finance-grid"><div class="finance-card"><small>Toplam Gelir · ${monthName(financeMonth)}</small><strong class="money">${money(cur.income)}</strong></div><div class="finance-card"><small>Toplam Gider · ${monthName(financeMonth)}</small><strong class="money">${money(cur.expense)}</strong></div><div class="finance-card balance"><small>Net Bakiye</small><strong class="money">${money(net)}</strong></div></div>
+ <div class="finance-grid"><div class="finance-card"><small>Toplam Gelir · ${monthName(financeMonth)}</small><strong class="money">${money(cur.income)}</strong></div><div class="finance-card"><small>Toplam Gider · ${monthName(financeMonth)}</small><strong class="money">${money(cur.expense)}</strong></div><div class="finance-card balance"><small>Net Bakiye · ${monthName(financeMonth)}</small><strong class="money">${money(net)}</strong></div></div>
  <div class="finance-actions"><button class="primary" onclick="openForm('finance');setTimeout(()=>setFinanceType('Gelir'),0)">＋ Gelir Ekle</button><button class="secondary" onclick="openForm('finance');setTimeout(()=>setFinanceType('Gider'),0)">＋ Gider Ekle</button></div>
- <div class="card" style="padding:14px;margin-bottom:12px"><div class="field-grid"><div class="field"><label>Görüntülenen ay</label><input type="month" value="${financeMonth}" onchange="financeMonth=this.value;finance()"></div><div class="field"><label>Karşılaştır</label><input type="month" value="${autoCompare}" onchange="compareMonth=this.value;finance()"></div></div><div class="compare"><div class="stat"><small>${monthName(financeMonth)} Net</small><strong>${money(net)}</strong></div><div class="stat"><small>${monthName(autoCompare)} Net</small><strong>${money(cmp.income-cmp.expense)}</strong></div><div class="stat"><small>Gelir farkı</small><strong>${money(cur.income-cmp.income)}</strong></div><div class="stat"><small>Gider farkı</small><strong>${money(cur.expense-cmp.expense)}</strong></div></div></div>
+ <div class="card" style="padding:14px;margin-bottom:12px"><div class="field-grid"><div class="field"><label>Görüntülenen ay</label><input type="month" value="${financeMonth}" onchange="financeMonth=this.value;finance()"></div><div class="field"><label>Karşılaştır</label><input type="month" value="${autoCompare}" onchange="compareMonth=this.value;finance()"></div></div>
+ <div class="compare"><div class="stat"><small>${monthName(financeMonth)} Net</small><strong>${money(net)}</strong></div><div class="stat"><small>${monthName(autoCompare)} Net</small><strong>${money(netCmp)}</strong></div><div class="stat"><small>Gelir farkı</small><strong>${money(cur.income-cmp.income)}</strong></div><div class="stat"><small>Gider farkı</small><strong>${money(cur.expense-cmp.expense)}</strong></div></div></div>
+ <div class="card" style="padding:14px;margin-bottom:12px"><div class="section-head" style="margin-top:0"><h3>AYLIK İŞLETME ÖZETİ</h3></div><div class="compare"><div class="stat"><small>${monthName(financeMonth)} Müşteri</small><strong>${curBiz.customers}</strong><small>${monthName(autoCompare)}: ${cmpBiz.customers} · ${changeValue(curBiz.customers,cmpBiz.customers)}</small></div><div class="stat"><small>${monthName(financeMonth)} Randevu</small><strong>${curBiz.appointments}</strong><small>${monthName(autoCompare)}: ${cmpBiz.appointments} · ${changeValue(curBiz.appointments,cmpBiz.appointments)}</small></div><div class="stat"><small>Gelir değişimi</small><strong>${changeValue(cur.income,cmp.income)}</strong><small>${money(cur.income-cmp.income)} fark</small></div><div class="stat"><small>Net değişimi</small><strong>${changeValue(net,netCmp)}</strong><small>${money(net-netCmp)} fark</small></div></div></div>
  <div class="section-head"><h3>İŞLEMLER · ${monthName(financeMonth)}</h3><span>${cur.rows.length}</span></div>
  <div class="card">${cur.rows.length?cur.rows.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(x=>`<div class="finance-row"><div class="money-icon">${x.type==="Gelir"?"↑":"↓"}</div><div class="grow"><b>${esc(x.category||x.type)}</b><small>${esc(x.note||"")} · ${esc(x.date||"")}${x.commissionPercent?` · ${x.commissionPercent}% komisyon`:""}</small></div><div style="display:flex;align-items:center;gap:8px"><div class="amount ${x.type==="Gelir"?"in":"out"}">${x.type==="Gelir"?"+":"−"}${money(x.amount)}</div><button class="dangerBtn finance-delete" type="button" title="Bu kaydı sil" onclick="event.preventDefault();event.stopPropagation();deleteFinance('${esc(x.id)}')">${icon("trash")} Sil</button></div></div>`).join(""):`<div class="empty"><b>Bu ay finans kaydı yok</b>Gelir veya gider ekleyebilirsin.</div>`}</div>`);
 }

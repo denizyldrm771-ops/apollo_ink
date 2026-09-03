@@ -68,8 +68,6 @@ button:disabled{opacity:.45}
 #authGate{position:fixed;inset:0;z-index:99999;background:#0b0b0c;display:none;align-items:center;justify-content:center;padding:24px}
 #authGate.open{display:flex}.auth-box{width:min(430px,100%);background:#151516;border:1px solid #2a2a2c;border-radius:24px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
 .auth-logo{width:72px;height:72px;border-radius:18px;display:block;margin:0 auto 18px;object-fit:cover}.auth-box h1{margin:0;text-align:center;font-size:25px}.auth-box .auth-sub{text-align:center;color:var(--muted);margin:8px 0 24px}.auth-box .field{margin-bottom:14px}.auth-box .actions{margin-top:12px}.auth-box button{width:100%;min-height:48px}.auth-error{display:none;margin:12px 0;padding:11px 12px;border-radius:12px;background:#2b1718;color:#ffb4b4;font-size:13px}.auth-links{display:flex;justify-content:center;gap:16px;margin-top:16px}.auth-links button{width:auto;min-height:auto;background:none;border:0;padding:4px;color:#fff;text-decoration:underline}.auth-loading{display:none;text-align:center;color:var(--muted);margin-top:10px;font-size:13px}
-
-.auth-gate{position:fixed;inset:0;z-index:9999;display:none;background:radial-gradient(circle at 50% -10%,#251715 0,#0b0b0d 45%,#09090b 100%);padding:24px;overflow:auto}.auth-gate.open{display:flex;align-items:center;justify-content:center}.auth-box{width:min(430px,100%);background:linear-gradient(145deg,#19191c,#111113);border:1px solid #303035;border-radius:26px;padding:28px 22px;box-shadow:0 20px 60px #0008}.auth-brand{text-align:center;margin-bottom:24px}.auth-mark{width:72px;height:72px;border-radius:22px;display:grid;place-items:center;margin:0 auto 14px;background:#f20b18;color:#fff;font-size:30px;font-weight:950;box-shadow:0 12px 30px #f20b1838}.auth-brand h1{margin:0;font-size:26px;font-weight:950}.auth-brand p{margin:7px 0 0;color:var(--muted);font-size:12px}.auth-field{margin:12px 0}.auth-field label{display:block;color:#aaa;font-size:12px;font-weight:800;margin:0 0 7px}.auth-field input{width:100%;height:50px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:#0d0d0f;outline:none}.auth-field input:focus{border-color:var(--red)}.auth-actions{display:grid;gap:9px;margin-top:16px}.auth-actions button{width:100%;min-height:48px}.auth-forgot{display:block;width:100%;text-align:center;color:#aaa;font-size:12px;font-weight:800;padding:10px}.auth-error{display:none;margin-top:12px;padding:11px 12px;border:1px solid #5a262a;background:#ff59620d;color:#ff7a81;border-radius:12px;font-size:12px;line-height:1.4}.auth-loading{display:none;text-align:center;color:var(--muted);font-size:12px;margin-top:10px}.auth-note{margin-top:15px;text-align:center;color:#777;font-size:10px;line-height:1.45}
 </style>
 
 <style id="apollo-calendar-fix">
@@ -81,45 +79,8 @@ button:disabled{opacity:.45}
 
 
 
-
-<style id="apollo-login-icon-fix">
-.apollo-login-icon{width:72px;height:72px;object-fit:contain;display:block;margin:0 auto 10px}
-</style>
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-  try{
-    var roots=document.querySelectorAll('[class*="login"],[class*="auth"]');
-    roots.forEach(function(root){
-      var els=root.querySelectorAll('div,span,h1,h2');
-      els.forEach(function(el){
-        if(el.children.length===0 && el.textContent.trim()==='A'){
-          var img=document.createElement('img');
-          img.src='icon.png'; img.alt='Apollo Ink'; img.className='apollo-login-icon';
-          el.replaceWith(img);
-        }
-      });
-    });
-  }catch(e){}
-});
-</script>
-
 </head>
 <body>
-<div class="auth-gate open" id="authGate" aria-modal="true" role="dialog">
-  <div class="auth-box">
-    <div class="auth-brand"><div class="auth-mark">A</div><h1>Apollo Ink</h1><p>Ink Artist Suite</p></div>
-    <div class="auth-field"><label for="authEmail">E-posta</label><input id="authEmail" type="email" autocomplete="email" placeholder="ornek@mail.com"></div>
-    <div class="auth-field"><label for="authPassword">Şifre</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="En az 6 karakter"></div>
-    <div class="auth-actions">
-      <button class="primary" type="button" onclick="authLogin()">Giriş Yap</button>
-      <button class="secondary" type="button" onclick="authSignup()">Kayıt Ol</button>
-      <button class="auth-forgot" type="button" onclick="authReset()">Şifremi Unuttum</button>
-    </div>
-    <div class="auth-loading" id="authLoading">İşlem yapılıyor…</div>
-    <div class="auth-error" id="authError"></div>
-    <div class="auth-note">Hesabınla giriş yaptığında Apollo Ink verilerin bu hesaba bağlanır. Bulut bağlantısı yapılandırılmadan gerçek kayıt yapılamaz.</div>
-  </div>
-</div>
 <div class="app">
 <header class="topbar"><div style="display:flex;gap:9px;align-items:center"><button class="iconbtn" id="notificationAction" aria-label="Bildirimler" title="Bildirimler"></button><button class="iconbtn" id="topAction" aria-label="Takvimi Gör" title="Takvimi Gör"></button></div></header>
 <main>
@@ -538,7 +499,7 @@ function queueCloudSave(){if(!window.__supabase||!window.__cloudUser)return;clea
 async function cloudSaveNow(){if(!window.__supabase||!window.__cloudUser)return;const payload=JSON.parse(JSON.stringify(data));const {error}=await window.__supabase.from("apollo_cloud").upsert({user_id:window.__cloudUser.id,payload,updated_at:new Date().toISOString()});if(error)console.warn("Cloud save",error.message);}
 async function cloudLoad(showAlert=false){if(!window.__supabase||!window.__cloudUser)return;const {data:row,error}=await window.__supabase.from("apollo_cloud").select("payload").eq("user_id",window.__cloudUser.id).maybeSingle();if(error){console.warn("Cloud load",error.message);if(showAlert)alert(error.message);return}if(row?.payload){data.appointments=Array.isArray(row.payload.appointments)?row.payload.appointments:[];data.customers=Array.isArray(row.payload.customers)?row.payload.customers:[];data.designs=Array.isArray(row.payload.designs)?row.payload.designs:[];data.finance=Array.isArray(row.payload.finance)?row.payload.finance:[];data.profile={...data.profile,...(row.payload.profile||{})};data.settings={...data.settings,...(row.payload.settings||{}),theme:"dark"};migrateLegacy();localStorage.setItem(KEY,JSON.stringify(data));renderScreen(document.querySelector(".screen.active")?.id||"home");if(showAlert)alert("Buluttaki verilerin yüklendi.");}else{await cloudSaveNow();if(showAlert)alert("Bu hesap için bulutta kayıt bulunamadı. Mevcut cihaz verilerin yüklendi.");}}
 async function cloudSyncNow(){await cloudSaveNow();await cloudLoad(true)}
-function initCloud(){if(!window.__supabase){authGate(true);authMsg("Bulut bağlantısı henüz yapılandırılmadı. Önce Supabase proje bilgilerini config.js dosyasına eklemeliyiz.");return}window.__supabase.auth.getSession().then(async({data:{session}})=>{if(session?.user){window.__cloudUser=session.user;authGate(false);await cloudLoad(false);profile()}else{window.__cloudUser=null;authGate(true)}});window.__supabase.auth.onAuthStateChange((_e,session)=>{window.__cloudUser=session?.user||null;if(session?.user){authGate(false);profile()}else{authGate(true);profile()}});}
+function initCloud(){if(!window.__supabase){authGate(false);return}window.__supabase.auth.getSession().then(async({data:{session}})=>{if(session?.user){window.__cloudUser=session.user;authGate(false);await cloudLoad(false);profile()}else{window.__cloudUser=null;authGate(true)}});window.__supabase.auth.onAuthStateChange((_e,session)=>{window.__cloudUser=session?.user||null;if(session?.user){authGate(false);profile()}else{authGate(true);profile()}});}
 function toggleTheme(){data.settings.theme="dark";applyTheme();save();profile()}
 function applyTheme(){data.settings.theme="dark";document.documentElement.classList.remove("light");document.body.classList.remove("light");document.querySelector('meta[name="theme-color"]').setAttribute("content","#09090b")}
 async function requestNotifications(){

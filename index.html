@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+<title>Ink Artist Suite — Apollo Ink</title>
+<style>
+:root{--bg:#09090b;--panel:#121214;--panel2:#18181b;--line:#2b2b30;--text:#f4f4f5;--muted:#9898a1;--red:#f20b18;--red2:#ff2935;--green:#36c979;--amber:#e7a63a;--danger:#ff5a62;--shadow:0 18px 50px #0007}
+:root.light{--bg:#f5f5f7;--panel:#fff;--panel2:#f0f0f3;--line:#d9d9df;--text:#151518;--muted:#707078;--shadow:0 18px 50px #0001}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+body{min-height:100dvh;background:radial-gradient(circle at 50% -5%,#211312 0,#0b0b0d 32%,var(--bg) 72%)}body.light{background:linear-gradient(#f8f8fa,var(--bg))}
+button,input,select,textarea{font:inherit;color:inherit}button{border:0;background:none;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}.app{min-height:100dvh;padding-bottom:88px}.topbar{padding:22px 18px 4px;display:flex;align-items:center;justify-content:flex-end;position:relative;z-index:30;background:transparent}.topbar>div{display:none}
+.title{font-size:25px;font-weight:850;letter-spacing:.2px}.eyebrow{font-size:11px;letter-spacing:2.6px;color:var(--muted);font-weight:800;margin-bottom:6px}
+.iconbtn{width:46px;height:46px;border:1px solid var(--line);border-radius:15px;background:var(--panel);display:grid;place-items:center;box-shadow:0 8px 25px #0002}.iconbtn svg{width:23px;height:23px}
+.screen{display:none}.screen.active{display:block}.hero{padding:0 18px 20px;position:relative;overflow:hidden}.hero:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 24%,#231e1a18,transparent 38%)}
+.sun{position:absolute;right:-60px;top:10px;width:360px;height:360px;opacity:.34;pointer-events:none;z-index:0}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:22px 0 10px;position:relative;z-index:2}.section-head h3{font-size:12px;letter-spacing:1.5px;margin:0;color:var(--muted)}.section-head h1{font-size:28px;margin:8px 0;font-weight:850}
+.welcome{display:flex;align-items:center;gap:14px;padding:2px 0 10px;position:relative;z-index:2}.avatar{width:74px;height:74px;border-radius:20px;overflow:hidden;background:#fff;display:grid;place-items:center;border:1px solid var(--line)}.avatar img{width:100%;height:100%;object-fit:contain}.hello{color:#aaa;font-size:14px.user{font-size:30px;font-weight:900;line-height:1.05}.sub{color:#8e8e96;font-size:13px;margin-top:6px}
+.date{font-size:25px;font-weight:900;position:relative;z-index:2}.redline{height:3px;width:132px;background:var(--red);margin-top:8px}.card{background:linear-gradient(145deg,#171719,#121214);border:1px solid #303035;border-radius:20px;box-shadow:0 10px 30px #0002;overflow:hidden}.row{display:flex;align-items:center;gap:12px;padding:15px;border-bottom:1px solid var(--line);min-height:76px}.row:last-child{border-bottom:0}.row.clickable{cursor:pointer}.row.clickable:hover{background:#ffffff08}.timebox{width:44px;height:44px;border-radius:13px;background:#ffffff08;border:1px solid var(--line);display:grid;place-items:center;flex:0 0 auto}.time{font-size:13px;font-weight:850;min-width:42px}.customer{min-width:0;flex:1}.customer b,.design-info b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.customer small,.design-info small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.status{font-size:10px;font-weight:850;padding:7px 8px;border-radius:9px;background:#36c97918;color:var(--green);white-space:nowrap}.status.pending{background:#e7a63a18;color:var(--amber)}.status.cancel{background:#ff5a6218;color:var(--danger)}
+.model-thumb{width:52px;height:52px;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:#fff}.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;position:relative;z-index:2}.quick button{background:linear-gradient(145deg,#18181b,#131315);border:1px solid #303035;border-radius:19px;padding:14px 5px;min-height:132px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}.quick svg{width:39px;height:39px;stroke:var(--text);stroke-width:1.8}.quick span{font-size:11px;font-weight:800}
+.link{color:var(--red2);font-weight:800;font-size:12px}.toolbar{display:flex;gap:9px;margin:12px 0}.search{flex:1;display:flex;align-items:center;gap:8px;padding:0 12px;height:46px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}.search svg{width:19px;color:var(--muted)}.search input{border:0;outline:0;background:transparent;width:100%}.filter,.secondary,.primary{height:46px;padding:0 15px;border-radius:14px;border:1px solid var(--line);font-weight:800}.primary{background:var(--red);border-color:var(--red);color:white}.calendar-cta{height:46px;min-width:185px;padding:0 14px;border-radius:13px;display:inline-flex;align-items:center;justify-content:center;gap:9px;white-space:nowrap}.calendar-cta svg{width:20px;height:20px;flex:0 0 20px}.secondary{background:var(--panel)}.tabs{display:flex;gap:8px;margin:12px 0}.tab{padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);font-size:12px;font-weight:800}.tab.active{background:var(--red);border-color:var(--red);color:#fff}
+.date-strip{display:flex;gap:8px;overflow:auto;padding:4px 0 10px}.day{min-width:66px;height:76px;border:1px solid var(--line);border-radius:15px;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}.day.active{border-color:var(--red);box-shadow:inset 0 -3px var(--red)}.day strong{font-size:20px}.day small{font-size:10px;color:var(--muted)}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:12px 0}.stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}.stat .num{font-size:23px;font-weight:850}.stat small{color:var(--muted);font-size:10px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.design{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer}.preview{height:165px;background:#fff;display:grid;place-items:center;overflow:hidden}.preview img{width:100%;height:100%;object-fit:contain}.design-info{padding:11px}.design-menu{display:flex;gap:7px;margin-top:8px}.mini{padding:7px 9px;border:1px solid var(--line);border-radius:9px;font-size:10px;font-weight:800;background:var(--panel2)}
+.finance-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.finance-card{padding:15px;border:1px solid var(--line);border-radius:17px;background:var(--panel)}.finance-card.balance{grid-column:1/-1}.finance-card small{color:var(--muted)}.money{display:block;margin-top:7px;font-size:22px}.finance-actions{display:flex;gap:9px;margin:12px 0}.finance-actions>*{flex:1}.finance-row{display:flex;align-items:center;gap:10px;padding:14px;border-bottom:1px solid var(--line)}.money-icon{width:38px;height:38px;border-radius:12px;background:#fff1;display:grid;place-items:center;font-size:20px}.grow{flex:1}.grow b{display:block}.grow small{display:block;color:var(--muted);margin-top:3px;font-size:10px}.amount{font-weight:850}.amount.in{color:var(--green)}.amount.out{color:var(--danger)}
+.profile-head{display:flex;gap:14px;align-items:center;margin:16px 0}.profile-name{font-size:23px;font-weight:850}.edit{margin-top:8px;color:var(--red2);font-weight:850;font-size:12px}.setting{display:flex;align-items:center;gap:12px;padding:15px;border-bottom:1px solid var(--line);cursor:pointer}.setting:last-child{border:0}.setting svg{width:23px;height:23px}.setting .grow small{color:var(--muted);display:block;margin-top:3px}.chev{font-size:25px;color:var(--muted)}
+.bottom{position:fixed;left:0;right:0;bottom:0;z-index:20;height:86px;background:#151518ee;backdrop-filter:blur(18px);border:1px solid #ffffff18;border-radius:0;display:grid;grid-template-columns:repeat(5,1fr);box-shadow:var(--shadow)}body.light .bottom{background:#fffffff0}.nav{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-size:10px;font-weight:800}.nav svg{width:31px;height:31px;stroke-width:1.8}.nav.active{color:var(--red2)}.nav.active svg{stroke-width:2.4}.fab{position:fixed;right:22px;bottom:101px;width:58px;height:58px;border-radius:18px;background:var(--red);color:#fff;font-size:31px;z-index:21;box-shadow:0 12px 30px #f20b1848}
+.empty{padding:30px 18px;text-align:center;color:var(--muted);font-size:12px}.empty b{display:block;color:var(--text);font-size:14px;margin-bottom:5px}
+.modal{position:fixed;inset:0;background:#0009;backdrop-filter:blur(5px);z-index:50;display:none;align-items:flex-end}.modal.open{display:flex}.sheet{width:100%;max-height:92dvh;overflow:auto;background:var(--panel);border-radius:24px 24px 0 0;padding:10px 18px 28px;border:1px solid var(--line);box-shadow:0 -20px 60px #0008}.handle{width:45px;height:5px;background:#777;border-radius:5px;margin:2px auto 17px}.sheet h2{font-size:22px;margin:5px 0 18px}.field{margin:12px 0}.field label{display:block;color:var(--muted);font-size:11px;font-weight:800;margin-bottom:7px}.field input,.field select,.field textarea{width:100%;min-height:47px;border:1px solid var(--line);background:var(--panel2);border-radius:13px;padding:11px;outline:0}.field textarea{min-height:90px;resize:vertical}.actions{display:flex;gap:9px;margin-top:18px}.actions>*{flex:1}.upload{border:1px dashed #555;border-radius:16px;padding:12px;margin:12px 0}.upload label{display:flex;gap:10px;align-items:center;cursor:pointer}.upload input{display:none}.upload-icon{width:43px;height:43px;border-radius:12px;background:#fff1;display:grid;place-items:center}.upload-icon svg{width:24px}.upload-preview{display:none;width:100%;max-height:240px;object-fit:contain;background:#fff;border-radius:13px;margin-top:10px}.detail-image{width:100%;max-height:320px;object-fit:contain;background:#fff;border-radius:15px;margin:10px 0}.contact-btn{display:inline-flex;padding:10px 12px;border:1px solid var(--line);border-radius:11px;margin-right:7px;margin-bottom:7px;text-decoration:none;color:var(--text);font-weight:800;font-size:11px}.danger{color:var(--danger)!important}.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.calhead{font-size:9px;color:var(--muted);text-align:center;padding:5px}.calday{min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);display:flex;align-items:center;justify-content:center;position:relative}.calday.has:after{content:"";position:absolute;bottom:5px;width:5px;height:5px;border-radius:50%;background:var(--red)}.calday.selected{outline:2px solid var(--red)}.monthbar{display:flex;align-items:center;justify-content:space-between;margin:12px 0}.monthbar b{font-size:17px}
+@media(min-width:700px){.hero{max-width:720px;margin:auto}.topbar{max-width:720px;margin:auto}.bottom{max-width:700px;left:50%;right:auto;transform:translateX(-50%);width:680px}.fab{right:calc(50% - 330px)}.grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar"><div><div class="eyebrow">APOLLO INK</div><div class="title" id="topTitle">ANA SAYFA</div></div><button class="iconbtn" id="topAction" aria-label="Bildirimler"></button></header>
+<main>
+<section class="screen active" id="home"></section>
+<section class="screen" id="appointments"></section>
+<section class="screen" id="designs"></section>
+<section class="screen" id="customers"></section>
+<section class="screen" id="finance"></section>
+<section class="screen" id="profile"></section>
+</main>
+</div>
+<nav class="bottom">
+<button class="nav active" data-screen="home"></button><button class="nav" data-screen="appointments"></button><button class="nav" data-screen="designs"></button><button class="nav" data-screen="customers"></button><button class="nav" data-screen="profile"></button>
+</nav>
+<button class="fab" id="fab">＋</button>
+<div class="modal" id="modal"><div class="sheet"><div class="handle"></div><div id="modalBody"></div></div></div>
+<script>
+const KEY="apolloInkData";
+const ICONS={
+home:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/><path d="M9 20v-5h6v5"/>',
+calendar:'<rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 9h18"/>',
+design:'<path d="M4 20l4.5-1L19 8.5 15.5 5 5 16z"/><path d="M14 6l3.5 3.5"/>',
+people:'<circle cx="9" cy="7" r="4"/><path d="M2 21v-2a7 7 0 0 1 14 0"/><path d="M16 5a4 4 0 0 1 0 8"/>',
+profile:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',
+search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+download:'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
+trash:'<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 14h10l1-14"/><path d="M9 7V4h6v3"/>',
+edit:'<path d="m4 20 4.5-1L19 8.5 15.5 5 5 16z"/><path d="m14 6 3.5 3.5"/>',
+moon:'<path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 8.5 8.5 0 1 0 21 14.5z"/>',
+sun2:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'
+};
+const icon=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]||ICONS.plus}</svg>`;
+const today=()=>new Date().toISOString().slice(0,10);
+const empty={appointments:[],customers:[],designs:[],finance:[],profile:{name:"",email:"",studio:"Apollo Ink",city:""},settings:{theme:"dark",notifications:false}};
+let raw={};try{raw=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){}
+let data={
+ appointments:Array.isArray(raw.appointments)?raw.appointments:[],
+ customers:Array.isArray(raw.customers)?raw.customers:[],
+ designs:Array.isArray(raw.designs)?raw.designs:[],
+ finance:Array.isArray(raw.finance)?raw.finance:[],
+ profile:{...empty.profile,...(raw.profile||{})},
+ settings:{...empty.settings,...(raw.settings||{})}
+};
+const save=()=>localStorage.setItem(KEY,JSON.stringify(data));
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+const safe=s=>{s=String(s||"").trim();return /^https?:\/\//i.test(s)?s:"https://"+s};
+const wa=p=>{let n=String(p||"").replace(/\D/g,"");if(n.startsWith("0"))n="90"+n.slice(1);return n?"https://wa.me/"+n:""};
+function sunSvg(){return `<img class="sun" src="sun.svg" alt="Apollo Ink">`}
+function shell(title,html){return `<div class="hero">${sunSvg()}<div class="section-head"><h1>${title}</h1></div>${html}</div>`}
+function setScreen(s){document.querySelectorAll(".screen").forEach(x=>x.classList.toggle("active",x.id===s));document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.screen===s));document.getElementById("topTitle").textContent={home:"ANA SAYFA",appointments:"RANDEVULAR",designs:"TASARIMLAR",customers:"MÜŞTERİLER",finance:"FİNANS",profile:"PROFİL"}[s];renderScreen(s)}
+document.querySelectorAll(".nav").forEach(n=>n.innerHTML=icon(n.dataset.screen==="home"?"home":n.dataset.screen==="appointments"?"calendar":n.dataset.screen==="designs"?"design":n.dataset.screen==="customers"?"people":"profile")+`<span>${n.dataset.screen==="home"?"Ana Sayfa":n.dataset.screen==="appointments"?"Randevu":n.dataset.screen==="designs"?"Tasarım":n.dataset.screen==="customers"?"Müşteri":"Profil"}</span>`);
+
+function home(){
+ const t=today(), todays=data.appointments.filter(a=>a.date===t).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+ const upcoming=data.appointments.filter(a=>a.date>=t&&a.status!=="İptal Edildi").sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,1);
+ const now=new Date();
+ document.getElementById("home").innerHTML=shell("",`
+ <div class="welcome"><div class="avatar"><img src="icon.png"></div><div><div class="hello">Merhaba,</div><div class="user">${esc(data.profile.name||"Sanatçı")}</div><div class="sub">Apollo Ink'e hoş geldin.</div></div></div>
+ <div class="section-head"><h3>BUGÜNKÜ RANDEVULAR</h3></div>
+ <div class="date">${now.toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"})}</div><div class="redline"></div>
+ <div class="card" style="margin-top:22px;position:relative;z-index:2">
+   <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-bottom:1px solid var(--line)">
+     <div style="display:flex;align-items:center;gap:12px"><div class="timebox" style="background:var(--red);border-color:var(--red);color:#fff">${icon("calendar")}</div><div><b style="font-size:22px">${todays.length}</b><div style="color:var(--muted);font-size:12px">Randevun var</div></div></div>
+     <button class="primary calendar-cta" onclick="setScreen('appointments')" aria-label="Takvimi Gör">${icon("calendar")}<span>Takvimi Gör</span><span>›</span></button>
+   </div>
+   ${todays.length?todays.slice(0,3).map(appointmentRow).join(""): `<div class="empty"><b>Bugün için randevu yok</b>Yeni bir randevu ekleyebilirsin.</div>`}
+   ${todays.length>3?`<button class="link" style="display:block;width:100%;padding:15px;border-top:1px solid var(--line)" onclick="setScreen('appointments')">Tümünü Gör ›</button>`:""}
+ </div>
+ <div class="section-head"><h3>HIZLI İŞLEMLER</h3></div><div class="quick">
+ <button onclick="openForm('appointment')">${icon("calendar")}<span>Randevu Ekle</span></button>
+ <button onclick="setScreen('customers')">${icon("people")}<span>Müşteriler</span></button>
+ <button onclick="setScreen('designs')">${icon("design")}<span>Tasarım Arşivi</span></button>
+ <button onclick="setScreen('finance')">${icon("profile")}<span>İstatistikler</span></button></div>
+ <div class="section-head"><h3>YAKLAŞAN RANDEVULAR</h3><button class="link" onclick="setScreen('appointments')">Tümünü Gör ›</button></div>
+ <div class="card" style="position:relative;z-index:2">${upcoming.length?upcoming.map(a=>`<button class="row clickable" style="width:100%;text-align:left;min-height:118px" onclick="openAppointment('${esc(a.id)}')"><div style="min-width:76px;height:76px;border:1px solid var(--line);border-radius:15px;background:#151517;display:flex;flex-direction:column;align-items:center;justify-content:center"><strong style="font-size:27px;color:var(--red2)">${new Date(a.date+"T12:00:00").getDate()}</strong><small style="color:var(--muted);font-size:9px">${new Date(a.date+"T12:00:00").toLocaleDateString("tr-TR",{month:"short"}).toUpperCase()}</small><small style="color:var(--muted);font-size:9px">${new Date(a.date+"T12:00:00").toLocaleDateString("tr-TR",{weekday:"short"})}</small></div><div class="customer"><div style="font-size:12px;color:var(--muted)">${esc(a.time||"—")}</div><b style="font-size:16px;margin-top:5px">${esc(a.customer||"Müşteri")}</b><small style="font-size:13px;margin-top:5px">${esc(a.style||"Dövme")}</small></div><span style="font-size:31px;color:#777">›</span></button>`).join(""):`<div class="empty"><b>Yaklaşan randevu yok</b>Takvimini doldurmak için yeni randevu ekle.</div>`}</div>`);
+}
+function appointmentRow(a){
+ return `<button class="row clickable" style="width:100%;text-align:left" onclick="openAppointment('${esc(a.id)}')"><div class="timebox">${icon("calendar")}</div>${a.modelImage?`<img class="model-thumb" src="${a.modelImage}" alt="Model">`:""}<div class="time">${esc(a.time||"—")}</div><div class="customer"><b>${esc(a.customer||"Müşteri")}</b><small>${esc(a.style||"Dövme")}${a.price?` · ₺${Number(a.price).toLocaleString("tr-TR")}`:""}</small>${a.needle?`<small>İğne: ${esc(a.needle)}</small>`:""}</div><span class="status ${a.status==="Beklemede"?"pending":a.status==="İptal Edildi"?"cancel":""}">${esc(a.status||"Onaylandı")}</span></button>`
+}
+let apptTab="all",selectedDay=today();
+function appointments(){
+ const base=new Date(), days=Array.from({length:7},(_,i)=>{let d=new Date(base);d.setDate(base.getDate()+i);return d});
+ document.getElementById("appointments").innerHTML=shell("RANDEVULAR",`
+ <div class="tabs"><button class="tab ${apptTab==="all"?"active":""}" onclick="apptTab='all';renderAppointments()">Tüm Randevular</button><button class="tab ${apptTab==="pending"?"active":""}" onclick="apptTab='pending';renderAppointments()">Bekleyenler</button></div>
+ <div class="date-strip">${days.map(d=>{let ds=d.toISOString().slice(0,10);return `<button class="day ${selectedDay===ds?"active":""}" onclick="selectedDay='${ds}';renderAppointments()"><strong>${d.getDate()}</strong><small>${d.toLocaleDateString("tr-TR",{month:"short"})}</small><small>${d.toLocaleDateString("tr-TR",{weekday:"short"})}</small></button>`}).join("")}<button class="day" onclick="openCalendar()">${icon("calendar")}<small>Takvim</small></button></div>
+ <div class="list-title section-head"><h3>${selectedDay===today()?"BUGÜN":new Date(selectedDay+"T12:00:00").toLocaleDateString("tr-TR",{day:"numeric",month:"long"})}</h3><span>${filteredAppointments().length}</span></div>
+ <div class="card">${filteredAppointments().length?filteredAppointments().sort((a,b)=>(a.time||"").localeCompare(b.time||"")).map(appointmentRow).join(""):`<div class="empty"><b>Bu gün için randevu yok</b>${apptTab==="pending"?"Bekleyen randevu bulunmuyor.":"Yeni randevu ekleyebilirsin."}</div>`}</div>`);
+}
+function filteredAppointments(){return data.appointments.filter(a=>a.date===selectedDay&&(apptTab==="all"||a.status==="Beklemede"))}
+function renderAppointments(){appointments()}
+function openCalendar(){
+ const now=new Date();let y=now.getFullYear(),m=now.getMonth(),sel=selectedDay;
+ const renderCal=()=>{const first=new Date(y,m,1),last=new Date(y,m+1,0),start=(first.getDay()+6)%7;let cells="";
+ for(let i=0;i<start;i++)cells+=`<div></div>`;
+ for(let d=1;d<=last.getDate();d++){let ds=new Date(y,m,d).toISOString().slice(0,10);let has=data.appointments.some(a=>a.date===ds);cells+=`<button class="calday ${has?"has":""} ${ds===sel?"selected":""}" onclick="calendarPick('${ds}')">${d}</button>`}
+ document.getElementById("modalBody").innerHTML=`<div class="monthbar"><button class="iconbtn" onclick="calendarMove(-1)">${icon("edit")}</button><b>${new Date(y,m,1).toLocaleDateString("tr-TR",{month:"long",year:"numeric"})}</b><button class="iconbtn" onclick="calendarMove(1)">${icon("edit")}</button></div><div class="calendar">${["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"].map(x=>`<div class="calhead">${x}</div>`).join("")}${cells}</div><div class="actions"><button class="secondary" onclick="closeModal()">Kapat</button></div>`;
+ };
+ window.calendarMove=delta=>{m+=delta;if(m<0){m=11;y--}if(m>11){m=0;y++}renderCal()};
+ window.calendarPick=ds=>{selectedDay=ds;closeModal();setScreen("appointments")};
+ renderCal();document.getElementById("modal").classList.add("open");
+}
+function designs(){
+ document.getElementById("designs").innerHTML=shell("TASARIMLAR",`
+ <div class="tabs"><button class="tab active" onclick="designFilter='all';renderDesigns()">Tüm Tasarımlar</button><button class="tab" onclick="designFilter='cat';renderDesignCategories()">Kategoriler</button></div>
+ <div class="toolbar"><div class="search">${icon("search")}<input id="designSearch" placeholder="Tasarım ara..." oninput="renderDesignGrid()"></div></div><div id="designGrid" class="grid"></div>`);
+ renderDesignGrid();
+}
+let designFilter="all";
+function renderDesignGrid(){
+ const q=(document.getElementById("designSearch")?.value||"").toLowerCase();
+ const arr=data.designs.filter(d=>(`${d.name||""} ${d.category||""}`).toLowerCase().includes(q));
+ document.getElementById("designGrid").innerHTML=arr.length?arr.map(d=>`<div class="design" onclick="openDesign('${esc(d.id)}')"><div class="preview">${d.image?`<img src="${d.image}">`:icon("design")}</div><div class="design-info"><small>${esc(d.category||"Kategorisiz")}</small><b>${esc(d.name||"Adsız tasarım")}</b></div></div>`).join(""):`<div class="empty" style="grid-column:1/-1"><b>Tasarım arşivin boş</b>＋ ile ilk tasarımını ekleyebilirsin.</div>`;
+}
+function renderDesignCategories(){
+ const cats=[...new Set(data.designs.map(d=>d.category).filter(Boolean))];
+ document.getElementById("designGrid").innerHTML=cats.length?cats.map(c=>`<button class="card" style="padding:22px;text-align:left" onclick="document.getElementById('designSearch').value='${esc(c)}';designFilter='all';renderDesigns()"><b>${esc(c)}</b><small style="display:block;color:var(--muted);margin-top:5px">${data.designs.filter(d=>d.category===c).length} tasarım</small></button>`).join(""):`<div class="empty" style="grid-column:1/-1"><b>Henüz kategori yok</b>Tasarım eklerken kategori yazabilirsin.</div>`;
+}
+function openDesign(id){
+ const d=data.designs.find(x=>String(x.id)===String(id));if(!d)return;
+ document.getElementById("modalBody").innerHTML=`<h2>${esc(d.name||"Tasarım")}</h2>${d.image?`<img class="detail-image" src="${d.image}">`:""}<p style="color:var(--muted)">${esc(d.category||"Kategorisiz")}</p><div class="actions"><button class="secondary" onclick="downloadImage('${esc(d.image||"")}','${esc((d.name||"tasarim").replace(/\s+/g,"-"))}.jpg')">${icon("download")} İndir</button><button class="secondary danger" onclick="deleteDesign('${esc(d.id)}')">${icon("trash")} Sil</button></div><div class="actions"><button class="secondary" onclick="closeModal()">Kapat</button></div>`;
+ document.getElementById("modal").classList.add("open");
+}
+function downloadImage(src,name){if(!src)return;const a=document.createElement("a");a.href=src;a.download=name;a.click()}
+function deleteDesign(id){if(!confirm("Bu tasarımı silmek istediğine emin misin?"))return;data.designs=data.designs.filter(x=>String(x.id)!==String(id));save();closeModal();renderScreen("designs")}
+function customers(){
+ document.getElementById("customers").innerHTML=shell("MÜŞTERİLER",`<div class="toolbar"><div class="search">${icon("search")}<input id="customerSearch" placeholder="Müşteri ara..." oninput="renderCustomers()"></div></div><div id="customerList"></div>`);
+ renderCustomers();
+}
+function renderCustomers(){
+ const q=(document.getElementById("customerSearch")?.value||"").toLowerCase();
+ const arr=data.customers.filter(c=>(`${c.name||""} ${c.phone||""} ${c.instagram||""}`).toLowerCase().includes(q));
+ document.getElementById("customerList").innerHTML=arr.length?arr.map(c=>`<button class="row clickable card" style="width:100%;text-align:left;margin:7px 0" onclick="openCustomer('${esc(c.id)}')"><div class="timebox">${icon("people")}</div><div class="customer"><b>${esc(c.name)}</b><small>${esc(c.phone||"Telefon eklenmemiş")}</small><small>${c.instagram?"Instagram bağlantısı mevcut":"Instagram eklenmemiş"}</small></div><span class="status">${data.appointments.filter(a=>a.customerId===c.id).length} dövme</span></button>`).join(""):`<div class="empty"><b>Müşteri listen boş</b>＋ ile ilk müşterini ekleyebilirsin.</div>`;
+}
+function openCustomer(id){
+ const c=data.customers.find(x=>String(x.id)===String(id));if(!c)return;
+ const hist=data.appointments.filter(a=>a.customerId===c.id).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+ document.getElementById("modalBody").innerHTML=`<h2>${esc(c.name)}</h2><div>${c.instagram?`<a class="contact-btn" href="${safe(c.instagram)}" target="_blank" rel="noopener">Instagram ↗</a>`:""}${c.phone?`<a class="contact-btn" href="${wa(c.phone)}" target="_blank" rel="noopener">WhatsApp ↗</a>`:""}</div><p style="color:var(--muted)">Telefon: ${esc(c.phone||"—")}</p><div class="section-head"><h3>DÖVME GEÇMİŞİ</h3><span>${hist.length}</span></div><div>${hist.length?hist.map(a=>`<div class="card" style="padding:13px;margin:8px 0"><b>${esc(a.style||"Dövme")}</b><small style="display:block;color:var(--muted);margin-top:4px">${esc(a.date)} · ${esc(a.time||"—")} · ${a.price?"₺"+Number(a.price).toLocaleString("tr-TR"):"Ücret yok"}</small>${a.needle?`<small style="display:block;color:var(--muted);margin-top:4px">İğne: ${esc(a.needle)}</small>`:""}${a.modelImage?`<img class="detail-image" src="${a.modelImage}">`:""}</div>`).join(""):"<p style='color:var(--muted)'>Henüz randevu/dövme geçmişi yok.</p>"}</div><div class="actions"><button class="secondary" onclick="openCustomerForm('${esc(c.id)}')">${icon("edit")} Düzenle</button><button class="secondary danger" onclick="deleteCustomer('${esc(c.id)}')">${icon("trash")} Sil</button></div><div class="actions"><button class="secondary" onclick="closeModal()">Kapat</button></div>`;
+ document.getElementById("modal").classList.add("open");
+}
+function deleteCustomer(id){if(!confirm("Müşteriyi ve bağlı müşteri geçmişini silmek istediğine emin misin?"))return;data.customers=data.customers.filter(c=>String(c.id)!==String(id));data.appointments=data.appointments.filter(a=>String(a.customerId)!==String(id));save();closeModal();renderScreen("customers")}
+function openForm(type,id=null){
+ const m=document.getElementById("modal"),b=document.getElementById("modalBody");
+ if(type==="appointment"){
+  const a=id?data.appointments.find(x=>String(x.id)===String(id)):null;
+  b.innerHTML=`<h2>${a?"Randevuyu Düzenle":"Yeni Randevu"}</h2><div class="field"><label>Müşteri</label><input id="fCustomer" value="${esc(a?.customer||"")}" placeholder="Ad Soyad"></div><div class="field"><label>Telefon / WhatsApp</label><input id="fPhone" type="tel" value="${esc(a?.phone||"")}" placeholder="05xx xxx xx xx"></div><div class="field"><label>Instagram profil bağlantısı</label><input id="fInstagram" type="url" value="${esc(a?.instagram||"")}" placeholder="https://instagram.com/kullaniciadi"></div><div class="field"><label>Tarih</label><input id="fDate" type="date" value="${esc(a?.date||today())}"></div><div class="field"><label>Saat</label><input id="fTime" type="time" value="${esc(a?.time||"12:00")}"></div><div class="field"><label>Vücut bölgesi</label><input id="fBody" value="${esc(a?.body||"")}" placeholder="Örn. Omuz"></div><div class="field"><label>Dövme / Model adı</label><input id="fStyle" value="${esc(a?.style||"")}" placeholder="Örn. Fine Line — Kelebek"></div><div class="upload"><label for="aImage"><span class="upload-icon">${icon("design")}</span><span><b>Yapılacak modelin görselini yükle</b><small style="display:block;color:var(--muted)">JPG, PNG veya WebP</small></span></label><input id="aImage" type="file" accept="image/*" onchange="previewImage(this,'aPreview')">${a?.modelImage?`<img id="aPreview" class="upload-preview" style="display:block" src="${a.modelImage}">`:`<img id="aPreview" class="upload-preview">`}</div><div class="field"><label>Kullanılacak iğne</label><input id="fNeedle" value="${esc(a?.needle||"")}" placeholder="Örn. 3RL, 7RS, 9M1"></div><div class="field"><label>Alınacak ücret (₺)</label><input id="fPrice" type="number" min="0" step="1" value="${a?.price||""}" placeholder="2500"></div><div class="field"><label>Durum</label><select id="fStatus"><option ${a?.status==="Onaylandı"||!a?"selected":""}>Onaylandı</option><option ${a?.status==="Beklemede"?"selected":""}>Beklemede</option><option ${a?.status==="İptal Edildi"?"selected":""}>İptal Edildi</option><option ${a?.status==="Tamamlandı"?"selected":""}>Tamamlandı</option></select></div><div class="field"><label>Not</label><textarea id="fNote" placeholder="Dövme ile ilgili not...">${esc(a?.note||"")}</textarea></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="primary" onclick="saveAppointment('${esc(id||"")}')">${a?"Değişiklikleri Kaydet":"Randevuyu Kaydet"}</button></div>${a?`<div class="actions"><button class="secondary danger" onclick="deleteAppointment('${esc(a.id)}')">${icon("trash")} Randevuyu Sil</button></div>`:""}`;
+ } else if(type==="customer") openCustomerForm();
+ else if(type==="design") b.innerHTML=`<h2>Yeni Tasarım</h2><div class="field"><label>Tasarım adı</label><input id="dName" placeholder="Örn. Kelebek"></div><div class="field"><label>Kategori</label><input id="dCat" placeholder="Minimal, Line Work, Blackwork..."></div><div class="upload"><label for="dImage"><span class="upload-icon">${icon("design")}</span><span><b>Görsel yükle</b><small style="display:block;color:var(--muted)">JPG, PNG veya WebP</small></span></label><input id="dImage" type="file" accept="image/*" onchange="previewImage(this,'dPreview')"><img id="dPreview" class="upload-preview"></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="primary" onclick="saveDesign()">Tasarımı Kaydet</button></div>`;
+ else if(type==="finance") b.innerHTML=`<h2>Finans Kaydı</h2><div class="tabs"><button id="incomeType" class="tab active" onclick="setFinanceType('Gelir')">Gelir</button><button id="expenseType" class="tab" onclick="setFinanceType('Gider')">Gider</button></div><input type="hidden" id="fFinanceType" value="Gelir"><div class="field"><label>Tutar (₺)</label><input id="fAmount" type="number" min="0" step="0.01"></div><div class="field"><label>Kategori</label><input id="fCategory" placeholder="Dövme, malzeme, kira..."></div><div class="field"><label>Açıklama</label><input id="fNote"></div><div class="field"><label>Tarih</label><input id="fFinanceDate" type="date" value="${today()}"></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="primary" onclick="saveFinance()">Kaydet</button></div>`;
+ else if(type==="profile") b.innerHTML=`<h2>Profil Düzenle</h2><div class="field"><label>Ad Soyad</label><input id="pName" value="${esc(data.profile.name)}"></div><div class="field"><label>Stüdyo</label><input id="pStudio" value="${esc(data.profile.studio)}"></div><div class="field"><label>Şehir</label><input id="pCity" value="${esc(data.profile.city)}"></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="primary" onclick="saveProfile()">Kaydet</button></div>`;
+ m.classList.add("open");
+}
+function openCustomerForm(id=null){
+ const c=id?data.customers.find(x=>String(x.id)===String(id)):null;
+ document.getElementById("modalBody").innerHTML=`<h2>${c?"Müşteriyi Düzenle":"Yeni Müşteri"}</h2><div class="field"><label>Ad Soyad</label><input id="cName" value="${esc(c?.name||"")}"></div><div class="field"><label>Telefon / WhatsApp</label><input id="cPhone" type="tel" value="${esc(c?.phone||"")}" placeholder="05xx xxx xx xx"></div><div class="field"><label>Instagram profil bağlantısı</label><input id="cInstagram" type="url" value="${esc(c?.instagram||"")}" placeholder="https://instagram.com/kullaniciadi"></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="primary" onclick="saveCustomer('${esc(id||"")}')">Kaydet</button></div>`;
+ document.getElementById("modal").classList.add("open");
+}
+function previewImage(input,id){const f=input.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=document.getElementById(id);im.src=r.result;im.style.display="block"};r.readAsDataURL(f)}
+function compressImage(file,max=1400,q=.82){return new Promise(resolve=>{const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));c.getContext("2d").drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL("image/jpeg",q))};img.src=r.result};r.readAsDataURL(file)})}
+async function saveAppointment(id){
+ const name=document.getElementById("fCustomer").value.trim();if(!name){alert("Müşteri adını gir.");return}
+ let c=data.customers.find(x=>x.name.toLowerCase()===name.toLowerCase());
+ if(!c){c={id:"c"+Date.now(),name,phone:"",instagram:"",regular:false,longAway:false};data.customers.push(c)}
+ const old=id?data.appointments.find(x=>String(x.id)===String(id)):null, file=document.getElementById("aImage").files?.[0];
+ let image=old?.modelImage||"";if(file)image=await compressImage(file);
+ const obj={id:old?.id||"a"+Date.now(),customerId:c.id,customer:name,date:document.getElementById("fDate").value,time:document.getElementById("fTime").value,style:document.getElementById("fStyle").value.trim(),body:document.getElementById("fBody")?.value.trim()||"",modelImage:image,needle:document.getElementById("fNeedle").value.trim(),price:Number(document.getElementById("fPrice").value)||0,deposit:Number(document.getElementById("fDeposit")?.value)||0,phone:document.getElementById("fPhone")?.value.trim()||"",instagram:document.getElementById("fInstagram")?.value.trim()||"",status:document.getElementById("fStatus").value,note:document.getElementById("fNote").value.trim()};
+ if(old)Object.assign(old,obj);else data.appointments.push(obj);c.phone=obj.phone||c.phone||"";c.instagram=obj.instagram||c.instagram||"";c.last=obj.date;save();closeModal();setScreen("appointments");
+}
+function deleteAppointment(id){if(!confirm("Bu randevuyu silmek istediğine emin misin?"))return;data.appointments=data.appointments.filter(a=>String(a.id)!==String(id));save();closeModal();setScreen("appointments")}
+function openAppointment(id){openForm("appointment",id)}
+function saveCustomer(id){
+ const name=document.getElementById("cName").value.trim();if(!name){alert("Ad soyad gir.");return}
+ if(id){const c=data.customers.find(x=>String(x.id)===String(id));Object.assign(c,{name,phone:document.getElementById("cPhone").value.trim(),instagram:document.getElementById("cInstagram").value.trim()});data.appointments.filter(a=>a.customerId===c.id).forEach(a=>a.customer=c.name)}
+ else data.customers.push({id:"c"+Date.now(),name,phone:document.getElementById("cPhone").value.trim(),instagram:document.getElementById("cInstagram").value.trim(),regular:false,longAway:false});
+ save();closeModal();setScreen("customers");
+}
+function saveDesign(){
+ const f=document.getElementById("dImage").files?.[0];const n=document.getElementById("dName").value.trim();if(!n){alert("Tasarım adı gir.");return}
+ const finish=image=>{data.designs.push({id:"d"+Date.now(),name:n,category:document.getElementById("dCat").value.trim(),image:image||""});save();closeModal();setScreen("designs")};
+ if(f)compressImage(f).then(finish);else finish("");
+}
+function setFinanceType(t){document.getElementById("fFinanceType").value=t;document.getElementById("incomeType").classList.toggle("active",t==="Gelir");document.getElementById("expenseType").classList.toggle("active",t==="Gider")}
+function saveFinance(){const amount=Number(document.getElementById("fAmount").value);if(!amount||amount<=0){alert("Geçerli bir tutar gir.");return}data.finance.push({id:"f"+Date.now(),type:document.getElementById("fFinanceType").value,amount,date:document.getElementById("fFinanceDate").value,category:document.getElementById("fCategory").value.trim(),note:document.getElementById("fNote").value.trim()});save();closeModal();setScreen("finance")}
+function deleteFinance(id){
+ if(!confirm("Bu gelir/gider kaydını silmek istediğine emin misin?")) return;
+ data.finance=data.finance.filter(x=>String(x.id)!==String(id));
+ save(); finance();
+}
+function finance(){
+ const inc=data.finance.filter(x=>x.type==="Gelir").reduce((a,x)=>a+Number(x.amount),0),out=data.finance.filter(x=>x.type==="Gider").reduce((a,x)=>a+Number(x.amount),0);
+ document.getElementById("finance").innerHTML=shell("FİNANS",`<div class="finance-grid"><div class="finance-card"><small>Toplam Gelir</small><strong class="money">₺${inc.toLocaleString("tr-TR",{minimumFractionDigits:2})}</strong></div><div class="finance-card"><small>Toplam Gider</small><strong class="money">₺${out.toLocaleString("tr-TR",{minimumFractionDigits:2})}</strong></div><div class="finance-card balance"><small>Net Bakiye</small><strong class="money">₺${(inc-out).toLocaleString("tr-TR",{minimumFractionDigits:2})}</strong></div></div><div class="finance-actions"><button class="primary" onclick="openForm('finance');setTimeout(()=>setFinanceType('Gelir'),0)">＋ Gelir Ekle</button><button class="secondary" onclick="openForm('finance');setTimeout(()=>setFinanceType('Gider'),0)">＋ Gider Ekle</button></div><div class="section-head"><h3>İŞLEMLER</h3><span>${data.finance.length}</span></div><div class="card">${data.finance.length?data.finance.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(x=>`<div class="finance-row"><div class="money-icon">${x.type==="Gelir"?"↑":"↓"}</div><div class="grow"><b>${esc(x.category||x.type)}</b><small>${esc(x.note||"")} · ${esc(x.date||"")}</small></div><div class="amount ${x.type==="Gelir"?"in":"out"}">${x.type==="Gelir"?"+":"−"}₺${Number(x.amount).toLocaleString("tr-TR",{minimumFractionDigits:2})}</div></div>`).join(""):`<div class="empty"><b>Henüz finans kaydı yok</b>Gelir ve giderlerini ekleyebilirsin.</div>`}</div>`);
+}
+function profile(){
+ document.getElementById("profile").innerHTML=shell("PROFİL",`<div class="profile-head"><div class="avatar"><img src="icon.png"></div><div><div class="profile-name">${esc(data.profile.name||"Sanatçı")}</div><div class="sub">${esc(data.profile.studio||"Apollo Ink")} · ${esc(data.profile.city||"")}</div><button class="edit" onclick="openForm('profile')">Profil Düzenle</button></div></div>
+ <div class="stats"><div class="stat"><div class="num">${data.appointments.length}</div><small>Toplam Randevu</small></div><div class="stat"><div class="num">${data.customers.length}</div><small>Toplam Müşteri</small></div><div class="stat"><div class="num">${data.designs.length}</div><small>Tasarım</small></div><div class="stat"><div class="num">${data.finance.filter(x=>x.type==="Gelir").reduce((a,x)=>a+Number(x.amount),0).toLocaleString("tr-TR")} ₺</div><small>Toplam Gelir</small></div></div>
+ <div class="card"><div class="setting" onclick="openForm('profile')">${icon("edit")}<div class="grow"><b>Profil Düzenle</b><small>Ad, stüdyo ve şehir bilgilerini değiştir</small></div><span class="chev">›</span></div><div class="setting" onclick="toggleTheme()">${icon(data.settings.theme==="dark"?"sun2":"moon")}<div class="grow"><b>Tema</b><small>${data.settings.theme==="dark"?"Koyu tema":"Açık tema"}</small></div><span class="chev">›</span></div><div class="setting" onclick="requestNotifications()">${icon("bell")}<div class="grow"><b>Bildirimler</b><small>${data.settings.notifications?"Bildirim izni etkin":"Randevu bildirimlerini etkinleştir"}</small></div><span class="chev">›</span></div></div>`);
+}
+function toggleTheme(){data.settings.theme=data.settings.theme==="dark"?"light":"dark";save();applyTheme();profile()}
+function applyTheme(){document.documentElement.classList.toggle("light",data.settings.theme==="light");document.body.classList.toggle("light",data.settings.theme==="light");document.querySelector('meta[name="theme-color"]').setAttribute("content",data.settings.theme==="light"?"#f5f5f7":"#0b0b0d")}
+async function requestNotifications(){if(!("Notification" in window)){alert("Bu tarayıcı bildirimleri desteklemiyor.");return}const p=await Notification.requestPermission();data.settings.notifications=p==="granted";save();profile();if(p==="granted")new Notification("Apollo Ink",{body:"Randevu bildirimleri etkinleştirildi."})}
+function notificationItems(){const t=today(),tom=new Date();tom.setDate(tom.getDate()+1);const ts=tom.toISOString().slice(0,10),now=new Date();const todays=data.appointments.filter(a=>a.date===t),tomor=data.appointments.filter(a=>a.date===ts);let html=`<h2>Bildirimler</h2><div class="card" style="padding:14px"><b>Bugün</b><p style="color:var(--muted)">${todays.length} randevun var.</p><b>Yarın</b><p style="color:var(--muted)">${tomor.length} randevun var.</p><b>Yaklaşan</b><p style="color:var(--muted)">Randevu saatinden 1 saat önce bildirim kontrolü yapılır.</p></div><div class="actions"><button class="secondary" onclick="requestNotifications()">Bildirim İzni</button><button class="secondary" onclick="closeModal()">Kapat</button></div>`;return html}
+function openNotifications(){document.getElementById("modalBody").innerHTML=notificationItems();document.getElementById("modal").classList.add("open")}
+function checkReminders(){
+ if(!data.settings.notifications||!("Notification" in window)||Notification.permission!=="granted")return;
+ const now=new Date(), stamp=Math.floor(now.getTime()/60000);
+ data.appointments.forEach(a=>{if(!a.date||!a.time||a.status==="İptal Edildi")return;const dt=new Date(a.date+"T"+a.time);const diff=Math.round((dt-now)/60000);if(diff>=59&&diff<=61){const key="rem_"+a.id+"_"+stamp;if(!sessionStorage.getItem(key)){sessionStorage.setItem(key,"1");new Notification("Apollo Ink — 1 saat kaldı",{body:`${a.customer} · ${a.time} · ${a.style||"Dövme"}`})}}});
+}
+function renderDesigns(){designs()}
+function renderScreen(s){({home,appointments:renderAppointments,designs,customers,finance,profile}[s]||home)()}
+document.getElementById("fab").onclick=()=>{const s=document.querySelector(".screen.active")?.id;openForm(s==="customers"?"customer":s==="designs"?"design":s==="finance"?"finance":"appointment")};
+document.getElementById("topAction").innerHTML=icon("bell");document.getElementById("topAction").onclick=openNotifications;
+document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")closeModal()};
+function closeModal(){document.getElementById("modal").classList.remove("open")}
+applyTheme();home();setInterval(checkReminders,60000);checkReminders();
+</script>
+<script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
+</body></html>

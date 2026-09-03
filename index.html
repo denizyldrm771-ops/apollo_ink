@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b0d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="icon" type="image/png" href="icon.png">
+  <title>Ink Artist Suite</title>
+  <style>
+    :root{
+      --bg:#09090b;--panel:#121214;--panel2:#171719;--line:#2a2a2e;
+      --text:#f4f4f5;--muted:#96969d;--red:#f20b18;--red2:#ff1b27;
+      --green:#2fc477;--amber:#e7a63a;--radius:18px;
+    }
+    *{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+    body{min-height:100dvh;background:radial-gradient(circle at 50% 0,#17100f 0,#0b0b0d 34%,#080809 100%)}
+    button,input,select,textarea{font:inherit;color:inherit}
+    button{border:0;background:none;cursor:pointer}
+    .app{min-height:100dvh;padding-bottom:88px}
+    .topbar{padding:52px 20px 12px;display:flex;justify-content:space-between;align-items:center}
+    .title{font-size:26px;font-weight:800;letter-spacing:.2px}.eyebrow{font-size:12px;letter-spacing:3px;color:#888;margin-bottom:8px;font-weight:700}
+    .bell{width:50px;height:50px;border:1px solid var(--line);border-radius:16px;display:grid;place-items:center;position:relative;background:#101012}
+    .bell:after{content:"";width:7px;height:7px;border-radius:50%;background:var(--red);position:absolute;right:11px;top:11px}
+    .bell svg{width:23px}
+    main{padding:0 20px}.screen{display:none}.screen.active{display:block}
+    .hero{position:relative;padding:12px 0 22px;overflow:hidden}.sun{position:absolute;right:-40px;top:-45px;width:310px;height:310px;opacity:.18}
+    .welcome{display:flex;align-items:center;gap:16px;position:relative;z-index:1}
+    .avatar{width:92px;height:92px;border-radius:50%;border:2px solid #ff5360;padding:8px;background:#09090b;display:grid;place-items:center}.avatar svg{width:72px;height:72px}.avatar img{width:72px;height:72px;object-fit:contain;border-radius:50%}
+    .hello{color:#999;font-size:16px}.user{font-size:38px;font-weight:850;line-height:1.05}.sub{color:#777;margin-top:5px}
+    .section-head{display:flex;justify-content:space-between;align-items:center;margin:22px 0 12px}.section-head h3{margin:0;font-size:12px;letter-spacing:2.5px;color:#888}.link{color:var(--red);font-weight:700}
+    .date{font-size:29px;font-weight:850;margin:0 0 18px}.redline{height:4px;width:80px;background:var(--red);border-radius:9px;margin-top:-10px}
+    .card{background:linear-gradient(145deg,#171719,#111113);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 8px 30px #0005}
+    .summary{display:flex;align-items:center;justify-content:space-between;padding:20px;border-bottom:1px solid var(--line)}
+    .count{display:flex;align-items:center;gap:13px}.count-icon{width:46px;height:46px;border-radius:14px;background:var(--red);display:grid;place-items:center}
+    .count strong{font-size:28px}.count span{display:block;color:#aaa}.primary{background:linear-gradient(#ff1a26,#e8000b);padding:14px 18px;border-radius:14px;box-shadow:0 7px 20px #e9001530;font-weight:700}
+    .row{display:flex;align-items:center;gap:13px;padding:15px 18px;border-bottom:1px solid #29292c}.row:last-child{border-bottom:0}
+    .timebox{width:45px;height:45px;border:1px solid var(--line);border-radius:13px;display:grid;place-items:center;color:#bbb}.time{font-size:18px;width:58px}.customer{flex:1;min-width:0}.customer b{font-size:16px}.customer small{display:block;color:#85858c;margin-top:3px}.status{font-size:12px;padding:8px 11px;border-radius:12px;background:#123526;color:var(--green);white-space:nowrap}.status.pending{background:#342817;color:var(--amber)}.status.cancel{background:#35161a;color:#ff5660}
+    .quick{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.quick button{border:1px solid var(--line);background:#151517;border-radius:16px;padding:15px 7px;min-height:110px}.quick svg{width:32px;height:32px;margin-bottom:10px}.quick span{display:block;font-size:12px}
+    .empty{padding:34px 20px;text-align:center;color:#85858c}.empty b{display:block;color:#ddd;margin-bottom:6px}
+    .toolbar{display:flex;gap:10px;margin:12px 0 18px}.search{flex:1;display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:15px;padding:0 15px;background:#111113}.search input{width:100%;padding:15px 0;background:none;border:0;outline:0}.filter{border:1px solid var(--line);border-radius:15px;padding:0 15px;color:var(--red)}
+    .tabs{display:flex;gap:10px;margin:10px 0 18px}.tab{padding:13px 18px;border-radius:15px;background:#19191c;color:#999}.tab.active{background:var(--red);color:#fff}
+    .date-strip{display:grid;grid-template-columns:repeat(5,1fr) 1.3fr;gap:8px;margin-bottom:25px}.day{padding:11px 5px;text-align:center;border:1px solid var(--line);border-radius:15px;background:#161619}.day strong{font-size:23px;display:block}.day small{color:#aaa}.day.active{background:var(--red);border-color:var(--red)}.day.active small{color:#fff}
+    .list-title{display:flex;justify-content:space-between;color:#999;letter-spacing:1.8px;font-size:12px;margin:25px 0 10px;font-weight:700}
+    .fab{position:fixed;right:22px;bottom:105px;width:66px;height:66px;border-radius:50%;background:var(--red);box-shadow:0 12px 30px #e6001b55;display:grid;place-items:center;z-index:8}.fab svg{width:35px}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.design{border:1px solid var(--line);border-radius:17px;overflow:hidden;background:#111113}.design .preview{height:175px;display:grid;place-items:center;background:#0b0b0d}.design .preview svg{width:75%;height:75%;opacity:.75}.design-info{padding:11px}.design-info small{color:#888}.design-info b{display:block;margin-top:5px}
+    .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:18px 0}.stat{border:1px solid var(--line);border-radius:16px;padding:16px;text-align:center;background:#121214}.stat .num{font-size:26px;font-weight:800}.stat small{color:#888}
+    .profile-head{display:flex;align-items:center;gap:18px;margin:15px 0 20px}.profile-head .avatar{width:112px;height:112px}.profile-name{font-size:30px;font-weight:850}.edit{margin-top:10px;border:1px solid #5a1d23;color:var(--red);padding:11px 14px;border-radius:13px}
+    .settings{border:1px solid var(--line);border-radius:18px;overflow:hidden}.setting{display:flex;align-items:center;gap:14px;padding:17px;border-bottom:1px solid var(--line)}.setting:last-child{border:0}.setting svg{width:25px;color:#aaa}.setting div{flex:1}.setting small{display:block;color:#777;margin-top:4px}.chev{color:#888}
+    .bottom{position:fixed;left:0;right:0;bottom:0;height:82px;padding-bottom:env(safe-area-inset-bottom);background:#111113ee;backdrop-filter:blur(18px);border-top:1px solid #29292d;display:grid;grid-template-columns:repeat(5,1fr);z-index:10}.nav{color:#777;display:grid;place-items:center;align-content:center;gap:4px;font-size:11px;position:relative}.nav svg{width:26px;height:26px}.nav.active{color:var(--red)}.nav.active:before{content:"";position:absolute;top:0;width:36px;height:3px;background:var(--red);border-radius:0 0 5px 5px}
+    .modal{position:fixed;inset:0;background:#0009;backdrop-filter:blur(10px);display:none;align-items:flex-end;z-index:30}.modal.open{display:flex}.sheet{width:100%;background:#151517;border:1px solid var(--line);border-radius:25px 25px 0 0;padding:22px 20px 30px;max-height:90dvh;overflow:auto}.handle{width:45px;height:5px;background:#555;border-radius:8px;margin:0 auto 20px}.sheet h2{margin:0 0 18px}.field{margin:12px 0}.field label{display:block;color:#999;font-size:13px;margin-bottom:7px}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:#0f0f11;border-radius:14px;padding:14px;outline:none}.actions{display:flex;gap:10px;margin-top:18px}.actions button{flex:1;padding:14px;border-radius:14px}.secondary{border:1px solid var(--line)!important}.form-primary{background:var(--red)}
+    @media(min-width:800px){main{max-width:760px;margin:auto}.topbar{max-width:760px;margin:auto}.bottom{left:50%;right:auto;transform:translateX(-50%);width:min(760px,100%);border-radius:22px 22px 0 0}.fab{right:calc(50% - 350px)}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar"><div id="topTitle" class="title">ANA SAYFA</div><button class="bell" aria-label="Bildirimler"><span aria-hidden="true">⌁</span></button></header>
+  <main>
+    <section id="home" class="screen active"></section>
+    <section id="appointments" class="screen"></section>
+    <section id="designs" class="screen"></section>
+    <section id="customers" class="screen"></section>
+    <section id="profile" class="screen"></section>
+  </main>
+</div>
+<nav class="bottom">
+  <button class="nav active" data-screen="home">⌂<span>Ana Sayfa</span></button>
+  <button class="nav" data-screen="appointments">▣<span>Randevular</span></button>
+  <button class="nav" data-screen="designs">♢<span>Tasarım</span></button>
+  <button class="nav" data-screen="customers">♧<span>Müşteriler</span></button>
+  <button class="nav" data-screen="profile">♙<span>Profil</span></button>
+</nav>
+<button class="fab" id="fab" aria-label="Ekle">＋</button>
+
+<div class="modal" id="modal"><div class="sheet"><div class="handle"></div><div id="modalBody"></div></div></div>
+
+<script>
+const key="apolloInkData";
+const today=()=>new Date().toISOString().slice(0,10);
+const emptyData={appointments:[],customers:[],designs:[],profile:{name:"",email:"",studio:"Apollo Ink",city:""},finance:[]};
+let data=Object.assign(emptyData, JSON.parse(localStorage.getItem(key)||"null")||{});
+const save=()=>localStorage.setItem(key,JSON.stringify(data));
+const icon=(s)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${s}</svg>`;
+const sun=`<svg class="sun" viewBox="0 0 300 300" fill="none" stroke="#8b7664" stroke-width="11">${Array.from({length:12},(_,i)=>`<line x1="150" y1="18" x2="150" y2="85" transform="rotate(${i*30} 150 150)"/>`).join("")}<circle cx="150" cy="150" r="64"/></svg>`;
+const logo=()=>`<div class="avatar"><img src="icon.png" alt="Apollo Ink" style="width:72px;height:72px;object-fit:contain;border-radius:50%"></div>`;
+function shell(title,html){return `<div class="hero">${sun}<div class="section-head" style="margin-top:0"><h1 style="font-size:26px;margin:0">${title}</h1></div>${html}</div>`}
+function home(){
+ const a=data.appointments.filter(x=>x.date===new Date().toISOString().slice(0,10));
+ const c=data.customers.length;
+ document.getElementById("home").innerHTML=shell("",`
+   <div class="welcome">${logo()}<div><div class="hello">Merhaba,</div><div class="user">${data.profile.name||"Sanatçı"}</div><div class="sub">Apollo Ink'e hoş geldin.</div></div></div>
+   <div class="section-head"><h3>BUGÜNKÜ RANDEVULAR</h3></div>
+   <div class="date">${new Date().toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"})}</div><div class="redline"></div>
+   <div class="card" style="margin-top:25px">${a.length? a.slice(0,3).map(appointmentRow).join(""):`<div class="empty"><b>Bugün için randevu yok</b>Yeni bir randevu ekleyebilirsin.</div>`}</div>
+   <div class="section-head"><h3>HIZLI İŞLEMLER</h3></div>
+   <div class="quick">
+    <button onclick="openForm('appointment')">${icon('<rect x="3" y="4" width="18" height="18" rx="3"/><path d="M8 2v4M16 2v4M3 9h18"/>')}<span>Randevu Ekle</span></button>
+    <button onclick="go('customers')">${icon('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>')}<span>Müşteriler</span></button>
+    <button onclick="go('designs')">${icon('<path d="M4 20l4.5-1L19 8.5 15.5 5 5 16z"/><path d="M14 6l3.5 3.5"/>')}<span>Tasarım Arşivi</span></button>
+    <button onclick="openStats()">${icon('<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>')}<span>İstatistikler</span></button>
+   </div>
+   <div class="section-head"><h3>YAKLAŞAN RANDEVULAR</h3><button class="link" onclick="go('appointments')">Tümünü Gör ›</button></div>
+   <div class="card">${data.appointments.slice().sort((x,y)=>x.date.localeCompare(y.date)).slice(0,1).map(x=>appointmentRow(x)).join("")||`<div class="empty"><b>Yaklaşan randevu yok</b>Takvimini doldurmak için yeni randevu ekle.</div>`}</div>`);
+}
+function appointmentRow(x){return `<div class="row"><div class="timebox">◷</div><div class="time">${x.time}</div><div class="customer"><b>${esc(x.customer)}</b><small>${esc(x.style||"Dövme")}</small></div><span class="status ${x.status==='Beklemede'?'pending':x.status==='İptal Edildi'?'cancel':''}">${esc(x.status||"Onaylandı")}</span></div>`}
+function appointments(){
+ const days=[0,1,2,3,4].map(i=>{let d=new Date();d.setDate(d.getDate()+i);return d});
+ document.getElementById("appointments").innerHTML=shell("RANDEVULAR",`
+ <div class="tabs"><button class="tab active">Tüm Randevular</button><button class="tab">Bekleyenler</button></div>
+ <div class="date-strip">${days.map((d,i)=>`<button class="day ${i===0?'active':''}"><strong>${d.getDate()}</strong><small>${d.toLocaleDateString("tr-TR",{month:"short"})}</small><small>${d.toLocaleDateString("tr-TR",{weekday:"short"})}</small></button>`).join("")}<button class="day">▣<small>Takvimi Gör</small></button></div>
+ <div class="list-title"><span>RANDEVULAR</span><span>${data.appointments.length}</span></div>
+ <div class="card">${data.appointments.length?data.appointments.slice().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).map(appointmentRow).join(""):`<div class="empty"><b>Henüz randevu yok</b>＋ ile ilk randevunu oluştur.</div>`}</div>`);
+}
+function designs(){
+ document.getElementById("designs").innerHTML=shell("TASARIMLAR",`
+ <div class="tabs"><button class="tab active">Tüm Tasarımlar</button><button class="tab">Kategoriler</button></div>
+ <div class="toolbar"><div class="search">⌕<input id="designSearch" placeholder="Tasarım ara..." oninput="renderDesignGrid()"></div></div>
+ <div id="designGrid" class="grid"></div>`);
+ renderDesignGrid();
+}
+function renderDesignGrid(){
+ const q=(document.getElementById("designSearch")?.value||"").toLowerCase();
+ const arr=data.designs.filter(x=>(x.name+x.category).toLowerCase().includes(q));
+ document.getElementById("designGrid").innerHTML=arr.length?arr.map(d=>`<div class="design"><div class="preview">${d.image?`<img src="${d.image}" style="max-width:90%;max-height:90%">`:icon('<circle cx="12" cy="12" r="7"/><path d="M12 3v18M3 12h18"/>')}</div><div class="design-info"><small>${esc(d.category)}</small><b>${esc(d.name)}</b></div></div>`).join(""):`<div class="empty" style="grid-column:1/-1"><b>Tasarım arşivin boş</b>Buraya kendi dövme tasarımlarını ekleyeceğiz.</div>`;
+}
+function customers(){
+ document.getElementById("customers").innerHTML=shell("MÜŞTERİLER",`
+ <div class="toolbar"><div class="search">⌕<input id="customerSearch" placeholder="Müşteri ara..." oninput="renderCustomers()"></div><button class="filter">Filtrele</button></div>
+ <div class="stats"><div class="stat"><div class="num">${data.customers.length}</div><small>Toplam Müşteri</small></div><div class="stat"><div class="num">${data.appointments.filter(x=>x.date.slice(0,7)===new Date().toISOString().slice(0,7)).length}</div><small>Bu Ay</small></div><div class="stat"><div class="num">${data.customers.filter(x=>x.regular).length}</div><small>Düzenli Müşteri</small></div><div class="stat"><div class="num">${data.customers.filter(x=>x.longAway).length}</div><small>Uzun Süredir Gelmeyen</small></div></div>
+ <div class="list-title"><span>TÜM MÜŞTERİLER</span><span>A-Z⌄</span></div><div id="customerList"></div>`);
+ renderCustomers();
+}
+function renderCustomers(){
+ const q=(document.getElementById("customerSearch")?.value||"").toLowerCase();
+ const arr=data.customers.filter(x=>(x.name+x.phone).toLowerCase().includes(q));
+ document.getElementById("customerList").innerHTML=arr.length?arr.map(c=>`<div class="row card" style="margin:8px 0;border-radius:16px"><div class="timebox">♙</div><div class="customer"><b>${esc(c.name)}</b><small>${esc(c.phone)}</small><small>Son randevu: ${esc(c.last||"—")}</small></div><span class="status ${c.longAway?'pending':''}">${c.longAway?'Uzun Süredir Gelmeyen':'Düzenli Müşteri'}</span></div>`).join(""):`<div class="empty"><b>Müşteri listen boş</b>Yeni müşteri eklediğinde burada görünecek.</div>`;
+}
+function profile(){
+ document.getElementById("profile").innerHTML=shell("PROFİL",`
+ <div class="profile-head">${logo()}<div><div class="profile-name">${esc(data.profile.name||"Sanatçı")}</div><div class="sub">${esc(data.profile.studio)}</div><div class="sub">Dövme sanatçısı</div><button class="edit" onclick="openForm('profile')">Profil Düzenle</button></div></div>
+ <div class="stats"><div class="stat"><div class="num">${data.appointments.length}</div><small>Toplam Randevu</small></div><div class="stat"><div class="num">${data.customers.length}</div><small>Toplam Müşteri</small></div><div class="stat"><div class="num">${data.designs.length}</div><small>Tasarım</small></div><div class="stat"><div class="num">1.0.0</div><small>Uygulama</small></div></div>
+ <div class="list-title"><span>HESABIM</span></div><div class="settings">
+ ${setting("♙","Kişisel Bilgiler","İletişim ve hesap bilgilerini yönet","openForm('profile')")}
+ ${setting("⌾","Güvenlik","Şifre, giriş ve güvenlik ayarları")}
+ ${setting("♧","Bildirim Ayarları","Bildirim tercihlerinizi yönetin")}
+ ${setting("◐","Uygulama Teması","Koyu tema aktif")}
+ ${setting("◎","Dil","Uygulama dili","")}
+ </div>
+ <div class="list-title"><span>DESTEK</span></div><div class="settings">${setting("?","Yardım & SSS","Sık sorulan sorulara göz at")}${setting("ⓘ","Hakkımızda","Apollo Ink hakkında bilgi alın")}</div>
+ <button class="primary" style="width:100%;margin-top:20px" onclick="alert('Çıkış işlemi sonraki sürümde bağlanacak.')">Çıkış Yap</button>`);
+}
+function setting(i,t,s,fn=""){return `<button class="setting" onclick="${fn}"><span style="font-size:25px;color:#aaa">${i}</span><div><b>${t}</b><small>${s}</small></div><span class="chev">›</span></button>`}
+function openForm(type){
+ const m=document.getElementById("modal"), b=document.getElementById("modalBody");
+ if(type==="appointment") b.innerHTML=`<h2>Yeni Randevu</h2><div class="field"><label>Müşteri</label><input id="fCustomer" placeholder="Ad Soyad"></div><div class="field"><label>Tarih</label><input id="fDate" type="date" value="${today()}"></div><div class="field"><label>Saat</label><input id="fTime" type="time" value="12:00"></div><div class="field"><label>Stil / Model</label><input id="fStyle" placeholder="Örn. Line Work – Kelebek"></div><div class="field"><label>Durum</label><select id="fStatus"><option>Onaylandı</option><option>Beklemede</option><option>İptal Edildi</option></select></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="form-primary" onclick="addAppointment()">Randevuyu Kaydet</button></div>`;
+ if(type==="customer") b.innerHTML=`<h2>Yeni Müşteri</h2><div class="field"><label>Ad Soyad</label><input id="cName" placeholder="Ad Soyad"></div><div class="field"><label>Telefon</label><input id="cPhone" placeholder="05xx xxx xx xx"></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="form-primary" onclick="addCustomer()">Müşteriyi Kaydet</button></div>`;
+ if(type==="design") b.innerHTML=`<h2>Yeni Tasarım</h2><div class="field"><label>Tasarım adı</label><input id="dName" placeholder="Örn. Kelebek"></div><div class="field"><label>Kategori</label><input id="dCat" placeholder="Minimal, Line Work..."></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="form-primary" onclick="addDesign()">Tasarımı Kaydet</button></div>`;
+ if(type==="profile") b.innerHTML=`<h2>Profil</h2><div class="field"><label>Ad Soyad</label><input id="pName" value="${esc(data.profile.name)}"></div><div class="field"><label>Stüdyo</label><input id="pStudio" value="${esc(data.profile.studio)}"></div><div class="field"><label>Şehir</label><input id="pCity" value="${esc(data.profile.city)}"></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="form-primary" onclick="saveProfile()">Kaydet</button></div>`;
+ m.classList.add("open");
+}
+function addAppointment(){data.appointments.push({customer:v("fCustomer"),date:v("fDate"),time:v("fTime"),style:v("fStyle"),status:v("fStatus")});save();closeModal();render()}
+function addCustomer(){data.customers.push({name:v("cName"),phone:v("cPhone"),regular:false,longAway:false});save();closeModal();render()}
+function addDesign(){data.designs.push({name:v("dName"),category:v("dCat")});save();closeModal();render()}
+function saveProfile(){data.profile.name=v("pName");data.profile.studio=v("pStudio");data.profile.city=v("pCity");save();closeModal();render()}
+function v(id){return document.getElementById(id).value.trim()}
+function closeModal(){document.getElementById("modal").classList.remove("open")}
+function openStats(){alert(`Randevular: ${data.appointments.length}\nMüşteriler: ${data.customers.length}\nTasarımlar: ${data.designs.length}`)}
+function esc(s=""){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function go(screen){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));document.getElementById(screen).classList.add("active");document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.screen===screen));document.getElementById("topTitle").textContent={home:"ANA SAYFA",appointments:"RANDEVULAR",designs:"TASARIMLAR",customers:"MÜŞTERİLER",profile:"PROFİL"}[screen];renderScreen(screen)}
+function renderScreen(s){({home,appointments,designs,customers,profile}[s])()}
+function render(){const active=document.querySelector(".screen.active")?.id||"home";renderScreen(active)}
+document.querySelectorAll(".nav").forEach(n=>n.onclick=()=>go(n.dataset.screen));
+document.getElementById("fab").onclick=()=>{const s=document.querySelector(".screen.active")?.id;openForm(s==="customers"?"customer":s==="designs"?"design":"appointment")};
+document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")closeModal()};
+home();
+</script>
+<script>
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body></html>

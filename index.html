@@ -106,7 +106,7 @@ button[title*="takvim"] svg{
 </head>
 <body>
 <div class="app">
-<header class="topbar"><button class="iconbtn" id="topAction" aria-label="Bildirimler"></button></header>
+<header class="topbar"><button class="iconbtn" id="topAction" aria-label="Takvimi Gör" title="Takvimi Gör"></button></header>
 <main>
 <section class="screen active" id="home"></section>
 <section class="screen" id="appointments"></section>
@@ -456,7 +456,7 @@ function checkReminders(){
 }
 function closeModal(){document.getElementById("modal").classList.remove("open")}
 document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")closeModal()};
-document.getElementById("topAction").innerHTML=icon("bell");document.getElementById("topAction").onclick=openNotifications;
+document.getElementById("topAction").innerHTML=icon("calendar");document.getElementById("topAction").onclick=openCalendar;
 document.getElementById("fab").onclick=()=>{const s=document.querySelector(".screen.active")?.id;openForm(s==="customers"?"customer":s==="designs"?"design":s==="finance"?"finance":"appointment")};
 applyTheme();home();setInterval(checkReminders,60000);checkReminders();
 </script>

@@ -98,6 +98,9 @@ button:disabled{opacity:.45}
 <button class="fab" id="fab">＋</button>
 <div class="modal" id="modal"><div class="sheet"><div class="handle"></div><div id="modalBody"></div></div></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>window.__supabase=(window.SUPABASE_URL&&window.SUPABASE_PUBLISHABLE_KEY&&window.SUPABASE_URL.indexOf("YOUR-")!==0)?supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;</script>
 <script>
 const KEY="apolloInkData";
 const CATS=["Minimal","Fine Line","Linework","Blackwork","Realism","Cover Up","Geometric","Diğer"];
@@ -140,7 +143,7 @@ settings:{...empty.settings,...(raw.settings||{}),theme:"dark"}
 data.appointments=data.appointments.map(a=>({...a,customerId:a.customerId||"",phone:a.phone||"",instagram:a.instagram||"",type:a.type||"",body:a.body||"",deposit:Number(a.deposit||0),note:a.note||"",modelImage:a.modelImage||"",needle:a.needle||"",price:Number(a.price||0)}));
 data.customers=data.customers.map(c=>({...c,phone:c.phone||"",instagram:c.instagram||""}));
 data.designs=data.designs.map(d=>({...d,note:d.note||"",category:d.category||"Diğer"}));
-const save=()=>localStorage.setItem(KEY,JSON.stringify(data));
+function save(){localStorage.setItem(KEY,JSON.stringify(data));queueCloudSave();}
 
 function migrateLegacy(){
   const names=new Set(data.customers.map(c=>String(c.name||"").toLowerCase()));
@@ -437,6 +440,10 @@ function profile(){
    <button class="row clickable" type="button" style="width:100%;text-align:left" onclick="openForm('profile')">${icon("profile")}<div class="customer"><b>Kişisel Bilgiler</b><small>Ad, e-posta, stüdyo, şehir ve profil fotoğrafı</small></div><span class="profile-arrow">›</span></button>
    <button class="row clickable" type="button" style="width:100%;text-align:left" onclick="openNotifications()">${icon("bell")}<div class="customer"><b>Bildirimler</b><small>Bugün, yarın ve yaklaşan randevular</small></div><span class="profile-arrow">›</span></button>
   </div>
+  <div class="profile-section-title">HESAP & BULUT</div>
+  <div class="profile-card">
+   <button class="row clickable" type="button" style="width:100%;text-align:left" onclick="openCloudAccount()">${icon("profile")}<div class="customer"><b>Hesap & Bulut</b><small>${cloudStatusText()}</small></div><span class="profile-arrow">›</span></button>
+  </div>
   <div class="profile-section-title">UYGULAMA</div>
   <div class="profile-card">
    <div class="row" style="width:100%;text-align:left">${icon("moon")}<div class="customer"><b>Tema</b><small>Uygulama daima koyu temada çalışır</small></div><span class="profile-status">KOYU</span></div>
@@ -449,6 +456,37 @@ function saveProfile(){
  const f=document.getElementById("pPhoto").files?.[0],finish=image=>{data.profile.name=document.getElementById("pName").value.trim();data.profile.email=document.getElementById("pEmail").value.trim();data.profile.studio=document.getElementById("pStudio").value.trim()||"Apollo Ink";data.profile.city=document.getElementById("pCity").value.trim();if(image)data.profile.photo=image;save();closeModal();profile()};
  if(f)compressImage(f,900,.85).then(finish);else finish(data.profile.photo||"");
 }
+function cloudStatusText(){
+ const u=window.__cloudUser;
+ if(!window.__supabase) return "Bulut bağlantısı henüz yapılandırılmadı";
+ return u?`Bağlı: ${u.email||"hesap"} · Senkron aktif`:`Hesabına giriş yaparak verilerini cihazlar arasında senkronla`;
+}
+function openCloudAccount(){
+ const u=window.__cloudUser;
+ const configured=!!window.__supabase;
+ document.getElementById("modalBody").innerHTML=`<h2>Hesap & Bulut</h2><div class="card" style="padding:15px;margin-bottom:12px"><b>${configured?(u?"Bulut hesabın bağlı":"Bulut hesabı hazır") : "Bulut bağlantısı hazır değil"}</b><p style="color:var(--muted);margin:8px 0 0">${configured?(u?`<b>${esc(u.email||"")}</b><br>Verilerin bu hesap altında saklanır ve aynı hesapla giriş yaptığın diğer cihazlarda kullanılabilir.`:"E-posta ve şifrenle hesap oluşturabilir veya giriş yapabilirsin."):"Önce Supabase proje bilgileri config.js dosyasına eklenmeli. Bu sürümde yerel verilerin silinmez."}</p></div>${configured&&!u?`<div class="field"><label>E-posta</label><input id="cloudEmail" type="email" autocomplete="email" placeholder="ornek@mail.com"></div><div class="field"><label>Şifre</label><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="En az 6 karakter"></div><div class="actions"><button class="secondary" onclick="cloudLogin()">Giriş Yap</button><button class="primary" onclick="cloudSignup()">Hesap Oluştur</button></div><div class="actions"><button class="secondary" onclick="cloudResetPassword()">Şifremi Unuttum</button><button class="secondary" onclick="closeModal()">Kapat</button></div>`:u?`<div class="actions"><button class="primary" onclick="cloudSyncNow()">${icon("download")} Şimdi Senkronla</button><button class="secondary danger" onclick="cloudLogout()">Çıkış Yap</button></div><div class="actions"><button class="secondary" onclick="closeModal()">Kapat</button></div>`:`<div class="actions"><button class="secondary" onclick="closeModal()">Kapat</button></div>`}`;
+ document.getElementById("modal").classList.add("open");
+}
+async function cloudLogin(){
+ const email=document.getElementById("cloudEmail").value.trim(),password=document.getElementById("cloudPassword").value;if(!email||!password){alert("E-posta ve şifreyi gir.");return}
+ const {data:res,error}=await window.__supabase.auth.signInWithPassword({email,password});if(error){alert(error.message);return}window.__cloudUser=res.user;await cloudLoad(true);closeModal();profile();
+}
+async function cloudSignup(){
+ const email=document.getElementById("cloudEmail").value.trim(),password=document.getElementById("cloudPassword").value;if(!email||password.length<6){alert("Geçerli bir e-posta ve en az 6 karakterlik şifre gir.");return}
+ const {data:res,error}=await window.__supabase.auth.signUp({email,password});if(error){alert(error.message);return}
+ if(res.session){window.__cloudUser=res.user;await cloudSaveNow();closeModal();profile();alert("Bulut hesabın oluşturuldu ve bağlandı.")}else{alert("Hesap oluşturuldu. E-posta doğrulaması açıksa gelen kutunu kontrol edip sonra giriş yap.");}
+}
+async function cloudResetPassword(){
+ const email=document.getElementById("cloudEmail").value.trim();if(!email){alert("Önce e-posta adresini yaz.");return}
+ const {error}=await window.__supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)alert(error.message);else alert("Şifre yenileme bağlantısı e-posta adresine gönderildi.");
+}
+async function cloudLogout(){await window.__supabase.auth.signOut();window.__cloudUser=null;closeModal();profile()}
+let cloudSaveTimer=null;
+function queueCloudSave(){if(!window.__supabase||!window.__cloudUser)return;clearTimeout(cloudSaveTimer);cloudSaveTimer=setTimeout(()=>cloudSaveNow(),900);}
+async function cloudSaveNow(){if(!window.__supabase||!window.__cloudUser)return;const payload=JSON.parse(JSON.stringify(data));const {error}=await window.__supabase.from("apollo_cloud").upsert({user_id:window.__cloudUser.id,payload,updated_at:new Date().toISOString()});if(error)console.warn("Cloud save",error.message);}
+async function cloudLoad(showAlert=false){if(!window.__supabase||!window.__cloudUser)return;const {data:row,error}=await window.__supabase.from("apollo_cloud").select("payload").eq("user_id",window.__cloudUser.id).maybeSingle();if(error){console.warn("Cloud load",error.message);if(showAlert)alert(error.message);return}if(row?.payload){data.appointments=Array.isArray(row.payload.appointments)?row.payload.appointments:[];data.customers=Array.isArray(row.payload.customers)?row.payload.customers:[];data.designs=Array.isArray(row.payload.designs)?row.payload.designs:[];data.finance=Array.isArray(row.payload.finance)?row.payload.finance:[];data.profile={...data.profile,...(row.payload.profile||{})};data.settings={...data.settings,...(row.payload.settings||{}),theme:"dark"};migrateLegacy();localStorage.setItem(KEY,JSON.stringify(data));renderScreen(document.querySelector(".screen.active")?.id||"home");if(showAlert)alert("Buluttaki verilerin yüklendi.");}else{await cloudSaveNow();if(showAlert)alert("Bu hesap için bulutta kayıt bulunamadı. Mevcut cihaz verilerin yüklendi.");}}
+async function cloudSyncNow(){await cloudSaveNow();await cloudLoad(true)}
+function initCloud(){if(!window.__supabase)return;window.__supabase.auth.getSession().then(async({data:{session}})=>{if(session?.user){window.__cloudUser=session.user;await cloudLoad(false);profile()}});window.__supabase.auth.onAuthStateChange((_e,session)=>{window.__cloudUser=session?.user||null;profile()});}
 function toggleTheme(){data.settings.theme="dark";applyTheme();save();profile()}
 function applyTheme(){data.settings.theme="dark";document.documentElement.classList.remove("light");document.body.classList.remove("light");document.querySelector('meta[name="theme-color"]').setAttribute("content","#09090b")}
 async function requestNotifications(){
@@ -480,7 +518,7 @@ document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")closeModal
 document.getElementById("topAction").innerHTML=icon("calendar");document.getElementById("topAction").onclick=openCalendar;
 document.getElementById("notificationAction").innerHTML=icon("bell");document.getElementById("notificationAction").onclick=openNotifications;
 document.getElementById("fab").onclick=()=>{const s=document.querySelector(".screen.active")?.id;openForm(s==="customers"?"customer":s==="designs"?"design":s==="finance"?"finance":"appointment")};
-applyTheme();home();setInterval(checkReminders,60000);checkReminders();
+applyTheme();home();initCloud();setInterval(checkReminders,60000);checkReminders();
 </script>
 <script>
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});

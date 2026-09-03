@@ -57,7 +57,7 @@ body.light .quick button{background:var(--panel)}
 .date-strip{display:flex;gap:8px;overflow:auto;padding:4px 0 10px}.day{min-width:66px;height:76px;border:1px solid var(--line);border-radius:15px;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}.day.active{border-color:var(--red);box-shadow:inset 0 -3px var(--red)}.day strong{font-size:20px}.day small{font-size:10px;color:var(--muted)}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.design{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer}.preview{height:175px;background:#fff;display:grid;place-items:center;overflow:hidden}.preview img{width:100%;height:100%;object-fit:contain}.design-info{padding:11px}
 .finance-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.finance-card{padding:15px;border:1px solid var(--line);border-radius:17px;background:var(--panel)}.finance-card.balance{grid-column:1/-1}.finance-card small{color:var(--muted)}.money{display:block;margin-top:7px;font-size:22px;font-weight:900}
-.finance-actions{display:flex;gap:9px;margin:12px 0}.finance-actions>*{flex:1}.finance-row{display:flex;align-items:center;gap:10px;padding:13px;border-bottom:1px solid var(--line)}.money-icon{width:38px;height:38px;border-radius:12px;background:#fff1;display:grid;place-items:center;font-size:20px}.grow{flex:1}.grow b{display:block}.grow small{display:block;color:var(--muted);margin-top:3px;font-size:10px}.amount{font-weight:900}.amount.in{color:var(--green)}.amount.out{color:var(--danger)}
+.finance-actions{display:flex;gap:9px;margin:12px 0}.finance-actions>*{flex:1}.finance-row{display:flex;align-items:center;gap:10px;padding:13px;border-bottom:1px solid var(--line)}.money-icon{width:38px;height:38px;border-radius:12px;background:#fff1;display:grid;place-items:center;font-size:20px}.grow{flex:1}.grow b{display:block}.grow small{display:block;color:var(--muted);margin-top:3px;font-size:10px}.amount{font-weight:900}.amount.in{color:var(--green)}.amount.out{color:var(--danger)}.finance-delete{min-height:36px;padding:0 10px;font-size:10px;white-space:nowrap}
 .profile-head{display:flex;gap:14px;align-items:center;margin:10px 0 18px}.profile-name{font-size:23px;font-weight:900}.edit{margin-top:8px;color:var(--red);font-weight:900;font-size:12px}
 .setting{display:flex;align-items:center;gap:12px;padding:15px;border-bottom:1px solid var(--line);cursor:pointer}.setting:last-child{border:0}.setting svg{width:23px;height:23px}.chev{font-size:25px;color:var(--muted)}
 .bottom{position:fixed;left:0;right:0;bottom:0;height:94px;z-index:60;background:#151518ee;backdrop-filter:blur(18px);border-top:1px solid #ffffff18;display:grid;grid-template-columns:repeat(6,1fr);box-shadow:0 -12px 35px #0005}
@@ -103,10 +103,12 @@ button[title*="takvim"] svg{
 }
 </style>
 
+
+<style id="apollo-top-calendar-size-fix">#topAction{width:40px!important;height:40px!important;padding:0!important}#topAction svg{width:20px!important;height:20px!important}</style>
 </head>
 <body>
 <div class="app">
-<header class="topbar"><button class="iconbtn" id="topAction" aria-label="Takvimi Gör" title="Takvimi Gör"></button></header>
+<header class="topbar"><div style="display:flex;gap:9px;align-items:center"><button class="iconbtn" id="notificationAction" aria-label="Bildirimler" title="Bildirimler"></button><button class="iconbtn" id="topAction" aria-label="Takvimi Gör" title="Takvimi Gör"></button></div></header>
 <main>
 <section class="screen active" id="home"></section>
 <section class="screen" id="appointments"></section>
@@ -164,7 +166,7 @@ customers:Array.isArray(raw.customers)?raw.customers:[],
 designs:Array.isArray(raw.designs)?raw.designs:[],
 finance:Array.isArray(raw.finance)?raw.finance:[],
 profile:{...empty.profile,...(raw.profile||{})},
-settings:{...empty.settings,...(raw.settings||{})}
+settings:{...empty.settings,...(raw.settings||{}),theme:"dark"}
 };
 data.appointments=data.appointments.map(a=>({...a,customerId:a.customerId||"",phone:a.phone||"",instagram:a.instagram||"",type:a.type||"",body:a.body||"",deposit:Number(a.deposit||0),note:a.note||"",modelImage:a.modelImage||"",needle:a.needle||"",price:Number(a.price||0)}));
 data.customers=data.customers.map(c=>({...c,phone:c.phone||"",instagram:c.instagram||""}));
@@ -346,7 +348,7 @@ function openForm(type,id=null){
 }
 function openCustomerForm(id=null){
  const c=id?data.customers.find(x=>String(x.id)===String(id)):null;
- document.getElementById("modalBody").innerHTML=`<h2>${c?"Müşteriyi Düzenle":"Yeni Müşteri"}</h2><div class="field"><label>Ad Soyad</label><input id="cName" value="${esc(c?.name||"")}"></div><div class="field-grid"><div class="field"><label>Telefon / WhatsApp</label><input id="cPhone" type="tel" value="${esc(c?.phone||"")}" placeholder="05xx xxx xx xx"></div><div class="field"><label>Instagram profil bağlantısı</label><input id="cInstagram" value="${esc(c?.instagram||"")}" placeholder="https://instagram.com/..."></div></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="primary" onclick="saveCustomer('${esc(id||"")}')">Kaydet</button></div>`;
+ document.getElementById("modalBody").innerHTML=`<h2>${c?"Müşteriyi Düzenle":"Yeni Müşteri"}</h2><div class="field"><label>Ad Soyad</label><input id="cName" value="${esc(c?.name||"")}"></div><div class="field"><label>Telefon / WhatsApp</label><input id="cPhone" type="tel" inputmode="tel" autocomplete="tel" value="${esc(c?.phone||"")}" placeholder="05xx xxx xx xx"></div><div class="field"><label>Instagram profil bağlantısı</label><input id="cInstagram" type="url" inputmode="url" autocomplete="url" value="${esc(c?.instagram||"")}" placeholder="https://instagram.com/kullaniciadi"></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="primary" onclick="saveCustomer('${esc(id||"")}')">Kaydet</button></div>`;
  document.getElementById("modal").classList.add("open");
 }
 function previewImage(input,id){const f=input.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=document.getElementById(id);im.src=r.result;im.style.display="block"};r.readAsDataURL(f)}
@@ -430,18 +432,41 @@ function finance(){
  <div class="finance-actions"><button class="primary" onclick="openForm('finance');setTimeout(()=>setFinanceType('Gelir'),0)">＋ Gelir Ekle</button><button class="secondary" onclick="openForm('finance');setTimeout(()=>setFinanceType('Gider'),0)">＋ Gider Ekle</button></div>
  <div class="card" style="padding:14px;margin-bottom:12px"><div class="field-grid"><div class="field"><label>Görüntülenen ay</label><input type="month" value="${financeMonth}" onchange="financeMonth=this.value;finance()"></div><div class="field"><label>Karşılaştır</label><input type="month" value="${autoCompare}" onchange="compareMonth=this.value;finance()"></div></div><div class="compare"><div class="stat"><small>${monthName(financeMonth)} Net</small><strong>${money(net)}</strong></div><div class="stat"><small>${monthName(autoCompare)} Net</small><strong>${money(cmp.income-cmp.expense)}</strong></div><div class="stat"><small>Gelir farkı</small><strong>${money(cur.income-cmp.income)}</strong></div><div class="stat"><small>Gider farkı</small><strong>${money(cur.expense-cmp.expense)}</strong></div></div></div>
  <div class="section-head"><h3>İŞLEMLER · ${monthName(financeMonth)}</h3><span>${cur.rows.length}</span></div>
- <div class="card">${cur.rows.length?cur.rows.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(x=>`<div class="finance-row"><div class="money-icon">${x.type==="Gelir"?"↑":"↓"}</div><div class="grow"><b>${esc(x.category||x.type)}</b><small>${esc(x.note||"")} · ${esc(x.date||"")}${x.commissionPercent?` · ${x.commissionPercent}% komisyon`:""}</small></div><div class="amount ${x.type==="Gelir"?"in":"out"}">${x.type==="Gelir"?"+":"−"}${money(x.amount)} <button class="danger" title="Sil" onclick="event.stopPropagation();deleteFinance('${esc(x.id)}')">${icon("trash")}</button></div></div>`).join(""):`<div class="empty"><b>Bu ay finans kaydı yok</b>Gelir veya gider ekleyebilirsin.</div>`}</div>`);
+ <div class="card">${cur.rows.length?cur.rows.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(x=>`<div class="finance-row"><div class="money-icon">${x.type==="Gelir"?"↑":"↓"}</div><div class="grow"><b>${esc(x.category||x.type)}</b><small>${esc(x.note||"")} · ${esc(x.date||"")}${x.commissionPercent?` · ${x.commissionPercent}% komisyon`:""}</small></div><div style="display:flex;align-items:center;gap:8px"><div class="amount ${x.type==="Gelir"?"in":"out"}">${x.type==="Gelir"?"+":"−"}${money(x.amount)}</div><button class="dangerBtn finance-delete" type="button" title="Bu kaydı sil" onclick="event.preventDefault();event.stopPropagation();deleteFinance('${esc(x.id)}')">${icon("trash")} Sil</button></div></div>`).join(""):`<div class="empty"><b>Bu ay finans kaydı yok</b>Gelir veya gider ekleyebilirsin.</div>`}</div>`);
 }
+function profile(){
+ const p=data.profile;
+ const photo=p.photo||"icon.png";
+ document.getElementById("profile").innerHTML=shell("PROFİL",`
+  <div class="profile-head">
+   <div class="avatar"><img src="${esc(photo)}" alt="Profil"></div>
+   <div><div class="profile-name">${esc(p.name||"Sanatçı")}</div><div style="color:var(--muted);font-size:12px">${esc(p.studio||"Apollo Ink")}${p.city?` · ${esc(p.city)}`:""}</div><button class="link edit" onclick="openForm('profile')">Profili Düzenle</button></div>
+  </div>
+  <div class="card">
+   <button class="row clickable" style="width:100%;text-align:left" onclick="openForm('profile')">${icon("edit")}<div class="customer"><b>Kişisel Bilgiler</b><small>Ad, e-posta, stüdyo, şehir ve profil fotoğrafı</small></div><span>›</span></button>
+   <button class="row clickable" style="width:100%;text-align:left" onclick="openNotifications()">${icon("bell")}<div class="customer"><b>Bildirimler</b><small>Bugün, yarın ve yaklaşan randevular</small></div><span>›</span></button>
+   <div class="row" style="width:100%;text-align:left">${icon("moon")}<div class="customer"><b>Tema</b><small>Apollo Ink koyu tema</small></div><span class="status">Koyu</span></div>
+   <button class="row clickable" style="width:100%;text-align:left" onclick="alert('Güvenlik ayarları yakında.')">${icon("profile")}<div class="customer"><b>Güvenlik</b><small>Uygulama güvenliği</small></div><span>›</span></button>
+   <button class="row clickable" style="width:100%;text-align:left" onclick="alert('Uygulama ayarları')">${icon("finance")}<div class="customer"><b>Uygulama Ayarları</b><small>Apollo Ink uygulama seçenekleri</small></div><span>›</span></button>
+  </div>`);
+}
+
 function saveProfile(){
  const f=document.getElementById("pPhoto").files?.[0],finish=image=>{data.profile.name=document.getElementById("pName").value.trim();data.profile.email=document.getElementById("pEmail").value.trim();data.profile.studio=document.getElementById("pStudio").value.trim()||"Apollo Ink";data.profile.city=document.getElementById("pCity").value.trim();if(image)data.profile.photo=image;save();closeModal();profile()};
  if(f)compressImage(f,900,.85).then(finish);else finish(data.profile.photo||"");
 }
-function toggleTheme(){data.settings.theme=data.settings.theme==="dark"?"light":"dark";applyTheme();save();profile()}
-function applyTheme(){document.documentElement.classList.toggle("light",data.settings.theme==="light");document.body.classList.toggle("light",data.settings.theme==="light");document.querySelector('meta[name="theme-color"]').setAttribute("content",data.settings.theme==="light"?"#f4f4f6":"#09090b")}
+function toggleTheme(){data.settings.theme="dark";applyTheme();save();profile()}
+function applyTheme(){data.settings.theme="dark";document.documentElement.classList.remove("light");document.body.classList.remove("light");document.querySelector('meta[name="theme-color"]').setAttribute("content","#09090b")}
 async function requestNotifications(){
- if(!("Notification" in window)){alert("Bu tarayıcı bildirimleri desteklemiyor.");return}
- const p=await Notification.requestPermission();data.settings.notifications=p==="granted";save();profile();
- if(p==="granted")new Notification("Apollo Ink",{body:"Bildirimler etkinleştirildi."});
+ try{
+  if(!("Notification" in window)){data.settings.notifications=true;save();openNotifications();return}
+  const p=await Notification.requestPermission();
+  data.settings.notifications=p==="granted";save();profile();
+  if(p==="granted"){
+   if("serviceWorker" in navigator){const reg=await navigator.serviceWorker.ready; if(reg.showNotification) await reg.showNotification("Apollo Ink",{body:"Bildirimler etkinleştirildi.",icon:"icon.png",badge:"icon.png"});}
+   else new Notification("Apollo Ink",{body:"Bildirimler etkinleştirildi."});
+  } else if(p==="denied") alert("Bildirim izni kapalı. iPhone'da Ayarlar > Bildirimler veya Safari/Web Sitesi ayarlarından Apollo Ink bildirimlerini açmalısın.");
+ }catch(e){alert("Bildirim izni alınamadı. Uygulama içi bildirimler yine çalışır.")}
 }
 function openNotifications(){
  const t=today(),tom=new Date();tom.setDate(tom.getDate()+1);const ts=tom.toISOString().slice(0,10);
@@ -449,14 +474,17 @@ function openNotifications(){
  document.getElementById("modalBody").innerHTML=`<h2>Bildirimler</h2><div class="card" style="padding:14px"><b>Bugün</b><p style="color:var(--muted)">${td.length} randevun var.</p><b>Yarın</b><p style="color:var(--muted)">${tm.length} randevun var.</p><b>1 saat önce</b><p style="color:var(--muted)">Yaklaşan randevular için 1 saatlik bildirim kontrolü etkin.</p></div><div class="notice">Safari/GitHub Pages üzerinde arka planda tam zamanlı zamanlayıcı garantisi yoktur. Uygulama açıkken 1 saatlik kontrol çalışır; sistem bildirimleri için izin verilmelidir.</div><div class="actions"><button class="secondary" onclick="requestNotifications()">Bildirim İzni</button><button class="secondary" onclick="closeModal()">Kapat</button></div>`;
  document.getElementById("modal").classList.add("open");
 }
+async function sendSystemNotification(title,body){
+ try{if("serviceWorker" in navigator){const reg=await navigator.serviceWorker.ready;if(reg.showNotification){await reg.showNotification(title,{body,icon:"icon.png",badge:"icon.png"});return}}if("Notification" in window&&Notification.permission==="granted")new Notification(title,{body})}catch(e){}
+}
 function checkReminders(){
- if(!data.settings.notifications||!("Notification" in window)||Notification.permission!=="granted")return;
  const now=new Date(),stamp=Math.floor(now.getTime()/60000);
- data.appointments.forEach(a=>{if(!a.date||!a.time||a.status==="İptal Edildi")return;const dt=new Date(a.date+"T"+a.time),diff=Math.round((dt-now)/60000);if(diff>=59&&diff<=61){const key="rem_"+a.id+"_"+stamp;if(!sessionStorage.getItem(key)){sessionStorage.setItem(key,"1");new Notification("Apollo Ink — 1 saat kaldı",{body:`${a.customer} · ${a.time} · ${a.style||a.type||"Dövme"}`})}}});
+ data.appointments.forEach(a=>{if(!a.date||!a.time||a.status==="İptal Edildi")return;const dt=new Date(a.date+"T"+a.time),diff=Math.round((dt-now)/60000);if(diff>=59&&diff<=61){const key="rem_"+a.id+"_"+stamp;if(!sessionStorage.getItem(key)){sessionStorage.setItem(key,"1");if(data.settings.notifications)sendSystemNotification("Apollo Ink — 1 saat kaldı",`${a.customer} · ${a.time} · ${a.style||a.type||"Dövme"}`)}}});
 }
 function closeModal(){document.getElementById("modal").classList.remove("open")}
 document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")closeModal()};
 document.getElementById("topAction").innerHTML=icon("calendar");document.getElementById("topAction").onclick=openCalendar;
+document.getElementById("notificationAction").innerHTML=icon("bell");document.getElementById("notificationAction").onclick=openNotifications;
 document.getElementById("fab").onclick=()=>{const s=document.querySelector(".screen.active")?.id;openForm(s==="customers"?"customer":s==="designs"?"design":s==="finance"?"finance":"appointment")};
 applyTheme();home();setInterval(checkReminders,60000);checkReminders();
 </script>

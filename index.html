@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09090b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Ink Artist Suite — Apollo Ink</title>
+<style>
+:root{--bg:#09090b;--panel:#141416;--panel2:#1b1b1e;--line:#303035;--text:#f5f5f7;--muted:#96969f;--red:#f20b18;--green:#36c979;--amber:#e7a63a;--danger:#ff5962;--sun:#231E1A}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+body{min-height:100dvh;background:radial-gradient(circle at 50% -10%,#251715 0,#0b0b0d 35%,var(--bg) 75%)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{border:0;background:none;cursor:pointer}
+button:disabled{opacity:.45}
+.app{min-height:100dvh;padding-bottom:100px}
+.topbar{height:70px;padding:12px 18px;display:flex;align-items:center;justify-content:flex-end;position:relative;z-index:40}
+.iconbtn{width:48px;height:48px;border:1px solid var(--line);border-radius:15px;background:var(--panel);display:grid;place-items:center}
+.iconbtn svg{width:24px;height:24px;display:block;flex:0 0 auto}
+.screen{display:none}.screen.active{display:block}
+.hero{max-width:760px;margin:auto;padding:0 18px 28px;position:relative;overflow:hidden}
+.sun{position:absolute;z-index:0;right:-95px;top:-30px;width:520px;height:520px;opacity:.34;pointer-events:none;filter:none;display:block}
+.hero>*:not(.sun){position:relative;z-index:2}
+.welcome{display:flex;align-items:center;gap:14px;padding:6px 0 12px}
+.avatar{width:76px;height:76px;border-radius:22px;overflow:hidden;background:#fff;border:1px solid var(--line);display:grid;place-items:center;flex:0 0 auto}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.hello{color:#aaa;font-size:14px}.user{font-size:29px;font-weight:900;line-height:1.05}.sub{color:var(--muted);font-size:12px;margin-top:5px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 10px}
+.section-head h1{font-size:28px;margin:0;font-weight:900}.section-head h3{font-size:12px;letter-spacing:1.6px;color:var(--muted);margin:0}
+.date{font-size:25px;font-weight:900}.redline{height:3px;width:132px;background:var(--red);margin-top:8px}
+.card{background:linear-gradient(145deg,#19191c,#121214);border:1px solid #303035;border-radius:20px;box-shadow:0 12px 32px #0003;overflow:hidden}
+.row{display:flex;align-items:center;gap:11px;padding:14px;border-bottom:1px solid var(--line);min-height:76px}
+.row:last-child{border-bottom:0}.row.clickable{cursor:pointer}.row.clickable:hover{background:#fff1}
+.timebox{width:45px;height:45px;border-radius:13px;background:#ffffff09;border:1px solid var(--line);display:grid;place-items:center;flex:0 0 auto}
+.timebox svg{width:23px;height:23px}.time{font-size:13px;font-weight:900;min-width:43px}
+.customer{min-width:0;flex:1}.customer b,.design-info b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.customer small,.design-info small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.status{font-size:10px;font-weight:900;padding:7px 8px;border-radius:9px;background:#36c97918;color:var(--green);white-space:nowrap}
+.status.pending{background:#e7a63a18;color:var(--amber)}.status.cancel{background:#ff596218;color:var(--danger)}.status.done{background:#36c97918;color:var(--green)}
+.model-thumb{width:54px;height:54px;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:#fff;flex:0 0 auto}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.quick button{background:linear-gradient(145deg,#19191c,#131315);border:1px solid #303035;border-radius:19px;padding:14px 5px;min-height:126px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px}
+.quick svg{width:39px;height:39px;stroke:currentColor;stroke-width:1.8}.quick span{font-size:11px;font-weight:850;text-align:center}
+.link{color:var(--red);font-weight:900;font-size:12px}
+.primary,.secondary,.dangerBtn{min-height:46px;padding:0 15px;border-radius:14px;border:1px solid var(--line);font-weight:850;display:inline-flex;align-items:center;justify-content:center;gap:9px}.primary svg,.secondary svg,.dangerBtn svg{width:22px;height:22px;display:block;flex:0 0 auto}
+.primary{background:var(--red);border-color:var(--red);color:#fff}.secondary{background:var(--panel)}.dangerBtn{background:transparent;color:var(--danger);border-color:#5a262a}
+.tabs{display:flex;gap:8px;overflow:auto;margin:12px 0}.tab{white-space:nowrap;padding:11px 13px;border:1px solid var(--line);border-radius:12px;background:var(--panel);font-size:11px;font-weight:850}.tab.active{background:var(--red);border-color:var(--red);color:#fff}
+.toolbar{display:flex;gap:9px;margin:12px 0}.search{flex:1;display:flex;align-items:center;gap:8px;padding:0 12px;height:46px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}.search svg{width:19px;color:var(--muted)}.search input{border:0;outline:0;background:transparent;width:100%}
+.date-strip{display:flex;gap:8px;overflow:auto;padding:4px 0 10px}.day{min-width:66px;height:76px;border:1px solid var(--line);border-radius:15px;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}.day.active{border-color:var(--red);box-shadow:inset 0 -3px var(--red)}.day strong{font-size:20px}.day small{font-size:10px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.design{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer}.preview{height:175px;background:#fff;display:grid;place-items:center;overflow:hidden}.preview img{width:100%;height:100%;object-fit:contain}.design-info{padding:11px}
+.finance-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.finance-card{padding:15px;border:1px solid var(--line);border-radius:17px;background:var(--panel)}.finance-card.balance{grid-column:1/-1}.finance-card small{color:var(--muted)}.money{display:block;margin-top:7px;font-size:22px;font-weight:900}
+.finance-actions{display:flex;gap:9px;margin:12px 0}.finance-actions>*{flex:1}.finance-row{display:flex;align-items:center;gap:10px;padding:13px;border-bottom:1px solid var(--line)}.money-icon{width:38px;height:38px;border-radius:12px;background:#fff1;display:grid;place-items:center;font-size:20px}.grow{flex:1}.grow b{display:block}.grow small{display:block;color:var(--muted);margin-top:3px;font-size:10px}.amount{font-weight:900}.amount.in{color:var(--green)}.amount.out{color:var(--danger)}.finance-delete{min-height:36px;padding:0 10px;font-size:10px;white-space:nowrap}
+.profile-head{display:flex;align-items:center;gap:16px;margin:4px 0 20px;padding:18px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(145deg,#19191c,#121214)}.profile-head .avatar{width:82px;height:82px;border-radius:24px;border:1px solid #3a3a40}.profile-head>div:nth-child(2){min-width:0;flex:1}.profile-name{font-size:24px;font-weight:900;line-height:1.1}.profile-sub{color:var(--muted);font-size:12px;margin-top:6px}.profile-edit{display:inline-flex;align-items:center;gap:7px;margin-top:11px;padding:9px 12px;border:1px solid var(--line);border-radius:11px;background:#ffffff08;color:var(--text);font-size:11px;font-weight:900}.profile-section-title{font-size:11px;letter-spacing:1.5px;color:var(--muted);font-weight:900;margin:20px 3px 9px}.profile-card{background:linear-gradient(145deg,#19191c,#121214);border:1px solid var(--line);border-radius:19px;overflow:hidden}.profile-card .row{min-height:68px;padding:13px 14px}.profile-card .row>svg{width:23px;height:23px;flex:0 0 auto}.profile-card .customer b{font-size:13px}.profile-card .customer small{font-size:10px}.profile-arrow{font-size:23px;color:#777;margin-left:4px}.profile-status{font-size:10px;font-weight:900;padding:7px 9px;border-radius:9px;background:#ffffff08;color:var(--muted)}
+.setting{display:flex;align-items:center;gap:12px;padding:15px;border-bottom:1px solid var(--line);cursor:pointer}.setting:last-child{border:0}.setting svg{width:23px;height:23px}.chev{font-size:25px;color:var(--muted)}
+.bottom{position:fixed;left:0;right:0;bottom:0;height:94px;z-index:60;background:#151518ee;backdrop-filter:blur(18px);border-top:1px solid #ffffff18;display:grid;grid-template-columns:repeat(6,1fr);box-shadow:0 -12px 35px #0005}
+.nav{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--muted);font-size:8.5px;font-weight:850;min-width:0}.nav svg{width:30px;height:30px;stroke-width:1.8}.nav.active{color:var(--red)}.nav.active svg{stroke-width:2.5}
+.fab{position:fixed;right:20px;bottom:108px;width:58px;height:58px;border-radius:18px;background:var(--red);color:#fff;font-size:31px;z-index:61;box-shadow:0 12px 30px #f20b1848}
+.modal{position:fixed;inset:0;background:#0009;backdrop-filter:blur(5px);z-index:100;display:none;align-items:flex-end}.modal.open{display:flex}.sheet{width:100%;max-width:760px;margin:auto;max-height:94dvh;overflow:auto;background:var(--panel);border-radius:24px 24px 0 0;padding:10px 18px 30px;border:1px solid var(--line);box-shadow:0 -20px 60px #0008}.handle{width:45px;height:5px;background:#777;border-radius:5px;margin:2px auto 17px}.sheet h2{font-size:22px;margin:5px 0 18px}.field{margin:12px 0}.field label{display:block;color:var(--muted);font-size:11px;font-weight:850;margin-bottom:7px}.field input,.field select,.field textarea{width:100%;min-height:47px;border:1px solid var(--line);background:var(--panel2);border-radius:13px;padding:11px;outline:0}.field textarea{min-height:90px;resize:vertical}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.actions{display:flex;gap:9px;margin-top:18px}.actions>*{flex:1}.upload{border:1px dashed #666;border-radius:16px;padding:12px;margin:12px 0}.upload label{display:flex;gap:10px;align-items:center;cursor:pointer}.upload input{display:none}.upload-icon{width:43px;height:43px;border-radius:12px;background:#fff1;display:grid;place-items:center}.upload-icon svg{width:24px}.upload-preview{display:none;width:100%;max-height:260px;object-fit:contain;background:#fff;border-radius:13px;margin-top:10px}.detail-image{width:100%;max-height:340px;object-fit:contain;background:#fff;border-radius:15px;margin:10px 0}.contact-btn{display:inline-flex;padding:10px 12px;border:1px solid var(--line);border-radius:11px;margin-right:7px;margin-bottom:7px;text-decoration:none;color:var(--text);font-weight:850;font-size:11px}.danger{color:var(--danger)!important}.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.calhead{font-size:9px;color:var(--muted);text-align:center;padding:5px}.calday{min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);display:flex;align-items:center;justify-content:center;position:relative}.calday.has:after{content:"";position:absolute;bottom:5px;width:5px;height:5px;border-radius:50%;background:var(--red)}.calday.selected{outline:2px solid var(--red)}.monthbar{display:flex;align-items:center;justify-content:space-between;margin:12px 0}.monthbar b{font-size:17px}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:9px}.compare .stat{padding:13px;background:var(--panel);border:1px solid var(--line);border-radius:15px}.stat small{display:block;color:var(--muted);font-size:10px}.stat strong{display:block;margin-top:6px;font-size:19px}
+.notice{padding:12px 14px;border:1px solid #5b3c1c;border-radius:14px;background:#e7a63a12;color:#e8c487;font-size:11px;margin:10px 0}
+@media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}.bottom{max-width:760px;left:50%;right:auto;transform:translateX(-50%);width:760px;border-radius:18px 18px 0 0}.fab{right:calc(50% - 350px)}}
+
+/* V18 AUTH GATE */
+#authGate{position:fixed;inset:0;z-index:99999;background:#0b0b0c;display:none;align-items:center;justify-content:center;padding:24px}
+#authGate.open{display:flex}.auth-box{width:min(430px,100%);background:#151516;border:1px solid #2a2a2c;border-radius:24px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.auth-logo{width:72px;height:72px;border-radius:18px;display:block;margin:0 auto 18px;object-fit:cover}.auth-box h1{margin:0;text-align:center;font-size:25px}.auth-box .auth-sub{text-align:center;color:var(--muted);margin:8px 0 24px}.auth-box .field{margin-bottom:14px}.auth-box .actions{margin-top:12px}.auth-box button{width:100%;min-height:48px}.auth-error{display:none;margin:12px 0;padding:11px 12px;border-radius:12px;background:#2b1718;color:#ffb4b4;font-size:13px}.auth-links{display:flex;justify-content:center;gap:16px;margin-top:16px}.auth-links button{width:auto;min-height:auto;background:none;border:0;padding:4px;color:#fff;text-decoration:underline}.auth-loading{display:none;text-align:center;color:var(--muted);margin-top:10px;font-size:13px}
+
+.auth-gate{position:fixed;inset:0;z-index:9999;display:none;background:radial-gradient(circle at 50% -10%,#251715 0,#0b0b0d 45%,#09090b 100%);padding:24px;overflow:auto}.auth-gate.open{display:flex;align-items:center;justify-content:center}.auth-box{width:min(430px,100%);background:linear-gradient(145deg,#19191c,#111113);border:1px solid #303035;border-radius:26px;padding:28px 22px;box-shadow:0 20px 60px #0008}.auth-brand{text-align:center;margin-bottom:24px}.auth-mark{width:72px;height:72px;border-radius:22px;display:grid;place-items:center;margin:0 auto 14px;background:#f20b18;color:#fff;font-size:30px;font-weight:950;box-shadow:0 12px 30px #f20b1838}.auth-brand h1{margin:0;font-size:26px;font-weight:950}.auth-brand p{margin:7px 0 0;color:var(--muted);font-size:12px}.auth-field{margin:12px 0}.auth-field label{display:block;color:#aaa;font-size:12px;font-weight:800;margin:0 0 7px}.auth-field input{width:100%;height:50px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:#0d0d0f;outline:none}.auth-field input:focus{border-color:var(--red)}.auth-actions{display:grid;gap:9px;margin-top:16px}.auth-actions button{width:100%;min-height:48px}.auth-forgot{display:block;width:100%;text-align:center;color:#aaa;font-size:12px;font-weight:800;padding:10px}.auth-error{display:none;margin-top:12px;padding:11px 12px;border:1px solid #5a262a;background:#ff59620d;color:#ff7a81;border-radius:12px;font-size:12px;line-height:1.4}.auth-loading{display:none;text-align:center;color:var(--muted);font-size:12px;margin-top:10px}.auth-note{margin-top:15px;text-align:center;color:#777;font-size:10px;line-height:1.45}
+.image-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.image-item{position:relative;overflow:hidden;border-radius:12px;background:#111}.image-item img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}.upload .image-grid{margin-top:10px}</style>
+
+<style id="apollo-calendar-fix">
+/* Top-right calendar: compact visual, comfortable touch target */
+#topAction{width:48px!important;height:48px!important;padding:0!important;border-radius:15px!important;display:grid!important;place-items:center!important}
+#topAction svg{width:18px!important;height:18px!important;max-width:18px!important;max-height:18px!important}
+#topAction svg *{vector-effect:non-scaling-stroke}
+</style>
+
+
+
+
+<style id="apollo-login-icon-fix">
+.apollo-login-icon{width:72px;height:72px;object-fit:contain;display:block;margin:0 auto 10px}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  try{
+    var roots=document.querySelectorAll('[class*="login"],[class*="auth"]');
+    roots.forEach(function(root){
+      var els=root.querySelectorAll('div,span,h1,h2');
+      els.forEach(function(el){
+        if(el.children.length===0 && el.textContent.trim()==='A'){
+          var img=document.createElement('img');
+          img.src='icon.png'; img.alt='Apollo Ink'; img.className='apollo-login-icon';
+          el.replaceWith(img);
+        }
+      });
+    });
+  }catch(e){}
+});
+</script>
+
+
+<style id="apollo-disable-login">
+  #authScreen, .auth-screen, #loginScreen, .login-screen {
+    display: none !important;
+  }
+  #app, #mainApp, .app-shell, .app {
+    display: block !important;
+  }
+</style>
+<script id="apollo-auto-enter">
+  document.addEventListener('DOMContentLoaded', function () {
+    try {
+      document.documentElement.classList.add('apollo-auto-enter');
+      var selectors = ['#authScreen','.auth-screen','#loginScreen','.login-screen'];
+      selectors.forEach(function(sel){
+        document.querySelectorAll(sel).forEach(function(el){ el.style.display='none'; });
+      });
+      var appSelectors = ['#app','#mainApp','.app-shell'];
+      appSelectors.forEach(function(sel){
+        document.querySelectorAll(sel).forEach(function(el){ el.style.display='block'; });
+      });
+    } catch(e) {}
+  });
+</script>
+
+
+<style id="apollo-no-auth-no-cloud-gate">
+  /* V18.6: Open directly to the main app. */
+  #authScreen, .auth-screen, #loginScreen, .login-screen,
+  #auth, .auth, [data-auth-screen] {
+    display: none !important;
+  }
+</style>
+<script id="apollo-direct-main">
+(function(){
+  function openMain(){
+    try{
+      // Hide any auth/login overlays and common cloud setup prompts.
+      document.querySelectorAll(
+        '#authScreen,.auth-screen,#loginScreen,.login-screen,#auth,.auth,[data-auth-screen]'
+      ).forEach(function(el){ el.style.display='none'; });
+
+      // Remove only visible startup cloud/auth blocking overlays, if present.
+      document.querySelectorAll('[role="dialog"],.modal,.overlay').forEach(function(el){
+        var t=(el.textContent||'').toLowerCase();
+        if(t.includes('bulut yapılandırılmadı') || t.includes('cloud not configured') ||
+           t.includes('giriş yap') || t.includes('login')){
+          el.style.display='none';
+        }
+      });
+
+      // Make the primary application shell visible.
+      document.querySelectorAll('#app,#mainApp,.app-shell,.app').forEach(function(el){
+        el.style.display='block';
+        el.removeAttribute('aria-hidden');
+      });
+    }catch(e){}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',openMain);
+  else openMain();
+  window.addEventListener('load',openMain);
+})();
+</script>
+
+
+<script id="apollo-v18-7-design-reset">
+(function(){
+  try {
+    var KEY = 'apolloInkData';
+    var raw = localStorage.getItem(KEY);
+    if (raw) {
+      var d = JSON.parse(raw);
+      if (d && Array.isArray(d.designs)) {
+        d.designs = [];
+        localStorage.setItem(KEY, JSON.stringify(d));
+      }
+    }
+  } catch(e) {}
+})();
+</script>
+
+
+<style id="apollo-v18-7-no-horizontal-scroll">
+html, body { overflow-x: hidden !important; max-width: 100%; }
+*, *::before, *::after { box-sizing: border-box; max-width: 100%; }
+</style>
+
+
+<style id="apollo-v18-8-direct-app-scroll-fix">
+  html, body { overflow-y: auto !important; overflow-x: hidden !important; height: auto !important; min-height: 100% !important; }
+  body { position: static !important; }
+  #authGate { display: none !important; visibility: hidden !important; pointer-events: none !important; }
+  #authGate.open { display: none !important; }
+  .app { display: block !important; min-height: 100dvh !important; }
+</style>
+<script id="apollo-v18-8-direct-app-start">
+(function(){
+  function directOpen(){
+    try{
+      var gate=document.getElementById('authGate');
+      if(gate){
+        gate.classList.remove('open');
+        gate.style.display='none';
+        gate.style.visibility='hidden';
+        gate.style.pointerEvents='none';
+      }
+      document.body.style.overflowY='auto';
+      document.body.style.overflowX='hidden';
+      document.body.style.height='auto';
+      document.documentElement.style.overflowY='auto';
+      document.documentElement.style.overflowX='hidden';
+    }catch(e){}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',directOpen);
+  else directOpen();
+  window.addEventListener('load',directOpen);
+})();
+</script>
+
+</head>
+<body>
+<div class="auth-gate open" id="authGate" aria-modal="true" role="dialog">
+  <div class="auth-box">
+    <div class="auth-brand"><div class="auth-mark">A</div><h1>Apollo Ink</h1><p>Ink Artist Suite</p></div>
+    <div class="auth-field"><label for="authEmail">E-posta</label><input id="authEmail" type="email" autocomplete="email" placeholder="ornek@mail.com"></div>
+    <div class="auth-field"><label for="authPassword">Şifre</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="En az 6 karakter"></div>
+    <div class="auth-actions">
+      <button class="primary" type="button" onclick="authLogin()">Giriş Yap</button>
+      <button class="secondary" type="button" onclick="authSignup()">Kayıt Ol</button>
+      <button class="auth-forgot" type="button" onclick="authReset()">Şifremi Unuttum</button>
+    </div>
+    <div class="auth-loading" id="authLoading">İşlem yapılıyor…</div>
+    <div class="auth-error" id="authError"></div>
+    <div class="auth-note">Hesabınla giriş yaptığında Apollo Ink verilerin bu hesaba bağlanır. Bulut bağlantısı yapılandırılmadan gerçek kayıt yapılamaz.</div>
+  </div>
+</div>
+<div class="app">
+<header class="topbar"><div style="display:flex;gap:9px;align-items:center"><button class="iconbtn" id="notificationAction" aria-label="Bildirimler" title="Bildirimler"></button><button class="iconbtn" id="topAction" aria-label="Takvimi Gör" title="Takvimi Gör"></button></div></header>
+<main>
+<section class="screen active" id="home"></section>
+<section class="screen" id="appointments"></section>
+<section class="screen" id="designs"></section>
+<section class="screen" id="customers"></section>
+<section class="screen" id="finance"></section>
+<section class="screen" id="profile"></section>
+</main>
+</div>
+<nav class="bottom">
+<button class="nav active" data-screen="home"></button>
+<button class="nav" data-screen="appointments"></button>
+<button class="nav" data-screen="designs"></button>
+<button class="nav" data-screen="customers"></button>
+<button class="nav" data-screen="finance"></button>
+<button class="nav" data-screen="profile"></button>
+</nav>
+<button class="fab" id="fab">＋</button>
+<div class="modal" id="modal"><div class="sheet"><div class="handle"></div><div id="modalBody"></div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>window.__supabase=(window.SUPABASE_URL&&window.SUPABASE_PUBLISHABLE_KEY&&window.SUPABASE_URL.indexOf("YOUR-")!==0)?supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;</script>
+<script>
+const KEY="apolloInkData";
+const CATS=["Minimal","Fine Line","Linework","Blackwork","Realism","Cover Up","Geometric","Diğer"];
+const ICONS={
+home:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/><path d="M9 20v-5h6v5"/>',
+calendar:'<rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 9h18"/>',
+design:'<path d="M4 20l4.5-1L19 8.5 15.5 5 5 16z"/><path d="M14 6l3.5 3.5"/>',
+people:'<circle cx="9" cy="7" r="4"/><path d="M2 21v-2a7 7 0 0 1 14 0"/><path d="M16 5a4 4 0 0 1 0 8"/>',
+profile:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+finance:'<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/><path d="M4 9l6-4 6 7 6-5"/>',
+bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',
+search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+download:'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
+trash:'<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 14h10l1-14"/><path d="M9 7V4h6v3"/>',
+edit:'<path d="m4 20 4.5-1L19 8.5 15.5 5 5 16z"/><path d="m14 6 3.5 3.5"/>',
+moon:'<path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 8.5 8.5 0 1 0 21 14.5z"/>',
+sun2:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+back:'<path d="M15 18l-6-6 6-6"/>'
+};
+const icon=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]||ICONS.plus}</svg>`;
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const dateObj=s=>new Date(s+"T12:00:00");
+const money=n=>"₺"+Number(n||0).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2});
+const safeUrl=s=>{s=String(s||"").trim();if(!s)return "";return /^https?:\/\//i.test(s)?s:"https://"+s};
+const waUrl=p=>{let n=String(p||"").replace(/\D/g,"");if(n.startsWith("0"))n="90"+n.slice(1);return n?"https://wa.me/"+n:""};
+const sunSvg=()=>`<svg class="sun" viewBox="0 0 512 512" aria-hidden="true"><g fill="#231E1A"><circle cx="256" cy="256" r="78"/><circle cx="256" cy="256" r="108" fill="none" stroke="#231E1A" stroke-width="18"/><path d="M250 12h12l5 132h-22zM250 368h12l5 132h-22zM12 250v12l132 5v-22zM368 250v12l132 5v-22z"/><path d="M86 78l9-9 99 88-15 15zM318 340l15-15 99 88-9 9zM425 87l9 9-88 99-15-15zM174 340l15 15-88 99-9-9z"/><path d="M122 24l11-5 53 121-20 8zM326 364l20-8 53 121-11 5zM24 122l5-11 121 53-8 20zM364 326l8-20 121 53-5 11z"/></g></svg>`;
+
+const empty={appointments:[],customers:[],designs:[],finance:[],profile:{name:"",email:"",studio:"Apollo Ink",city:"",photo:""},settings:{theme:"dark",notifications:false}};
+let raw={};try{raw=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){}
+let data={
+appointments:Array.isArray(raw.appointments)?raw.appointments:[],
+customers:Array.isArray(raw.customers)?raw.customers:[],
+designs:Array.isArray(raw.designs)?raw.designs:[],
+finance:Array.isArray(raw.finance)?raw.finance:[],
+profile:{...empty.profile,...(raw.profile||{})},
+settings:{...empty.settings,...(raw.settings||{}),theme:"dark"}
+};
+data.appointments=data.appointments.map(a=>({...a,customerId:a.customerId||"",phone:a.phone||"",instagram:a.instagram||"",type:a.type||"",body:a.body||"",deposit:Number(a.deposit||0),note:a.note||"",modelImage:a.modelImage||"",modelImages:Array.isArray(a.modelImages)?a.modelImages:(a.modelImage?[a.modelImage]:[]),needle:a.needle||"",price:Number(a.price||0)}));
+data.customers=data.customers.map(c=>({...c,phone:c.phone||"",instagram:c.instagram||""}));
+data.designs=data.designs.map(d=>({...d,note:d.note||"",category:d.category||"Diğer"}));
+function save(){localStorage.setItem(KEY,JSON.stringify(data));queueCloudSave();}
+
+function migrateLegacy(){
+  const names=new Set(data.customers.map(c=>String(c.name||"").toLowerCase()));
+  data.appointments.forEach(a=>{
+    if(!a.customerId){
+      const c=data.customers.find(c=>String(c.name||"").toLowerCase()===String(a.customer||"").toLowerCase());
+      if(c){a.customerId=c.id;a.phone=c.phone;a.instagram=c.instagram}
+    }
+  });
+  save();
+}
+migrateLegacy();
+
+function shell(title,html){return `<div class="hero">${sunSvg()}${title?`<div class="section-head"><h1>${title}</h1></div>`:""}${html}</div>`}
+function renderScreen(s){({home,appointments,designs,customers,finance,profile}[s]||home)()}
+function setScreen(s){document.querySelectorAll(".screen").forEach(x=>x.classList.toggle("active",x.id===s));document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.screen===s));renderScreen(s);window.scrollTo({top:0,behavior:"smooth"})}
+
+document.querySelectorAll(".nav").forEach(n=>{
+ const map={home:["home","Ana Sayfa"],appointments:["calendar","Randevu"],designs:["design","Tasarım"],customers:["people","Müşteri"],finance:["finance","Finans"],profile:["profile","Profil"]};
+ const [ic,label]=map[n.dataset.screen];n.innerHTML=icon(ic)+`<span>${label}</span>`;
+ n.onclick=()=>setScreen(n.dataset.screen);
+});
+
+function home(){
+ const t=today(), todays=data.appointments.filter(a=>a.date===t&&a.status!=="İptal Edildi").sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+ const upcoming=data.appointments.filter(a=>(a.date+(a.time||""))>=t&&a.status!=="İptal Edildi").sort((a,b)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))).slice(0,1);
+ const p=data.profile.photo||"icon.png";
+ document.getElementById("home").innerHTML=shell("",`
+ <div class="welcome"><div class="avatar"><img src="${p}" alt=""></div><div><div class="hello">Merhaba,</div><div class="user">${esc(data.profile.name||"Sanatçı")}</div><div class="sub">Apollo Ink'e hoş geldin.</div></div></div>
+ <div class="section-head"><h3>BUGÜNKÜ RANDEVULAR</h3></div>
+ <div class="date">${dateObj(t).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"})}</div><div class="redline"></div>
+ <div class="card" style="margin-top:22px">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 14px;border-bottom:1px solid var(--line)">
+   <div style="display:flex;align-items:center;gap:12px"><div class="timebox" style="background:var(--red);border-color:var(--red);color:#fff">${icon("calendar")}</div><div><b style="font-size:22px">${todays.length}</b><div style="color:var(--muted);font-size:12px">Randevun var</div></div></div>
+   <button class="primary" style="height:46px" onclick="setScreen('appointments')">${icon("calendar")} Takvimi Gör ›</button>
+  </div>
+  ${todays.length?todays.slice(0,3).map(appointmentRow).join(""):``}
+  ${todays.length>3?`<button class="link" style="display:block;width:100%;padding:15px;border-top:1px solid var(--line)" onclick="setScreen('appointments')">Tümünü Gör ›</button>`:""}
+ </div>
+ <div class="section-head"><h3>HIZLI İŞLEMLER</h3></div><div class="quick">
+  <button onclick="openForm('appointment')">${icon("calendar")}<span>Randevu Ekle</span></button>
+  <button onclick="setScreen('customers')">${icon("people")}<span>Müşteriler</span></button>
+  <button onclick="setScreen('designs')">${icon("design")}<span>Tasarım Arşivi</span></button>
+  <button onclick="setScreen('finance')">${icon("finance")}<span>Finans</span></button>
+ </div>
+ <div class="section-head"><h3>YAKLAŞAN RANDEVULAR</h3><button class="link" onclick="setScreen('appointments')">Tümünü Gör ›</button></div>
+ <div class="card">${upcoming.length?upcoming.map(a=>`<button class="row clickable" style="width:100%;text-align:left;min-height:112px" onclick="openAppointment('${esc(a.id)}')"><div style="min-width:76px;height:76px;border:1px solid var(--line);border-radius:15px;background:#151517;display:flex;flex-direction:column;align-items:center;justify-content:center"><strong style="font-size:27px;color:var(--red)">${dateObj(a.date).getDate()}</strong><small style="color:var(--muted);font-size:9px">${dateObj(a.date).toLocaleDateString("tr-TR",{month:"short"}).toUpperCase()}</small><small style="color:var(--muted);font-size:9px">${dateObj(a.date).toLocaleDateString("tr-TR",{weekday:"short"})}</small></div><div class="customer"><div style="font-size:12px;color:var(--muted)">${esc(a.time||"—")}</div><b style="font-size:16px;margin-top:5px">${esc(a.customer||"Müşteri")}</b><small style="font-size:13px;margin-top:5px">${esc(a.style||a.type||"Dövme")}</small></div><span style="font-size:31px;color:#777">›</span></button>`).join(""):``}</div>`);
+}
+function appointmentRow(a){
+ const label=a.status||"Onaylandı";
+ return `<button class="row clickable" style="width:100%;text-align:left" onclick="openAppointment('${esc(a.id)}')"><div class="timebox">${icon("calendar")}</div>${(a.modelImages?.[0]||a.modelImage)?`<img class="model-thumb" src="${a.modelImages?.[0]||a.modelImage}" alt="Model">`:""}<div class="time">${esc(a.time||"—")}</div><div class="customer"><b>${esc(a.customer||"Müşteri")}</b><small>${esc(a.type||a.style||"Dövme")}${a.body?` · ${esc(a.body)}`:""}${a.price?` · ${money(a.price)}`:""}</small><small>${esc(a.date||"")}</small>${a.needle?`<small>İğne: ${esc(a.needle)}</small>`:""}</div><span class="status ${a.status==="Beklemede"?"pending":a.status==="İptal Edildi"?"cancel":a.status==="Tamamlandı"?"done":""}">${esc(label)}</span></button>`;
+}
+
+let apptTab="all",selectedDay=null;
+function appointments(){
+ const t=today();
+ const days=Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()+i);return d});
+ document.getElementById("appointments").innerHTML=shell("RANDEVULAR",`
+ <div class="tabs">
+  <button class="tab ${apptTab==="all"?"active":""}" onclick="apptTab='all';appointments()">Tüm Randevular</button>
+  <button class="tab ${apptTab==="pending"?"active":""}" onclick="apptTab='pending';appointments()">Bekleyenler</button>
+  <button class="tab ${apptTab==="past"?"active":""}" onclick="apptTab='past';appointments()">Geçmiş</button>
+  <button class="tab ${apptTab==="future"?"active":""}" onclick="apptTab='future';appointments()">Gelecek</button>
+ </div>
+ <div style="margin-bottom:10px"><button class="tab ${selectedDay===null?"active":""}" onclick="selectedDay=null;apptTab='all';appointments()">Tüm Günler</button></div>
+ <div class="date-strip">${days.map(d=>{const ds=d.toISOString().slice(0,10);return `<button class="day ${selectedDay===ds?"active":""}" onclick="selectedDay='${ds}';appointments()"><strong>${d.getDate()}</strong><small>${d.toLocaleDateString("tr-TR",{month:"short"})}</small><small>${d.toLocaleDateString("tr-TR",{weekday:"short"})}</small></button>`}).join("")}<button class="day" onclick="openCalendar()"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+  <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+  <path d="M7 3.5v4M17 3.5v4M3.8 9h16.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M8 12.5h.01M12 12.5h.01M16 12.5h.01M8 16.5h.01M12 16.5h.01M16 16.5h.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+</svg></button></div>
+ <div class="section-head"><h3>${selectedDay===null?"TÜM GÜNLER":selectedDay===t?"BUGÜN":dateObj(selectedDay).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"})}</h3><span>${filteredAppointments().length}</span></div>
+ <div class="card">${filteredAppointments().length?filteredAppointments().sort((a,b)=>(a.time||"").localeCompare(b.time||"")).map(appointmentRow).join(""):``}</div>`);
+}
+function filteredAppointments(){
+ const t=today();
+ return data.appointments.filter(a=>{
+   if(apptTab==="pending") return a.status==="Beklemede" && (!selectedDay || a.date===selectedDay);
+   if(apptTab==="past") return a.status==="Tamamlandı" || a.status==="İptal Edildi" || a.date<t;
+   if(apptTab==="future") return a.date>=t && a.status!=="Tamamlandı" && a.status!=="İptal Edildi";
+   if(selectedDay!==null) return a.date===selectedDay && a.status!=="Tamamlandı" && a.status!=="İptal Edildi";
+   return true;
+ });
+}
+
+function openCalendar(){
+ let base=dateObj(selectedDay||today()),y=base.getFullYear(),m=base.getMonth();
+ const render=()=>{
+  const first=new Date(y,m,1),last=new Date(y,m+1,0),start=(first.getDay()+6)%7;
+  let cells="";for(let i=0;i<start;i++)cells+="<div></div>";
+  for(let d=1;d<=last.getDate();d++){const ds=new Date(y,m,d).toISOString().slice(0,10),has=data.appointments.some(a=>a.date===ds&&a.status!=="İptal Edildi");cells+=`<button class="calday ${has?"has":""} ${ds===selectedDay?"selected":""}" onclick="calendarPick('${ds}')"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+  <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+  <path d="M7 3.5v4M17 3.5v4M3.8 9h16.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M8 12.5h.01M12 12.5h.01M16 12.5h.01M8 16.5h.01M12 16.5h.01M16 16.5h.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+</svg></button>`}
+  document.getElementById("modalBody").innerHTML=`<h2>Takvim</h2><div class="monthbar"><button class="iconbtn" onclick="calendarMove(-1)"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+  <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+  <path d="M7 3.5v4M17 3.5v4M3.8 9h16.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M8 12.5h.01M12 12.5h.01M16 12.5h.01M8 16.5h.01M12 16.5h.01M16 16.5h.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+</svg></button><b>${new Date(y,m,1).toLocaleDateString("tr-TR",{month:"long",year:"numeric"})}</b><button class="iconbtn" onclick="calendarMove(1)"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+  <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+  <path d="M7 3.5v4M17 3.5v4M3.8 9h16.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M8 12.5h.01M12 12.5h.01M16 12.5h.01M8 16.5h.01M12 16.5h.01M16 16.5h.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+</svg></button></div><div class="calendar">${["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"].map(x=>`<div class="calhead">${x}</div>`).join("")}${cells}</div><div class="actions"><button class="secondary" onclick="closeModal()">Kapat</button></div>`;
+ };
+ window.calendarMove=d=>{m+=d;if(m<0){m=11;y--}if(m>11){m=0;y++}render()};
+ window.calendarPick=ds=>{selectedDay=ds;closeModal();appointments()};
+ render();document.getElementById("modal").classList.add("open");
+}
+
+let designFilter="all";
+function designs(){
+ document.getElementById("designs").innerHTML=shell("TASARIM ARŞİVİ",`
+ <div class="tabs"><button class="tab ${designFilter==="all"?"active":""}" onclick="designFilter='all';designs()">Tüm Tasarımlar</button><button class="tab ${designFilter==="cat"?"active":""}" onclick="designFilter='cat';renderDesignCategories()">Kategoriler</button></div>
+ <div class="toolbar"><div class="search">${icon("search")}<input id="designSearch" placeholder="Tasarım ara..." oninput="renderDesignGrid()"></div></div>
+ <div id="designGrid" class="grid"></div>`);
+ renderDesignGrid();
+}
+function renderDesignGrid(){
+ const q=(document.getElementById("designSearch")?.value||"").toLowerCase();
+ const arr=data.designs.filter(d=>(`${d.name||""} ${d.category||""}`).toLowerCase().includes(q));
+ document.getElementById("designGrid").innerHTML=arr.length?arr.map(d=>`<div class="design" onclick="openDesign('${esc(d.id)}')"><div class="preview">${d.image?`<img src="${d.image}" alt="">`:icon("design")}</div><div class="design-info"><small>${esc(d.category||"Kategorisiz")}</small><b>${esc(d.name||"Adsız tasarım")}</b></div></div>`).join(""):``;
+}
+function renderDesignCategories(){
+ const custom=[...new Set(data.designs.map(d=>d.category).filter(Boolean))];
+ const cats=[...new Set([...CATS,...custom])];
+ document.getElementById("designGrid").innerHTML=cats.map(c=>`<button class="card" style="padding:20px;text-align:left" onclick="document.getElementById('designSearch').value='${esc(c)}';designFilter='all';renderDesignGrid()"><b>${esc(c)}</b><small style="display:block;color:var(--muted);margin-top:5px">${data.designs.filter(d=>d.category===c).length} tasarım</small></button>`).join("");
+}
+function openDesign(id){
+ const d=data.designs.find(x=>String(x.id)===String(id));if(!d)return;
+ document.getElementById("modalBody").innerHTML=`<h2>${esc(d.name||"Tasarım")}</h2>${d.image?`<img class="detail-image" src="${d.image}" alt="">`:""}<p style="color:var(--muted)"><b>Kategori:</b> ${esc(d.category||"Diğer")}</p><p style="color:var(--muted)"><b>Not:</b> ${esc(d.note||"Not yok")}</p><div class="actions"><button class="secondary" onclick="downloadImage('${esc(d.image||"")}','${esc((d.name||"tasarim").replace(/\s+/g,"-"))}.jpg')">${icon("download")} İndir</button><button class="dangerBtn" onclick="deleteDesign('${esc(d.id)}')">${icon("trash")} Sil</button></div><div class="actions"><button class="secondary" onclick="closeModal()">Kapat</button></div>`;
+ document.getElementById("modal").classList.add("open");
+}
+function downloadImage(src,name){if(!src)return alert("Bu tasarımın görseli yok.");const a=document.createElement("a");a.href=src;a.download=name;a.target="_blank";document.body.appendChild(a);a.click();a.remove()}
+function deleteDesign(id){if(!confirm("Bu tasarımı silmek istediğine emin misin?"))return;data.designs=data.designs.filter(x=>String(x.id)!==String(id));save();closeModal();designs()}
+
+function customers(){
+ document.getElementById("customers").innerHTML=shell("MÜŞTERİLER",`<div class="toolbar"><div class="search">${icon("search")}<input id="customerSearch" placeholder="Müşteri ara..." oninput="renderCustomers()"></div></div><div id="customerList"></div>`);
+ renderCustomers();
+}
+function renderCustomers(){
+ const q=(document.getElementById("customerSearch")?.value||"").toLowerCase();
+ const arr=data.customers.filter(c=>(`${c.name||""} ${c.phone||""} ${c.instagram||""}`).toLowerCase().includes(q));
+ document.getElementById("customerList").innerHTML=arr.length?arr.map(c=>`<button class="row clickable card" style="width:100%;text-align:left;margin:7px 0" onclick="openCustomer('${esc(c.id)}')"><div class="timebox">${icon("people")}</div><div class="customer"><b>${esc(c.name)}</b><small>${esc(c.phone||"Telefon eklenmemiş")}</small><small>${c.instagram?"Instagram bağlantısı mevcut":"Instagram eklenmemiş"}</small></div><span class="status">${data.appointments.filter(a=>a.customerId===c.id).length} randevu</span></button>`).join(""):``;
+}
+function openCustomer(id){
+ const c=data.customers.find(x=>String(x.id)===String(id));if(!c)return;
+ const hist=data.appointments.filter(a=>a.customerId===c.id).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+ const spent=hist.reduce((s,a)=>s+Number(a.price||0),0);
+ document.getElementById("modalBody").innerHTML=`<h2>${esc(c.name)}</h2><div>${c.phone?`<a class="contact-btn" href="tel:${esc(c.phone)}">Telefon ↗</a><a class="contact-btn" href="${waUrl(c.phone)}" target="_blank" rel="noopener">WhatsApp ↗</a>`:""}${c.instagram?`<a class="contact-btn" href="${safeUrl(c.instagram)}" target="_blank" rel="noopener">Instagram ↗</a>`:""}</div><p style="color:var(--muted)">Telefon: ${esc(c.phone||"—")}</p><div class="compare"><div class="stat"><small>Toplam Randevu</small><strong>${hist.length}</strong></div><div class="stat"><small>Toplam Harcama</small><strong>${money(spent)}</strong></div></div><div class="section-head"><h3>DÖVME GEÇMİŞİ</h3></div>${hist.length?hist.map(a=>`<div class="card" style="padding:13px;margin:8px 0"><b>${esc(a.style||a.type||"Dövme")}</b><small style="display:block;color:var(--muted);margin-top:4px">${esc(a.date)} · ${esc(a.time||"—")} · ${a.body?esc(a.body):"Bölge yok"} · ${a.price?money(a.price):"Ücret yok"}</small>${a.needle?`<small style="display:block;color:var(--muted);margin-top:4px">İğne: ${esc(a.needle)}</small>`:""}${a.note?`<small style="display:block;color:var(--muted);margin-top:4px">Not: ${esc(a.note)}</small>`:""}${(a.modelImages?.length||a.modelImage)?`<div class="image-grid">${(a.modelImages?.length?a.modelImages:[a.modelImage]).map((im,i)=>`<div class="image-item"><img class="detail-image" src="${im}" alt="Model ${i+1}"></div>`).join("")}</div>`:""}</div>`).join(""):`<p style="color:var(--muted)">Henüz randevu/dövme geçmişi yok.</p>`}<div class="actions"><button class="secondary" onclick="openCustomerForm('${esc(c.id)}')">${icon("edit")} Düzenle</button><button class="dangerBtn" onclick="deleteCustomer('${esc(c.id)}')">${icon("trash")} Sil</button></div><div class="actions"><button class="secondary" onclick="closeModal()">Kapat</button></div>`;
+ document.getElementById("modal").classList.add("open");
+}
+function deleteCustomer(id){if(!confirm("Müşteriyi ve bu müşteriye bağlı randevuları silmek istediğine emin misin?"))return;data.customers=data.customers.filter(c=>String(c.id)!==String(id));data.appointments=data.appointments.filter(a=>String(a.customerId)!==String(id));save();closeModal();customers()}
+
+function openForm(type,id=null){
+ const m=document.getElementById("modal"),b=document.getElementById("modalBody");
+ if(type==="appointment"){
+  const a=id?data.appointments.find(x=>String(x.id)===String(id)):null;
+  const c=a?.customerId?data.customers.find(x=>x.id===a.customerId):null;
+  b.innerHTML=`<h2>${a?"Randevuyu Düzenle":"Yeni Randevu"}</h2>
+  <div class="field"><label>Müşteri</label><input id="fCustomer" value="${esc(a?.customer||"")}" placeholder="Ad Soyad"></div>
+  <div class="field-grid"><div class="field"><label>Telefon / WhatsApp</label><input id="fPhone" type="tel" value="${esc(a?.phone||c?.phone||"")}" placeholder="05xx xxx xx xx"></div><div class="field"><label>Instagram bağlantısı</label><input id="fInstagram" value="${esc(a?.instagram||c?.instagram||"")}" placeholder="https://instagram.com/..."></div></div>
+  <div class="field-grid"><div class="field"><label>Tarih</label><input id="fDate" type="date" value="${esc(a?.date||today())}"></div><div class="field"><label>Saat</label><input id="fTime" type="time" value="${esc(a?.time||"12:00")}"></div></div>
+  <div class="field-grid"><div class="field"><label>Dövme türü</label><select id="fType">${["Minimal","Fine Line","Linework","Blackwork","Realism","Cover Up","Geometric","Diğer"].map(x=>`<option ${a?.type===x?"selected":""}>${x}</option>`).join("")}</select></div><div class="field"><label>Vücut bölgesi</label><input id="fBody" value="${esc(a?.body||"")}" placeholder="Omuz, kol..."></div></div>
+  <div class="field"><label>Dövme / Model adı</label><input id="fStyle" value="${esc(a?.style||"")}" placeholder="Örn. Güneş"></div>
+  <div class="upload"><label for="aImage"><span class="upload-icon">${icon("design")}</span><span><b>Yapılacak modelin görsellerini yükle</b><small style="display:block;color:var(--muted)">10–20 veya daha fazla JPG, PNG ya da WebP seçebilirsin</small></span></label><input id="aImage" type="file" accept="image/*" multiple onchange="previewImages(this,'aPreviewGrid')"><div id="aPreviewGrid" class="image-grid">${(a?.modelImages?.length||a?.modelImage)?(a.modelImages?.length?a.modelImages:[a.modelImage]).map((im,i)=>`<div class="image-item"><img src="${im}" alt="Model ${i+1}"></div>`).join(""):""}</div></div>
+  <input type="hidden" id="fStatus" value="${esc(a?.status||"Onaylandı")}">
+  <div class="field-grid"><div class="field"><label>Kullanılacak iğne</label><input id="fNeedle" value="${esc(a?.needle||"")}" placeholder="3RL, 7RS..."></div><div class="field"><label>Ücret (₺)</label><input id="fPrice" type="number" min="0" step="1" value="${a?.price||""}" placeholder="2500"></div></div>
+  <div class="field"><label>Depozito (₺)</label><input id="fDeposit" type="number" min="0" step="1" value="${a?.deposit||0}" placeholder="0"></div>
+
+  <div class="field"><label>Not</label><textarea id="fNote" placeholder="Dövme ile ilgili not...">${esc(a?.note||"")}</textarea></div>
+  <div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="primary" onclick="saveAppointment('${esc(id||"")}')">${a?"Değişiklikleri Kaydet":"Randevuyu Kaydet"}</button></div>
+  ${a?`<div class="actions"><button class="dangerBtn" onclick="deleteAppointment('${esc(a.id)}')">${icon("trash")} Randevuyu Sil</button></div>${a.status!=="Tamamlandı"&&a.status!=="İptal Edildi"?`<div class="section-head" style="margin-top:18px"><h3>RANDEVU DURUMU</h3></div><div class="actions"><button class="primary" type="button" onclick="setAppointmentStatus('${esc(a.id)}','Tamamlandı')">✓ Tamamlandı</button><button class="dangerBtn" type="button" onclick="setAppointmentStatus('${esc(a.id)}','İptal Edildi')">İptal</button></div>`:""}`:""}`;
+ }else if(type==="customer"){openCustomerForm(id)}
+ else if(type==="design"){b.innerHTML=`<h2>Yeni Tasarım</h2><div class="field"><label>Tasarım adı</label><input id="dName" placeholder="Örn. Güneş"></div><div class="field"><label>Kategori</label><select id="dCat">${CATS.map(x=>`<option>${x}</option>`).join("")}<option value="__custom">Yeni kategori…</option></select></div><div class="field" id="customCatWrap" style="display:none"><label>Yeni kategori adı</label><input id="dCustomCat" placeholder="Kategori adı"></div><div class="field"><label>Tasarım notu</label><textarea id="dNote" placeholder="Not ekle..."></textarea></div><div class="upload"><label for="dImage"><span class="upload-icon">${icon("design")}</span><span><b>Görsel yükle</b><small style="display:block;color:var(--muted)">JPG, PNG veya WebP</small></span></label><input id="dImage" type="file" accept="image/*" onchange="previewImage(this,'dPreview')"><img id="dPreview" class="upload-preview"></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="primary" onclick="saveDesign()">Tasarımı Kaydet</button></div>`;setTimeout(()=>document.getElementById("dCat").onchange=e=>document.getElementById("customCatWrap").style.display=e.target.value==="__custom"?"block":"none",0)}
+ else if(type==="finance"){b.innerHTML=`<h2>Finans Kaydı</h2><div class="tabs"><button id="incomeType" class="tab active" onclick="setFinanceType('Gelir')">Gelir</button><button id="expenseType" class="tab" onclick="setFinanceType('Gider')">Gider</button></div><input type="hidden" id="fFinanceType" value="Gelir"><div class="field"><label>Tutar (₺)</label><input id="fAmount" type="number" min="0" step="0.01" placeholder="1500" oninput="calcCommission()"></div><div class="field" id="commissionField"><label>Komisyon (%) — yalnızca gelir</label><input id="fCommission" type="number" min="0" max="100" step="0.01" value="0" oninput="calcCommission()"><small id="commissionPreview" style="display:block;color:var(--muted);margin-top:5px"></small></div><div class="field"><label>Kategori</label><input id="fCategory" placeholder="Dövme, malzeme, kira..."></div><div class="field"><label>Açıklama</label><input id="fNote"></div><div class="field"><label>Tarih</label><input id="fFinanceDate" type="date" value="${today()}"></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="primary" onclick="saveFinance()">Kaydet</button></div>`}
+ else if(type==="profile"){b.innerHTML=`<h2>Profil Düzenle</h2><div class="upload"><label for="pPhoto"><span class="upload-icon">${icon("people")}</span><span><b>Profil fotoğrafını değiştir</b><small style="display:block;color:var(--muted)">Galeriden istediğin fotoğrafı seç</small></span></label><input id="pPhoto" type="file" accept="image/*" onchange="previewImage(this,'pPreview')"><img id="pPreview" class="upload-preview" ${data.profile.photo?`style="display:block" src="${data.profile.photo}"`:""}></div><div class="field"><label>Ad Soyad</label><input id="pName" value="${esc(data.profile.name)}"></div><div class="field"><label>E-posta</label><input id="pEmail" type="email" value="${esc(data.profile.email)}"></div><div class="field"><label>Stüdyo</label><input id="pStudio" value="${esc(data.profile.studio)}"></div><div class="field"><label>Şehir</label><input id="pCity" value="${esc(data.profile.city)}"></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="primary" onclick="saveProfile()">Kaydet</button></div>`}
+ m.classList.add("open");
+}
+function openCustomerForm(id=null){
+ const c=id?data.customers.find(x=>String(x.id)===String(id)):null;
+ document.getElementById("modalBody").innerHTML=`<h2>${c?"Müşteriyi Düzenle":"Yeni Müşteri"}</h2><div class="field"><label>Ad Soyad</label><input id="cName" value="${esc(c?.name||"")}"></div><div class="field"><label>Telefon / WhatsApp</label><input id="cPhone" type="tel" inputmode="tel" autocomplete="tel" value="${esc(c?.phone||"")}" placeholder="05xx xxx xx xx"></div><div class="field"><label>Instagram profil bağlantısı</label><input id="cInstagram" type="url" inputmode="url" autocomplete="url" value="${esc(c?.instagram||"")}" placeholder="https://instagram.com/kullaniciadi"></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="primary" onclick="saveCustomer('${esc(id||"")}')">Kaydet</button></div>`;
+ document.getElementById("modal").classList.add("open");
+}
+function previewImage(input,id){const f=input.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=document.getElementById(id);im.src=r.result;im.style.display="block"};r.readAsDataURL(f)}
+function previewImages(input,id){const box=document.getElementById(id);if(!box)return;box.innerHTML="";[...(input.files||[])].forEach((f,i)=>{const r=new FileReader();r.onload=()=>{box.insertAdjacentHTML("beforeend",`<div class="image-item"><img src="${r.result}" alt="Model ${i+1}"></div>`)};r.readAsDataURL(f)})}
+function compressImage(file,max=1500,q=.84){return new Promise(resolve=>{const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));c.getContext("2d").drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL("image/jpeg",q))};img.src=r.result};r.readAsDataURL(file)})}
+
+async function saveAppointment(id){
+ const name=document.getElementById("fCustomer").value.trim();if(!name)return alert("Müşteri adını gir.");
+ const phone=document.getElementById("fPhone").value.trim(),instagram=document.getElementById("fInstagram").value.trim();
+ let c=data.customers.find(x=>String(x.name||"").toLowerCase()===name.toLowerCase());
+ if(!c){c={id:"c"+Date.now(),name,phone,instagram};data.customers.push(c)}else{c.phone=phone;c.instagram=instagram;c.name=name}
+ const old=id?data.appointments.find(x=>String(x.id)===String(id)):null,files=[...(document.getElementById("aImage").files||[])];
+ let images=old?.modelImages?.length?old.modelImages:(old?.modelImage?[old.modelImage]:[]);if(files.length){const added=await Promise.all(files.map(f=>compressImage(f)));images=[...images,...added]}
+ let image=images[0]||"";
+ const obj={id:old?.id||"a"+Date.now(),customerId:c.id,customer:name,phone,instagram,date:document.getElementById("fDate").value,time:document.getElementById("fTime").value,type:document.getElementById("fType").value,body:document.getElementById("fBody").value.trim(),style:document.getElementById("fStyle").value.trim(),modelImage:image,modelImages:images,needle:document.getElementById("fNeedle").value.trim(),price:Number(document.getElementById("fPrice").value)||0,deposit:Number(document.getElementById("fDeposit").value)||0,status:document.getElementById("fStatus").value,note:document.getElementById("fNote").value.trim()};
+ if(old)Object.assign(old,obj);else data.appointments.push(obj);
+ c.last=obj.date;
+ syncAppointmentFinance(old?.id,obj);
+ save();closeModal();setScreen("appointments");
+}
+function syncAppointmentFinance(oldId,a){
+ const id="appt_"+a.id;
+ data.finance=data.finance.filter(x=>x.linkedAppointmentId!==id);
+ if(a.status==="Tamamlandı"&&Number(a.price)>0){
+   const pct=Number(a.commissionPercent)||0, commission=Number(a.price)*pct/100;
+   data.finance.push({id:"f"+Date.now(),linkedAppointmentId:id,type:"Gelir",amount:Number(a.price),date:a.date,category:"Dövme",note:`${a.customer} — Randevu geliri`,commissionPercent:pct});
+   if(commission>0) data.finance.push({id:"f"+(Date.now()+1),linkedAppointmentId:id,type:"Gider",amount:commission,date:a.date,category:"Komisyon",note:`${pct}% komisyon — ${a.customer}`,commissionPercent:0});
+ }
+}
+function showCommissionChoice(id){
+ const a=data.appointments.find(x=>String(x.id)===String(id)); if(!a)return;
+ document.getElementById("modalBody").innerHTML=`<h2>Komisyon Seç</h2><p style="color:var(--muted);margin:6px 0 16px">${esc(a.customer||"Müşteri")} · ${money(a.price||0)}</p><div class="actions" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="secondary" type="button" onclick="finishAppointmentWithCommission('${esc(a.id)}',0)">Komisyon Yok</button><button class="secondary" type="button" onclick="finishAppointmentWithCommission('${esc(a.id)}',30)">%30</button><button class="secondary" type="button" onclick="finishAppointmentWithCommission('${esc(a.id)}',50)">%50</button><button class="secondary" type="button" onclick="finishAppointmentWithCommission('${esc(a.id)}',70)">%70</button></div><div class="actions"><button class="secondary" type="button" onclick="openAppointment('${esc(a.id)}')">Vazgeç</button></div>`;
+}
+function finishAppointmentWithCommission(id,pct){
+ const a=data.appointments.find(x=>String(x.id)===String(id)); if(!a)return;
+ a.status="Tamamlandı"; a.commissionPercent=Number(pct)||0;
+ syncAppointmentFinance(a.id,a); save(); closeModal(); appointments();
+}
+function setAppointmentStatus(id,status){
+ const a=data.appointments.find(x=>String(x.id)===String(id)); if(!a)return;
+ if(status==="Tamamlandı"){ showCommissionChoice(id); return; }
+ if(status==="İptal Edildi"){
+   if(!confirm("Bu randevuyu iptal etmek istediğine emin misin? Kayıt korunacak ve finans'a gelir eklenmeyecek."))return;
+   a.status="İptal Edildi"; a.commissionPercent=0; syncAppointmentFinance(a.id,a); save(); closeModal(); appointments();
+ }
+}
+function deleteAppointment(id){
+ if(!confirm("Bu randevuyu silmek istediğine emin misin?"))return;
+ // Delete only the appointment and any finance records explicitly linked to it.
+ data.appointments=data.appointments.filter(a=>String(a.id)!==String(id));
+ data.finance=data.finance.filter(f=>String(f.linkedAppointmentId||"")!=="appt_"+String(id));
+ save();closeModal();appointments();
+}
+function openAppointment(id){openForm("appointment",id)}
+
+function saveCustomer(id){
+ const name=document.getElementById("cName").value.trim();if(!name)return alert("Ad soyad gir.");
+ const phone=document.getElementById("cPhone").value.trim(),instagram=document.getElementById("cInstagram").value.trim();
+ if(id){const c=data.customers.find(x=>String(x.id)===String(id));Object.assign(c,{name,phone,instagram});data.appointments.filter(a=>a.customerId===c.id).forEach(a=>{a.customer=name;a.phone=phone;a.instagram=instagram})}
+ else data.customers.push({id:"c"+Date.now(),name,phone,instagram});
+ save();closeModal();customers();
+}
+
+function saveDesign(){
+ const f=document.getElementById("dImage").files?.[0],n=document.getElementById("dName").value.trim();if(!n)return alert("Tasarım adı gir.");
+ let cat=document.getElementById("dCat").value;if(cat==="__custom"){cat=document.getElementById("dCustomCat").value.trim();if(!cat)return alert("Kategori adı gir.");}
+ const note=document.getElementById("dNote").value.trim();
+ const finish=image=>{data.designs.push({id:"d"+Date.now(),name:n,category:cat,note,image:image||""});save();closeModal();designs()};
+ if(f)compressImage(f).then(finish);else finish("");
+}
+
+function setFinanceType(t){
+ document.getElementById("fFinanceType").value=t;document.getElementById("incomeType").classList.toggle("active",t==="Gelir");document.getElementById("expenseType").classList.toggle("active",t==="Gider");document.getElementById("commissionField").style.display=t==="Gelir"?"block":"none";calcCommission();
+}
+function calcCommission(){
+ const type=document.getElementById("fFinanceType")?.value,amount=Number(document.getElementById("fAmount")?.value)||0,pct=Number(document.getElementById("fCommission")?.value)||0;
+ const fee=amount*pct/100,net=amount-fee;const el=document.getElementById("commissionPreview");if(el)el.textContent=type==="Gelir"?`Komisyon: ${money(fee)} · Net gelir: ${money(net)}`:"";
+}
+function saveFinance(){
+ const amount=Number(document.getElementById("fAmount").value);if(!amount||amount<=0)return alert("Geçerli bir tutar gir.");
+ const type=document.getElementById("fFinanceType").value,date=document.getElementById("fFinanceDate").value,category=document.getElementById("fCategory").value.trim()||type,note=document.getElementById("fNote").value.trim(),pct=type==="Gelir"?Number(document.getElementById("fCommission").value)||0:0;
+ if(type==="Gelir"&&pct>0){
+   const commission=amount*pct/100;
+   // Gelir brüt tutar olarak kalır; komisyon ayrı bir gider kaydıdır.
+   data.finance.push({id:"f"+Date.now(),type:"Gelir",amount,date,category,note,commissionPercent:pct});
+   data.finance.push({id:"f"+(Date.now()+1),type:"Gider",amount:commission,date,category:"Komisyon",note:`${pct}% komisyon — ${note}`});
+ }else data.finance.push({id:"f"+Date.now(),type,amount,date,category,note,commissionPercent:0});
+ save();closeModal();finance();
+}
+function deleteFinance(id){if(!confirm("Bu finans kaydını silmek istediğine emin misin?"))return;const x=data.finance.find(f=>String(f.id)===String(id));if(x?.linkedAppointmentId){data.finance=data.finance.filter(f=>f.linkedAppointmentId!==x.linkedAppointmentId)}else data.finance=data.finance.filter(f=>String(f.id)!==String(id));save();finance()}
+
+let financeMonth=today().slice(0,7),compareMonth="";
+function monthName(ym){const [y,m]=ym.split("-").map(Number);return new Date(y,m-1,1).toLocaleDateString("tr-TR",{month:"long",year:"numeric"})}
+function monthTotals(ym){
+ const rows=data.finance.filter(x=>(x.date||"").startsWith(ym));
+ return {income:rows.filter(x=>x.type==="Gelir").reduce((s,x)=>s+Number(x.amount),0),expense:rows.filter(x=>x.type==="Gider").reduce((s,x)=>s+Number(x.amount),0),rows};
+}
+function monthBusinessTotals(ym){
+ const appts=data.appointments.filter(a=>(a.date||"").startsWith(ym)&&a.status!=="İptal Edildi");
+ const customerIds=new Set(appts.map(a=>String(a.customerId||a.customer||"")).filter(Boolean));
+ return {appointments:appts.length,customers:customerIds.size};
+}
+function changeValue(cur,prev){
+ const diff=cur-prev;
+ if(prev===0)return diff===0?"0%":(diff>0?"Yeni":"−");
+ return `${diff>=0?"+":""}${((diff/prev)*100).toFixed(0)}%`;
+}
+function finance(){
+ const cur=monthTotals(financeMonth),net=cur.income-cur.expense;
+ const prev=new Date(Number(financeMonth.slice(0,4)),Number(financeMonth.slice(5))-2,1);const prevYm=`${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,"0")}`;
+ const autoCompare=compareMonth||prevYm, cmp=monthTotals(autoCompare);
+ const curBiz=monthBusinessTotals(financeMonth),cmpBiz=monthBusinessTotals(autoCompare);
+ const netCmp=cmp.income-cmp.expense;
+ document.getElementById("finance").innerHTML=shell("FİNANS",`
+ <div class="finance-grid"><div class="finance-card"><small>Toplam Gelir · ${monthName(financeMonth)}</small><strong class="money">${money(cur.income)}</strong></div><div class="finance-card"><small>Toplam Gider · ${monthName(financeMonth)}</small><strong class="money">${money(cur.expense)}</strong></div><div class="finance-card balance"><small>Net Bakiye · ${monthName(financeMonth)}</small><strong class="money">${money(net)}</strong></div></div>
+ <div class="finance-actions"><button class="primary" onclick="openForm('finance');setTimeout(()=>setFinanceType('Gelir'),0)">＋ Gelir Ekle</button><button class="secondary" onclick="openForm('finance');setTimeout(()=>setFinanceType('Gider'),0)">＋ Gider Ekle</button></div>
+ <div class="card" style="padding:14px;margin-bottom:12px"><div class="field-grid"><div class="field"><label>Görüntülenen ay</label><input type="month" value="${financeMonth}" onchange="financeMonth=this.value;finance()"></div><div class="field"><label>Karşılaştır</label><input type="month" value="${autoCompare}" onchange="compareMonth=this.value;finance()"></div></div>
+ <div class="compare"><div class="stat"><small>${monthName(financeMonth)} Net</small><strong>${money(net)}</strong></div><div class="stat"><small>${monthName(autoCompare)} Net</small><strong>${money(netCmp)}</strong></div><div class="stat"><small>Gelir farkı</small><strong>${money(cur.income-cmp.income)}</strong></div><div class="stat"><small>Gider farkı</small><strong>${money(cur.expense-cmp.expense)}</strong></div></div></div>
+ <div class="card" style="padding:14px;margin-bottom:12px"><div class="section-head" style="margin-top:0"><h3>AYLIK İŞLETME ÖZETİ</h3></div><div class="compare"><div class="stat"><small>${monthName(financeMonth)} Müşteri</small><strong>${curBiz.customers}</strong><small>${monthName(autoCompare)}: ${cmpBiz.customers} · ${changeValue(curBiz.customers,cmpBiz.customers)}</small></div><div class="stat"><small>${monthName(financeMonth)} Randevu</small><strong>${curBiz.appointments}</strong><small>${monthName(autoCompare)}: ${cmpBiz.appointments} · ${changeValue(curBiz.appointments,cmpBiz.appointments)}</small></div><div class="stat"><small>Gelir değişimi</small><strong>${changeValue(cur.income,cmp.income)}</strong><small>${money(cur.income-cmp.income)} fark</small></div><div class="stat"><small>Net değişimi</small><strong>${changeValue(net,netCmp)}</strong><small>${money(net-netCmp)} fark</small></div></div></div>
+ <div class="section-head"><h3>İŞLEMLER · ${monthName(financeMonth)}</h3><span>${cur.rows.length}</span></div>
+ <div class="card">${cur.rows.length?cur.rows.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(x=>`<div class="finance-row"><div class="money-icon">${x.type==="Gelir"?"↑":"↓"}</div><div class="grow"><b>${esc(x.category||x.type)}</b><small>${esc(x.note||"")} · ${esc(x.date||"")}${x.commissionPercent?` · ${x.commissionPercent}% komisyon`:""}</small></div><div style="display:flex;align-items:center;gap:8px"><div class="amount ${x.type==="Gelir"?"in":"out"}">${x.type==="Gelir"?"+":"−"}${money(x.amount)}</div><button class="dangerBtn finance-delete" type="button" title="Bu kaydı sil" onclick="event.preventDefault();event.stopPropagation();deleteFinance('${esc(x.id)}')">${icon("trash")} Sil</button></div></div>`).join(""):``}</div>`);
+}
+function profile(){
+ const p=data.profile;
+ const photo=p.photo||"icon.png";
+ document.getElementById("profile").innerHTML=shell("PROFİL",`
+  <div class="profile-head">
+   <div class="avatar"><img src="${esc(photo)}" alt="Profil fotoğrafı"></div>
+   <div>
+    <div class="profile-name">${esc(p.name||"Sanatçı")}</div>
+    <div class="profile-sub">${esc(p.studio||"Apollo Ink")}${p.city?` · ${esc(p.city)}`:""}</div>
+    <button class="profile-edit" type="button" onclick="openForm('profile')">${icon("edit")} Profili Düzenle</button>
+   </div>
+  </div>
+  <div class="profile-section-title">HESAP</div>
+  <div class="profile-card">
+   <button class="row clickable" type="button" style="width:100%;text-align:left" onclick="openForm('profile')">${icon("profile")}<div class="customer"><b>Kişisel Bilgiler</b><small>Ad, e-posta, stüdyo, şehir ve profil fotoğrafı</small></div><span class="profile-arrow">›</span></button>
+   <button class="row clickable" type="button" style="width:100%;text-align:left" onclick="openNotifications()">${icon("bell")}<div class="customer"><b>Bildirimler</b><small>Bugün, yarın ve yaklaşan randevular</small></div><span class="profile-arrow">›</span></button>
+  </div>
+  <div class="profile-section-title">HESAP & BULUT</div>
+  <div class="profile-card">
+   <button class="row clickable" type="button" style="width:100%;text-align:left" onclick="openCloudAccount()">${icon("profile")}<div class="customer"><b>Hesap & Bulut</b><small>${cloudStatusText()}</small></div><span class="profile-arrow">›</span></button>
+  </div>
+  <div class="profile-section-title">UYGULAMA</div>
+  <div class="profile-card">
+   <div class="row" style="width:100%;text-align:left">${icon("moon")}<div class="customer"><b>Tema</b><small>Uygulama daima koyu temada çalışır</small></div><span class="profile-status">KOYU</span></div>
+   <button class="row clickable" type="button" style="width:100%;text-align:left" onclick="alert('Güvenlik ayarları yakında.')">${icon("profile")}<div class="customer"><b>Güvenlik</b><small>Uygulama güvenliği</small></div><span class="profile-arrow">›</span></button>
+   <button class="row clickable" type="button" style="width:100%;text-align:left" onclick="alert('Uygulama ayarları')">${icon("finance")}<div class="customer"><b>Uygulama Ayarları</b><small>Apollo Ink uygulama seçenekleri</small></div><span class="profile-arrow">›</span></button>
+  </div>`);
+}
+
+function saveProfile(){
+ const f=document.getElementById("pPhoto").files?.[0],finish=image=>{data.profile.name=document.getElementById("pName").value.trim();data.profile.email=document.getElementById("pEmail").value.trim();data.profile.studio=document.getElementById("pStudio").value.trim()||"Apollo Ink";data.profile.city=document.getElementById("pCity").value.trim();if(image)data.profile.photo=image;save();closeModal();profile()};
+ if(f)compressImage(f,900,.85).then(finish);else finish(data.profile.photo||"");
+}
+function cloudStatusText(){
+ const u=window.__cloudUser;
+ if(!window.__supabase) return "Bulut bağlantısı henüz yapılandırılmadı";
+ return u?`Bağlı: ${u.email||"hesap"} · Senkron aktif`:`Hesabına giriş yaparak verilerini cihazlar arasında senkronla`;
+}
+function openCloudAccount(){
+ const u=window.__cloudUser;
+ const configured=!!window.__supabase;
+ document.getElementById("modalBody").innerHTML=`<h2>Hesap & Bulut</h2><div class="card" style="padding:15px;margin-bottom:12px"><b>${configured?(u?"Bulut hesabın bağlı":"Bulut hesabı hazır") : "Bulut bağlantısı hazır değil"}</b><p style="color:var(--muted);margin:8px 0 0">${configured?(u?`<b>${esc(u.email||"")}</b><br>Verilerin bu hesap altında saklanır ve aynı hesapla giriş yaptığın diğer cihazlarda kullanılabilir.`:"E-posta ve şifrenle hesap oluşturabilir veya giriş yapabilirsin."):"Önce Supabase proje bilgileri config.js dosyasına eklenmeli. Bu sürümde yerel verilerin silinmez."}</p></div>${configured&&!u?`<div class="field"><label>E-posta</label><input id="cloudEmail" type="email" autocomplete="email" placeholder="ornek@mail.com"></div><div class="field"><label>Şifre</label><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="En az 6 karakter"></div><div class="actions"><button class="secondary" onclick="cloudLogin()">Giriş Yap</button><button class="primary" onclick="cloudSignup()">Hesap Oluştur</button></div><div class="actions"><button class="secondary" onclick="cloudResetPassword()">Şifremi Unuttum</button><button class="secondary" onclick="closeModal()">Kapat</button></div>`:u?`<div class="actions"><button class="primary" onclick="cloudSyncNow()">${icon("download")} Şimdi Senkronla</button><button class="secondary danger" onclick="cloudLogout()">Çıkış Yap</button></div><div class="actions"><button class="secondary" onclick="closeModal()">Kapat</button></div>`:`<div class="actions"><button class="secondary" onclick="closeModal()">Kapat</button></div>`}`;
+ document.getElementById("modal").classList.add("open");
+}
+function authGate(open=true){document.getElementById("authGate").classList.toggle("open",open);document.body.style.overflow=open?"hidden":""}
+function authMsg(msg){const e=document.getElementById("authError");e.textContent=msg;e.style.display=msg?"block":"none"}
+function authBusy(v){document.getElementById("authLoading").style.display=v?"block":"none"}
+function authFields(){return {email:document.getElementById("authEmail").value.trim(),password:document.getElementById("authPassword").value}}
+async function authLogin(){if(!window.__supabase){authMsg("Bulut bağlantısı henüz yapılandırılmadı.");return}const {email,password}=authFields();if(!email||!password){authMsg("E-posta ve şifreyi gir.");return}authBusy(true);authMsg("");const {data:res,error}=await window.__supabase.auth.signInWithPassword({email,password});authBusy(false);if(error){authMsg(error.message);return}window.__cloudUser=res.user;await cloudLoad(false);authGate(false);profile();home()}
+async function authSignup(){if(!window.__supabase){authMsg("Bulut bağlantısı henüz yapılandırılmadı.");return}const {email,password}=authFields();if(!email||password.length<6){authMsg("Geçerli bir e-posta ve en az 6 karakterlik şifre gir. Şifre en az 6 karakter olmalı.");return}authBusy(true);authMsg("");const {data:res,error}=await window.__supabase.auth.signUp({email,password});authBusy(false);if(error){authMsg(error.message);return}if(res.session){window.__cloudUser=res.user;await cloudLoad(false);authGate(false);profile();home()}else{authMsg("Hesap oluşturuldu. E-posta doğrulama bağlantısı geldiyse önce e-postanı doğrula, sonra giriş yap.")}}
+async function authReset(){if(!window.__supabase){authMsg("Bulut bağlantısı henüz yapılandırılmadı.");return}const email=document.getElementById("authEmail").value.trim();if(!email){authMsg("Şifre yenileme bağlantısı için önce e-posta adresini yaz.");return}authBusy(true);authMsg("");const {error}=await window.__supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});authBusy(false);if(error){authMsg(error.message);return}authMsg("Şifre yenileme bağlantısı e-posta adresine gönderildi.")}
+
+async function cloudLogin(){
+ const email=document.getElementById("cloudEmail").value.trim(),password=document.getElementById("cloudPassword").value;if(!email||!password){alert("E-posta ve şifreyi gir.");return}
+ const {data:res,error}=await window.__supabase.auth.signInWithPassword({email,password});if(error){alert(error.message);return}window.__cloudUser=res.user;await cloudLoad(true);closeModal();profile();
+}
+async function cloudSignup(){
+ const email=document.getElementById("cloudEmail").value.trim(),password=document.getElementById("cloudPassword").value;if(!email||password.length<6){alert("Geçerli bir e-posta ve en az 6 karakterlik şifre gir.");return}
+ const {data:res,error}=await window.__supabase.auth.signUp({email,password});if(error){alert(error.message);return}
+ if(res.session){window.__cloudUser=res.user;await cloudSaveNow();closeModal();profile();alert("Bulut hesabın oluşturuldu ve bağlandı.")}else{alert("Hesap oluşturuldu. E-posta doğrulaması açıksa gelen kutunu kontrol edip sonra giriş yap.");}
+}
+async function cloudResetPassword(){
+ const email=document.getElementById("cloudEmail").value.trim();if(!email){alert("Önce e-posta adresini yaz.");return}
+ const {error}=await window.__supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)alert(error.message);else alert("Şifre yenileme bağlantısı e-posta adresine gönderildi.");
+}
+async function cloudLogout(){await window.__supabase.auth.signOut();window.__cloudUser=null;closeModal();profile()}
+let cloudSaveTimer=null;
+function queueCloudSave(){if(!window.__supabase||!window.__cloudUser)return;clearTimeout(cloudSaveTimer);cloudSaveTimer=setTimeout(()=>cloudSaveNow(),900);}
+async function cloudSaveNow(){if(!window.__supabase||!window.__cloudUser)return;const payload=JSON.parse(JSON.stringify(data));const {error}=await window.__supabase.from("apollo_cloud").upsert({user_id:window.__cloudUser.id,payload,updated_at:new Date().toISOString()});if(error)console.warn("Cloud save",error.message);}
+async function cloudLoad(showAlert=false){if(!window.__supabase||!window.__cloudUser)return;const {data:row,error}=await window.__supabase.from("apollo_cloud").select("payload").eq("user_id",window.__cloudUser.id).maybeSingle();if(error){console.warn("Cloud load",error.message);if(showAlert)alert(error.message);return}if(row?.payload){data.appointments=Array.isArray(row.payload.appointments)?row.payload.appointments:[];data.customers=Array.isArray(row.payload.customers)?row.payload.customers:[];data.designs=Array.isArray(row.payload.designs)?row.payload.designs:[];data.finance=Array.isArray(row.payload.finance)?row.payload.finance:[];data.profile={...data.profile,...(row.payload.profile||{})};data.settings={...data.settings,...(row.payload.settings||{}),theme:"dark"};migrateLegacy();localStorage.setItem(KEY,JSON.stringify(data));renderScreen(document.querySelector(".screen.active")?.id||"home");if(showAlert)alert("Buluttaki verilerin yüklendi.");}else{await cloudSaveNow();if(showAlert)alert("Bu hesap için bulutta kayıt bulunamadı. Mevcut cihaz verilerin yüklendi.");}}
+async function cloudSyncNow(){await cloudSaveNow();await cloudLoad(true)}
+function initCloud(){if(!window.__supabase){authGate(true);authMsg("Bulut bağlantısı henüz yapılandırılmadı. Önce Supabase proje bilgilerini config.js dosyasına eklemeliyiz.");return}window.__supabase.auth.getSession().then(async({data:{session}})=>{if(session?.user){window.__cloudUser=session.user;authGate(false);await cloudLoad(false);profile()}else{window.__cloudUser=null;authGate(true)}});window.__supabase.auth.onAuthStateChange((_e,session)=>{window.__cloudUser=session?.user||null;if(session?.user){authGate(false);profile()}else{authGate(true);profile()}});}
+function toggleTheme(){data.settings.theme="dark";applyTheme();save();profile()}
+function applyTheme(){data.settings.theme="dark";document.documentElement.classList.remove("light");document.body.classList.remove("light");document.querySelector('meta[name="theme-color"]').setAttribute("content","#09090b")}
+async function requestNotifications(){
+ try{
+  if(!("Notification" in window)){data.settings.notifications=true;save();openNotifications();return}
+  const p=await Notification.requestPermission();
+  data.settings.notifications=p==="granted";save();profile();
+  if(p==="granted"){
+   if("serviceWorker" in navigator){const reg=await navigator.serviceWorker.ready; if(reg.showNotification) await reg.showNotification("Apollo Ink",{body:"Bildirimler etkinleştirildi.",icon:"icon.png",badge:"icon.png"});}
+   else new Notification("Apollo Ink",{body:"Bildirimler etkinleştirildi."});
+  } else if(p==="denied") alert("Bildirim izni kapalı. iPhone'da Ayarlar > Bildirimler veya Safari/Web Sitesi ayarlarından Apollo Ink bildirimlerini açmalısın.");
+ }catch(e){alert("Bildirim izni alınamadı. Uygulama içi bildirimler yine çalışır.")}
+}
+function openNotifications(){
+ const t=today(),tom=new Date();tom.setDate(tom.getDate()+1);const ts=tom.toISOString().slice(0,10);
+ const td=data.appointments.filter(a=>a.date===t&&a.status!=="İptal Edildi"),tm=data.appointments.filter(a=>a.date===ts&&a.status!=="İptal Edildi");
+ document.getElementById("modalBody").innerHTML=`<h2>Bildirimler</h2><div class="card" style="padding:14px"><b>Bugün</b><p style="color:var(--muted)">${td.length} randevun var.</p><b>Yarın</b><p style="color:var(--muted)">${tm.length} randevun var.</p><b>1 saat önce</b><p style="color:var(--muted)">Yaklaşan randevular için 1 saatlik bildirim kontrolü etkin.</p></div><div class="notice">Safari/GitHub Pages üzerinde arka planda tam zamanlı zamanlayıcı garantisi yoktur. Uygulama açıkken 1 saatlik kontrol çalışır; sistem bildirimleri için izin verilmelidir.</div><div class="actions"><button class="secondary" onclick="requestNotifications()">Bildirim İzni</button><button class="secondary" onclick="closeModal()">Kapat</button></div>`;
+ document.getElementById("modal").classList.add("open");
+}
+async function sendSystemNotification(title,body){
+ try{if("serviceWorker" in navigator){const reg=await navigator.serviceWorker.ready;if(reg.showNotification){await reg.showNotification(title,{body,icon:"icon.png",badge:"icon.png"});return}}if("Notification" in window&&Notification.permission==="granted")new Notification(title,{body})}catch(e){}
+}
+function checkReminders(){
+ const now=new Date(),stamp=Math.floor(now.getTime()/60000);
+ data.appointments.forEach(a=>{if(!a.date||!a.time||a.status==="İptal Edildi")return;const dt=new Date(a.date+"T"+a.time),diff=Math.round((dt-now)/60000);if(diff>=59&&diff<=61){const key="rem_"+a.id+"_"+stamp;if(!sessionStorage.getItem(key)){sessionStorage.setItem(key,"1");if(data.settings.notifications)sendSystemNotification("Apollo Ink — 1 saat kaldı",`${a.customer} · ${a.time} · ${a.style||a.type||"Dövme"}`)}}});
+}
+function closeModal(){document.getElementById("modal").classList.remove("open")}
+document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")closeModal()};
+document.getElementById("topAction").innerHTML=icon("calendar");document.getElementById("topAction").onclick=openCalendar;
+document.getElementById("notificationAction").innerHTML=icon("bell");document.getElementById("notificationAction").onclick=openNotifications;
+document.getElementById("fab").onclick=()=>{const s=document.querySelector(".screen.active")?.id;openForm(s==="customers"?"customer":s==="designs"?"design":s==="finance"?"finance":"appointment")};
+applyTheme();home();/* V18.8: auth/cloud gate disabled for direct local entry */setInterval(checkReminders,60000);checkReminders();
+</script>
+<script>
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body></html>

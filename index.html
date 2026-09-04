@@ -40,7 +40,7 @@ button:disabled{opacity:.45}
 .customer{min-width:0;flex:1}.customer b,.design-info b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .customer small,.design-info small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
 .status{font-size:10px;font-weight:900;padding:7px 8px;border-radius:9px;background:#36c97918;color:var(--green);white-space:nowrap}
-.status.pending{background:#e7a63a18;color:var(--amber)}.status.cancel{background:#ff596218;color:var(--danger)}
+.status.pending{background:#e7a63a18;color:var(--amber)}.status.cancel{background:#ff596218;color:var(--danger)}.status.done{background:#36c97918;color:var(--green)}
 .model-thumb{width:54px;height:54px;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:#fff;flex:0 0 auto}
 .quick{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .quick button{background:linear-gradient(145deg,#19191c,#131315);border:1px solid #303035;border-radius:19px;padding:14px 5px;min-height:126px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px}
@@ -68,7 +68,9 @@ button:disabled{opacity:.45}
 #authGate{position:fixed;inset:0;z-index:99999;background:#0b0b0c;display:none;align-items:center;justify-content:center;padding:24px}
 #authGate.open{display:flex}.auth-box{width:min(430px,100%);background:#151516;border:1px solid #2a2a2c;border-radius:24px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
 .auth-logo{width:72px;height:72px;border-radius:18px;display:block;margin:0 auto 18px;object-fit:cover}.auth-box h1{margin:0;text-align:center;font-size:25px}.auth-box .auth-sub{text-align:center;color:var(--muted);margin:8px 0 24px}.auth-box .field{margin-bottom:14px}.auth-box .actions{margin-top:12px}.auth-box button{width:100%;min-height:48px}.auth-error{display:none;margin:12px 0;padding:11px 12px;border-radius:12px;background:#2b1718;color:#ffb4b4;font-size:13px}.auth-links{display:flex;justify-content:center;gap:16px;margin-top:16px}.auth-links button{width:auto;min-height:auto;background:none;border:0;padding:4px;color:#fff;text-decoration:underline}.auth-loading{display:none;text-align:center;color:var(--muted);margin-top:10px;font-size:13px}
-</style>
+
+.auth-gate{position:fixed;inset:0;z-index:9999;display:none;background:radial-gradient(circle at 50% -10%,#251715 0,#0b0b0d 45%,#09090b 100%);padding:24px;overflow:auto}.auth-gate.open{display:flex;align-items:center;justify-content:center}.auth-box{width:min(430px,100%);background:linear-gradient(145deg,#19191c,#111113);border:1px solid #303035;border-radius:26px;padding:28px 22px;box-shadow:0 20px 60px #0008}.auth-brand{text-align:center;margin-bottom:24px}.auth-mark{width:72px;height:72px;border-radius:22px;display:grid;place-items:center;margin:0 auto 14px;background:#f20b18;color:#fff;font-size:30px;font-weight:950;box-shadow:0 12px 30px #f20b1838}.auth-brand h1{margin:0;font-size:26px;font-weight:950}.auth-brand p{margin:7px 0 0;color:var(--muted);font-size:12px}.auth-field{margin:12px 0}.auth-field label{display:block;color:#aaa;font-size:12px;font-weight:800;margin:0 0 7px}.auth-field input{width:100%;height:50px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:#0d0d0f;outline:none}.auth-field input:focus{border-color:var(--red)}.auth-actions{display:grid;gap:9px;margin-top:16px}.auth-actions button{width:100%;min-height:48px}.auth-forgot{display:block;width:100%;text-align:center;color:#aaa;font-size:12px;font-weight:800;padding:10px}.auth-error{display:none;margin-top:12px;padding:11px 12px;border:1px solid #5a262a;background:#ff59620d;color:#ff7a81;border-radius:12px;font-size:12px;line-height:1.4}.auth-loading{display:none;text-align:center;color:var(--muted);font-size:12px;margin-top:10px}.auth-note{margin-top:15px;text-align:center;color:#777;font-size:10px;line-height:1.45}
+.image-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.image-item{position:relative;overflow:hidden;border-radius:12px;background:#111}.image-item img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}.upload .image-grid{margin-top:10px}</style>
 
 <style id="apollo-calendar-fix">
 /* Top-right calendar: compact visual, comfortable touch target */
@@ -79,8 +81,70 @@ button:disabled{opacity:.45}
 
 
 
+
+<style id="apollo-login-icon-fix">
+.apollo-login-icon{width:72px;height:72px;object-fit:contain;display:block;margin:0 auto 10px}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  try{
+    var roots=document.querySelectorAll('[class*="login"],[class*="auth"]');
+    roots.forEach(function(root){
+      var els=root.querySelectorAll('div,span,h1,h2');
+      els.forEach(function(el){
+        if(el.children.length===0 && el.textContent.trim()==='A'){
+          var img=document.createElement('img');
+          img.src='icon.png'; img.alt='Apollo Ink'; img.className='apollo-login-icon';
+          el.replaceWith(img);
+        }
+      });
+    });
+  }catch(e){}
+});
+</script>
+
+
+<style id="apollo-disable-login">
+  #authScreen, .auth-screen, #loginScreen, .login-screen {
+    display: none !important;
+  }
+  #app, #mainApp, .app-shell, .app {
+    display: block !important;
+  }
+</style>
+<script id="apollo-auto-enter">
+  document.addEventListener('DOMContentLoaded', function () {
+    try {
+      document.documentElement.classList.add('apollo-auto-enter');
+      var selectors = ['#authScreen','.auth-screen','#loginScreen','.login-screen'];
+      selectors.forEach(function(sel){
+        document.querySelectorAll(sel).forEach(function(el){ el.style.display='none'; });
+      });
+      var appSelectors = ['#app','#mainApp','.app-shell'];
+      appSelectors.forEach(function(sel){
+        document.querySelectorAll(sel).forEach(function(el){ el.style.display='block'; });
+      });
+    } catch(e) {}
+  });
+</script>
+
 </head>
 <body>
+<div class="auth-gate open" id="authGate" aria-modal="true" role="dialog">
+  <div class="auth-box">
+    <div class="auth-brand"><div class="auth-mark">A</div><h1>Apollo Ink</h1><p>Ink Artist Suite</p></div>
+    <div class="auth-field"><label for="authEmail">E-posta</label><input id="authEmail" type="email" autocomplete="email" placeholder="ornek@mail.com"></div>
+    <div class="auth-field"><label for="authPassword">Şifre</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="En az 6 karakter"></div>
+    <div class="auth-actions">
+      <button class="primary" type="button" onclick="authLogin()">Giriş Yap</button>
+      <button class="secondary" type="button" onclick="authSignup()">Kayıt Ol</button>
+      <button class="auth-forgot" type="button" onclick="authReset()">Şifremi Unuttum</button>
+    </div>
+    <div class="auth-loading" id="authLoading">İşlem yapılıyor…</div>
+    <div class="auth-error" id="authError"></div>
+    <div class="auth-note">Hesabınla giriş yaptığında Apollo Ink verilerin bu hesaba bağlanır. Bulut bağlantısı yapılandırılmadan gerçek kayıt yapılamaz.</div>
+  </div>
+</div>
 <div class="app">
 <header class="topbar"><div style="display:flex;gap:9px;align-items:center"><button class="iconbtn" id="notificationAction" aria-label="Bildirimler" title="Bildirimler"></button><button class="iconbtn" id="topAction" aria-label="Takvimi Gör" title="Takvimi Gör"></button></div></header>
 <main>
@@ -145,7 +209,7 @@ finance:Array.isArray(raw.finance)?raw.finance:[],
 profile:{...empty.profile,...(raw.profile||{})},
 settings:{...empty.settings,...(raw.settings||{}),theme:"dark"}
 };
-data.appointments=data.appointments.map(a=>({...a,customerId:a.customerId||"",phone:a.phone||"",instagram:a.instagram||"",type:a.type||"",body:a.body||"",deposit:Number(a.deposit||0),note:a.note||"",modelImage:a.modelImage||"",needle:a.needle||"",price:Number(a.price||0)}));
+data.appointments=data.appointments.map(a=>({...a,customerId:a.customerId||"",phone:a.phone||"",instagram:a.instagram||"",type:a.type||"",body:a.body||"",deposit:Number(a.deposit||0),note:a.note||"",modelImage:a.modelImage||"",modelImages:Array.isArray(a.modelImages)?a.modelImages:(a.modelImage?[a.modelImage]:[]),needle:a.needle||"",price:Number(a.price||0)}));
 data.customers=data.customers.map(c=>({...c,phone:c.phone||"",instagram:c.instagram||""}));
 data.designs=data.designs.map(d=>({...d,note:d.note||"",category:d.category||"Diğer"}));
 function save(){localStorage.setItem(KEY,JSON.stringify(data));queueCloudSave();}
@@ -198,10 +262,11 @@ function home(){
  <div class="card">${upcoming.length?upcoming.map(a=>`<button class="row clickable" style="width:100%;text-align:left;min-height:112px" onclick="openAppointment('${esc(a.id)}')"><div style="min-width:76px;height:76px;border:1px solid var(--line);border-radius:15px;background:#151517;display:flex;flex-direction:column;align-items:center;justify-content:center"><strong style="font-size:27px;color:var(--red)">${dateObj(a.date).getDate()}</strong><small style="color:var(--muted);font-size:9px">${dateObj(a.date).toLocaleDateString("tr-TR",{month:"short"}).toUpperCase()}</small><small style="color:var(--muted);font-size:9px">${dateObj(a.date).toLocaleDateString("tr-TR",{weekday:"short"})}</small></div><div class="customer"><div style="font-size:12px;color:var(--muted)">${esc(a.time||"—")}</div><b style="font-size:16px;margin-top:5px">${esc(a.customer||"Müşteri")}</b><small style="font-size:13px;margin-top:5px">${esc(a.style||a.type||"Dövme")}</small></div><span style="font-size:31px;color:#777">›</span></button>`).join(""):``}</div>`);
 }
 function appointmentRow(a){
- return `<button class="row clickable" style="width:100%;text-align:left" onclick="openAppointment('${esc(a.id)}')"><div class="timebox">${icon("calendar")}</div>${a.modelImage?`<img class="model-thumb" src="${a.modelImage}" alt="Model">`:""}<div class="time">${esc(a.time||"—")}</div><div class="customer"><b>${esc(a.customer||"Müşteri")}</b><small>${esc(a.type||a.style||"Dövme")}${a.body?` · ${esc(a.body)}`:""}${a.price?` · ${money(a.price)}`:""}</small>${a.needle?`<small>İğne: ${esc(a.needle)}</small>`:""}</div><span class="status ${a.status==="Beklemede"?"pending":a.status==="İptal Edildi"?"cancel":""}">${esc(a.status||"Onaylandı")}</span></button>`;
+ const label=a.status||"Onaylandı";
+ return `<button class="row clickable" style="width:100%;text-align:left" onclick="openAppointment('${esc(a.id)}')"><div class="timebox">${icon("calendar")}</div>${(a.modelImages?.[0]||a.modelImage)?`<img class="model-thumb" src="${a.modelImages?.[0]||a.modelImage}" alt="Model">`:""}<div class="time">${esc(a.time||"—")}</div><div class="customer"><b>${esc(a.customer||"Müşteri")}</b><small>${esc(a.type||a.style||"Dövme")}${a.body?` · ${esc(a.body)}`:""}${a.price?` · ${money(a.price)}`:""}</small><small>${esc(a.date||"")}</small>${a.needle?`<small>İğne: ${esc(a.needle)}</small>`:""}</div><span class="status ${a.status==="Beklemede"?"pending":a.status==="İptal Edildi"?"cancel":a.status==="Tamamlandı"?"done":""}">${esc(label)}</span></button>`;
 }
 
-let apptTab="all",selectedDay=today();
+let apptTab="all",selectedDay=null;
 function appointments(){
  const t=today();
  const days=Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()+i);return d});
@@ -212,26 +277,28 @@ function appointments(){
   <button class="tab ${apptTab==="past"?"active":""}" onclick="apptTab='past';appointments()">Geçmiş</button>
   <button class="tab ${apptTab==="future"?"active":""}" onclick="apptTab='future';appointments()">Gelecek</button>
  </div>
+ <div style="margin-bottom:10px"><button class="tab ${selectedDay===null?"active":""}" onclick="selectedDay=null;apptTab='all';appointments()">Tüm Günler</button></div>
  <div class="date-strip">${days.map(d=>{const ds=d.toISOString().slice(0,10);return `<button class="day ${selectedDay===ds?"active":""}" onclick="selectedDay='${ds}';appointments()"><strong>${d.getDate()}</strong><small>${d.toLocaleDateString("tr-TR",{month:"short"})}</small><small>${d.toLocaleDateString("tr-TR",{weekday:"short"})}</small></button>`}).join("")}<button class="day" onclick="openCalendar()"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
   <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
   <path d="M7 3.5v4M17 3.5v4M3.8 9h16.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
   <path d="M8 12.5h.01M12 12.5h.01M16 12.5h.01M8 16.5h.01M12 16.5h.01M16 16.5h.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
 </svg></button></div>
- <div class="section-head"><h3>${selectedDay===t?"BUGÜN":dateObj(selectedDay).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"})}</h3><span>${filteredAppointments().length}</span></div>
+ <div class="section-head"><h3>${selectedDay===null?"TÜM GÜNLER":selectedDay===t?"BUGÜN":dateObj(selectedDay).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"})}</h3><span>${filteredAppointments().length}</span></div>
  <div class="card">${filteredAppointments().length?filteredAppointments().sort((a,b)=>(a.time||"").localeCompare(b.time||"")).map(appointmentRow).join(""):``}</div>`);
 }
 function filteredAppointments(){
  const t=today();
  return data.appointments.filter(a=>{
-   if(a.status==="İptal Edildi")return false;
-   if(apptTab==="pending")return a.status==="Beklemede"&&a.date===selectedDay;
-   if(apptTab==="past")return a.date< t;
-   if(apptTab==="future")return a.date>=t;
-   return a.date===selectedDay;
+   if(apptTab==="pending") return a.status==="Beklemede" && (!selectedDay || a.date===selectedDay);
+   if(apptTab==="past") return a.status==="Tamamlandı" || a.status==="İptal Edildi" || a.date<t;
+   if(apptTab==="future") return a.date>=t && a.status!=="Tamamlandı" && a.status!=="İptal Edildi";
+   if(selectedDay!==null) return a.date===selectedDay && a.status!=="Tamamlandı" && a.status!=="İptal Edildi";
+   return true;
  });
 }
+
 function openCalendar(){
- let base=dateObj(selectedDay),y=base.getFullYear(),m=base.getMonth();
+ let base=dateObj(selectedDay||today()),y=base.getFullYear(),m=base.getMonth();
  const render=()=>{
   const first=new Date(y,m,1),last=new Date(y,m+1,0),start=(first.getDay()+6)%7;
   let cells="";for(let i=0;i<start;i++)cells+="<div></div>";
@@ -294,7 +361,7 @@ function openCustomer(id){
  const c=data.customers.find(x=>String(x.id)===String(id));if(!c)return;
  const hist=data.appointments.filter(a=>a.customerId===c.id).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
  const spent=hist.reduce((s,a)=>s+Number(a.price||0),0);
- document.getElementById("modalBody").innerHTML=`<h2>${esc(c.name)}</h2><div>${c.phone?`<a class="contact-btn" href="tel:${esc(c.phone)}">Telefon ↗</a><a class="contact-btn" href="${waUrl(c.phone)}" target="_blank" rel="noopener">WhatsApp ↗</a>`:""}${c.instagram?`<a class="contact-btn" href="${safeUrl(c.instagram)}" target="_blank" rel="noopener">Instagram ↗</a>`:""}</div><p style="color:var(--muted)">Telefon: ${esc(c.phone||"—")}</p><div class="compare"><div class="stat"><small>Toplam Randevu</small><strong>${hist.length}</strong></div><div class="stat"><small>Toplam Harcama</small><strong>${money(spent)}</strong></div></div><div class="section-head"><h3>DÖVME GEÇMİŞİ</h3></div>${hist.length?hist.map(a=>`<div class="card" style="padding:13px;margin:8px 0"><b>${esc(a.style||a.type||"Dövme")}</b><small style="display:block;color:var(--muted);margin-top:4px">${esc(a.date)} · ${esc(a.time||"—")} · ${a.body?esc(a.body):"Bölge yok"} · ${a.price?money(a.price):"Ücret yok"}</small>${a.needle?`<small style="display:block;color:var(--muted);margin-top:4px">İğne: ${esc(a.needle)}</small>`:""}${a.note?`<small style="display:block;color:var(--muted);margin-top:4px">Not: ${esc(a.note)}</small>`:""}${a.modelImage?`<img class="detail-image" src="${a.modelImage}" alt="">`:""}</div>`).join(""):`<p style="color:var(--muted)">Henüz randevu/dövme geçmişi yok.</p>`}<div class="actions"><button class="secondary" onclick="openCustomerForm('${esc(c.id)}')">${icon("edit")} Düzenle</button><button class="dangerBtn" onclick="deleteCustomer('${esc(c.id)}')">${icon("trash")} Sil</button></div><div class="actions"><button class="secondary" onclick="closeModal()">Kapat</button></div>`;
+ document.getElementById("modalBody").innerHTML=`<h2>${esc(c.name)}</h2><div>${c.phone?`<a class="contact-btn" href="tel:${esc(c.phone)}">Telefon ↗</a><a class="contact-btn" href="${waUrl(c.phone)}" target="_blank" rel="noopener">WhatsApp ↗</a>`:""}${c.instagram?`<a class="contact-btn" href="${safeUrl(c.instagram)}" target="_blank" rel="noopener">Instagram ↗</a>`:""}</div><p style="color:var(--muted)">Telefon: ${esc(c.phone||"—")}</p><div class="compare"><div class="stat"><small>Toplam Randevu</small><strong>${hist.length}</strong></div><div class="stat"><small>Toplam Harcama</small><strong>${money(spent)}</strong></div></div><div class="section-head"><h3>DÖVME GEÇMİŞİ</h3></div>${hist.length?hist.map(a=>`<div class="card" style="padding:13px;margin:8px 0"><b>${esc(a.style||a.type||"Dövme")}</b><small style="display:block;color:var(--muted);margin-top:4px">${esc(a.date)} · ${esc(a.time||"—")} · ${a.body?esc(a.body):"Bölge yok"} · ${a.price?money(a.price):"Ücret yok"}</small>${a.needle?`<small style="display:block;color:var(--muted);margin-top:4px">İğne: ${esc(a.needle)}</small>`:""}${a.note?`<small style="display:block;color:var(--muted);margin-top:4px">Not: ${esc(a.note)}</small>`:""}${(a.modelImages?.length||a.modelImage)?`<div class="image-grid">${(a.modelImages?.length?a.modelImages:[a.modelImage]).map((im,i)=>`<div class="image-item"><img class="detail-image" src="${im}" alt="Model ${i+1}"></div>`).join("")}</div>`:""}</div>`).join(""):`<p style="color:var(--muted)">Henüz randevu/dövme geçmişi yok.</p>`}<div class="actions"><button class="secondary" onclick="openCustomerForm('${esc(c.id)}')">${icon("edit")} Düzenle</button><button class="dangerBtn" onclick="deleteCustomer('${esc(c.id)}')">${icon("trash")} Sil</button></div><div class="actions"><button class="secondary" onclick="closeModal()">Kapat</button></div>`;
  document.getElementById("modal").classList.add("open");
 }
 function deleteCustomer(id){if(!confirm("Müşteriyi ve bu müşteriye bağlı randevuları silmek istediğine emin misin?"))return;data.customers=data.customers.filter(c=>String(c.id)!==String(id));data.appointments=data.appointments.filter(a=>String(a.customerId)!==String(id));removeAutoFinanceForAppointmentIds([]);save();closeModal();customers()}
@@ -310,13 +377,14 @@ function openForm(type,id=null){
   <div class="field-grid"><div class="field"><label>Tarih</label><input id="fDate" type="date" value="${esc(a?.date||today())}"></div><div class="field"><label>Saat</label><input id="fTime" type="time" value="${esc(a?.time||"12:00")}"></div></div>
   <div class="field-grid"><div class="field"><label>Dövme türü</label><select id="fType">${["Minimal","Fine Line","Linework","Blackwork","Realism","Cover Up","Geometric","Diğer"].map(x=>`<option ${a?.type===x?"selected":""}>${x}</option>`).join("")}</select></div><div class="field"><label>Vücut bölgesi</label><input id="fBody" value="${esc(a?.body||"")}" placeholder="Omuz, kol..."></div></div>
   <div class="field"><label>Dövme / Model adı</label><input id="fStyle" value="${esc(a?.style||"")}" placeholder="Örn. Güneş"></div>
-  <div class="upload"><label for="aImage"><span class="upload-icon">${icon("design")}</span><span><b>Yapılacak modelin görselini yükle</b><small style="display:block;color:var(--muted)">JPG, PNG veya WebP</small></span></label><input id="aImage" type="file" accept="image/*" onchange="previewImage(this,'aPreview')">${a?.modelImage?`<img id="aPreview" class="upload-preview" style="display:block" src="${a.modelImage}">`:`<img id="aPreview" class="upload-preview">`}</div>
+  <div class="upload"><label for="aImage"><span class="upload-icon">${icon("design")}</span><span><b>Yapılacak modelin görsellerini yükle</b><small style="display:block;color:var(--muted)">10–20 veya daha fazla JPG, PNG ya da WebP seçebilirsin</small></span></label><input id="aImage" type="file" accept="image/*" multiple onchange="previewImages(this,'aPreviewGrid')"><div id="aPreviewGrid" class="image-grid">${(a?.modelImages?.length||a?.modelImage)?(a.modelImages?.length?a.modelImages:[a.modelImage]).map((im,i)=>`<div class="image-item"><img src="${im}" alt="Model ${i+1}"></div>`).join(""):""}</div></div>
+  <input type="hidden" id="fStatus" value="${esc(a?.status||"Onaylandı")}">
   <div class="field-grid"><div class="field"><label>Kullanılacak iğne</label><input id="fNeedle" value="${esc(a?.needle||"")}" placeholder="3RL, 7RS..."></div><div class="field"><label>Ücret (₺)</label><input id="fPrice" type="number" min="0" step="1" value="${a?.price||""}" placeholder="2500"></div></div>
   <div class="field"><label>Depozito (₺)</label><input id="fDeposit" type="number" min="0" step="1" value="${a?.deposit||0}" placeholder="0"></div>
-  <div class="field"><label>Durum</label><select id="fStatus">${["Onaylandı","Beklemede","Tamamlandı","İptal Edildi"].map(x=>`<option ${a?.status===x||(!a&&x==="Onaylandı")?"selected":""}>${x}</option>`).join("")}</select></div>
+
   <div class="field"><label>Not</label><textarea id="fNote" placeholder="Dövme ile ilgili not...">${esc(a?.note||"")}</textarea></div>
   <div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="primary" onclick="saveAppointment('${esc(id||"")}')">${a?"Değişiklikleri Kaydet":"Randevuyu Kaydet"}</button></div>
-  ${a?`<div class="actions"><button class="dangerBtn" onclick="deleteAppointment('${esc(a.id)}')">${icon("trash")} Randevuyu Sil</button></div>`:""}`;
+  ${a?`<div class="actions"><button class="dangerBtn" onclick="deleteAppointment('${esc(a.id)}')">${icon("trash")} Randevuyu Sil</button></div>${a.status!=="Tamamlandı"&&a.status!=="İptal Edildi"?`<div class="section-head" style="margin-top:18px"><h3>RANDEVU DURUMU</h3></div><div class="actions"><button class="primary" type="button" onclick="setAppointmentStatus('${esc(a.id)}','Tamamlandı')">✓ Tamamlandı</button><button class="dangerBtn" type="button" onclick="setAppointmentStatus('${esc(a.id)}','İptal Edildi')">İptal</button></div>`:""}`:""}`;
  }else if(type==="customer"){openCustomerForm(id)}
  else if(type==="design"){b.innerHTML=`<h2>Yeni Tasarım</h2><div class="field"><label>Tasarım adı</label><input id="dName" placeholder="Örn. Güneş"></div><div class="field"><label>Kategori</label><select id="dCat">${CATS.map(x=>`<option>${x}</option>`).join("")}<option value="__custom">Yeni kategori…</option></select></div><div class="field" id="customCatWrap" style="display:none"><label>Yeni kategori adı</label><input id="dCustomCat" placeholder="Kategori adı"></div><div class="field"><label>Tasarım notu</label><textarea id="dNote" placeholder="Not ekle..."></textarea></div><div class="upload"><label for="dImage"><span class="upload-icon">${icon("design")}</span><span><b>Görsel yükle</b><small style="display:block;color:var(--muted)">JPG, PNG veya WebP</small></span></label><input id="dImage" type="file" accept="image/*" onchange="previewImage(this,'dPreview')"><img id="dPreview" class="upload-preview"></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="primary" onclick="saveDesign()">Tasarımı Kaydet</button></div>`;setTimeout(()=>document.getElementById("dCat").onchange=e=>document.getElementById("customCatWrap").style.display=e.target.value==="__custom"?"block":"none",0)}
  else if(type==="finance"){b.innerHTML=`<h2>Finans Kaydı</h2><div class="tabs"><button id="incomeType" class="tab active" onclick="setFinanceType('Gelir')">Gelir</button><button id="expenseType" class="tab" onclick="setFinanceType('Gider')">Gider</button></div><input type="hidden" id="fFinanceType" value="Gelir"><div class="field"><label>Tutar (₺)</label><input id="fAmount" type="number" min="0" step="0.01" placeholder="1500" oninput="calcCommission()"></div><div class="field" id="commissionField"><label>Komisyon (%) — yalnızca gelir</label><input id="fCommission" type="number" min="0" max="100" step="0.01" value="0" oninput="calcCommission()"><small id="commissionPreview" style="display:block;color:var(--muted);margin-top:5px"></small></div><div class="field"><label>Kategori</label><input id="fCategory" placeholder="Dövme, malzeme, kira..."></div><div class="field"><label>Açıklama</label><input id="fNote"></div><div class="field"><label>Tarih</label><input id="fFinanceDate" type="date" value="${today()}"></div><div class="actions"><button class="secondary" onclick="closeModal()">Vazgeç</button><button class="primary" onclick="saveFinance()">Kaydet</button></div>`}
@@ -329,6 +397,7 @@ function openCustomerForm(id=null){
  document.getElementById("modal").classList.add("open");
 }
 function previewImage(input,id){const f=input.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=document.getElementById(id);im.src=r.result;im.style.display="block"};r.readAsDataURL(f)}
+function previewImages(input,id){const box=document.getElementById(id);if(!box)return;box.innerHTML="";[...(input.files||[])].forEach((f,i)=>{const r=new FileReader();r.onload=()=>{box.insertAdjacentHTML("beforeend",`<div class="image-item"><img src="${r.result}" alt="Model ${i+1}"></div>`)};r.readAsDataURL(f)})}
 function compressImage(file,max=1500,q=.84){return new Promise(resolve=>{const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));c.getContext("2d").drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL("image/jpeg",q))};img.src=r.result};r.readAsDataURL(file)})}
 
 async function saveAppointment(id){
@@ -336,9 +405,10 @@ async function saveAppointment(id){
  const phone=document.getElementById("fPhone").value.trim(),instagram=document.getElementById("fInstagram").value.trim();
  let c=data.customers.find(x=>String(x.name||"").toLowerCase()===name.toLowerCase());
  if(!c){c={id:"c"+Date.now(),name,phone,instagram};data.customers.push(c)}else{c.phone=phone;c.instagram=instagram;c.name=name}
- const old=id?data.appointments.find(x=>String(x.id)===String(id)):null,file=document.getElementById("aImage").files?.[0];
- let image=old?.modelImage||"";if(file)image=await compressImage(file);
- const obj={id:old?.id||"a"+Date.now(),customerId:c.id,customer:name,phone,instagram,date:document.getElementById("fDate").value,time:document.getElementById("fTime").value,type:document.getElementById("fType").value,body:document.getElementById("fBody").value.trim(),style:document.getElementById("fStyle").value.trim(),modelImage:image,needle:document.getElementById("fNeedle").value.trim(),price:Number(document.getElementById("fPrice").value)||0,deposit:Number(document.getElementById("fDeposit").value)||0,status:document.getElementById("fStatus").value,note:document.getElementById("fNote").value.trim()};
+ const old=id?data.appointments.find(x=>String(x.id)===String(id)):null,files=[...(document.getElementById("aImage").files||[])];
+ let images=old?.modelImages?.length?old.modelImages:(old?.modelImage?[old.modelImage]:[]);if(files.length){const added=await Promise.all(files.map(f=>compressImage(f)));images=[...images,...added]}
+ let image=images[0]||"";
+ const obj={id:old?.id||"a"+Date.now(),customerId:c.id,customer:name,phone,instagram,date:document.getElementById("fDate").value,time:document.getElementById("fTime").value,type:document.getElementById("fType").value,body:document.getElementById("fBody").value.trim(),style:document.getElementById("fStyle").value.trim(),modelImage:image,modelImages:images,needle:document.getElementById("fNeedle").value.trim(),price:Number(document.getElementById("fPrice").value)||0,deposit:Number(document.getElementById("fDeposit").value)||0,status:document.getElementById("fStatus").value,note:document.getElementById("fNote").value.trim()};
  if(old)Object.assign(old,obj);else data.appointments.push(obj);
  c.last=obj.date;
  syncAppointmentFinance(old?.id,obj);
@@ -348,12 +418,27 @@ function syncAppointmentFinance(oldId,a){
  const id="appt_"+a.id;
  data.finance=data.finance.filter(x=>x.linkedAppointmentId!==id);
  if(a.status==="Tamamlandı"&&Number(a.price)>0){
-   data.finance.push({id:"f"+Date.now(),linkedAppointmentId:id,type:"Gelir",amount:Number(a.price),date:a.date,category:"Dövme",note:`${a.customer} — Randevu geliri`,commissionPercent:0});
+   const pct=Number(a.commissionPercent)||0, commission=Number(a.price)*pct/100;
+   data.finance.push({id:"f"+Date.now(),linkedAppointmentId:id,type:"Gelir",amount:Number(a.price),date:a.date,category:"Dövme",note:`${a.customer} — Randevu geliri`,commissionPercent:pct});
+   if(commission>0) data.finance.push({id:"f"+(Date.now()+1),linkedAppointmentId:id,type:"Gider",amount:commission,date:a.date,category:"Komisyon",note:`${pct}% komisyon — ${a.customer}`,commissionPercent:0});
  }
 }
-function removeAutoFinanceForAppointmentIds(ids){
- if(!ids.length)return;
- const set=new Set(ids.map(x=>"appt_"+x));data.finance=data.finance.filter(x=>!set.has(x.linkedAppointmentId));
+function showCommissionChoice(id){
+ const a=data.appointments.find(x=>String(x.id)===String(id)); if(!a)return;
+ document.getElementById("modalBody").innerHTML=`<h2>Komisyon Seç</h2><p style="color:var(--muted);margin:6px 0 16px">${esc(a.customer||"Müşteri")} · ${money(a.price||0)}</p><div class="actions" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="secondary" type="button" onclick="finishAppointmentWithCommission('${esc(a.id)}',0)">Komisyon Yok</button><button class="secondary" type="button" onclick="finishAppointmentWithCommission('${esc(a.id)}',30)">%30</button><button class="secondary" type="button" onclick="finishAppointmentWithCommission('${esc(a.id)}',50)">%50</button><button class="secondary" type="button" onclick="finishAppointmentWithCommission('${esc(a.id)}',70)">%70</button></div><div class="actions"><button class="secondary" type="button" onclick="openAppointment('${esc(a.id)}')">Vazgeç</button></div>`;
+}
+function finishAppointmentWithCommission(id,pct){
+ const a=data.appointments.find(x=>String(x.id)===String(id)); if(!a)return;
+ a.status="Tamamlandı"; a.commissionPercent=Number(pct)||0;
+ syncAppointmentFinance(a.id,a); save(); closeModal(); appointments();
+}
+function setAppointmentStatus(id,status){
+ const a=data.appointments.find(x=>String(x.id)===String(id)); if(!a)return;
+ if(status==="Tamamlandı"){ showCommissionChoice(id); return; }
+ if(status==="İptal Edildi"){
+   if(!confirm("Bu randevuyu iptal etmek istediğine emin misin? Kayıt korunacak ve finans'a gelir eklenmeyecek."))return;
+   a.status="İptal Edildi"; a.commissionPercent=0; syncAppointmentFinance(a.id,a); save(); closeModal(); appointments();
+ }
 }
 function deleteAppointment(id){
  if(!confirm("Bu randevuyu silmek istediğine emin misin?"))return;
@@ -390,9 +475,10 @@ function saveFinance(){
  const type=document.getElementById("fFinanceType").value,date=document.getElementById("fFinanceDate").value,category=document.getElementById("fCategory").value.trim()||type,note=document.getElementById("fNote").value.trim(),pct=type==="Gelir"?Number(document.getElementById("fCommission").value)||0:0;
  if(type==="Gelir"&&pct>0){
    const commission=amount*pct/100;
-   data.finance.push({id:"f"+Date.now(),type:"Gider",amount:commission,date,category:"Komisyon",note:`${pct}% komisyon — ${note}`});
-   data.finance.push({id:"f"+(Date.now()+1),type:"Gelir",amount:amount-commission,date,category,note});
- }else data.finance.push({id:"f"+Date.now(),type,amount,date,category,note});
+   // Gelir brüt tutar olarak kalır; komisyon ayrı bir gider kaydıdır.
+   data.finance.push({id:"f"+Date.now(),type:"Gelir",amount,date,category,note,commissionPercent:pct});
+   data.finance.push({id:"f"+(Date.now()+1),type:"Gider",amount:commission,date,category:"Komisyon",note:`${pct}% komisyon — ${note}`});
+ }else data.finance.push({id:"f"+Date.now(),type,amount,date,category,note,commissionPercent:0});
  save();closeModal();finance();
 }
 function deleteFinance(id){if(!confirm("Bu finans kaydını silmek istediğine emin misin?"))return;const x=data.finance.find(f=>String(f.id)===String(id));if(x?.linkedAppointmentId){data.finance=data.finance.filter(f=>f.linkedAppointmentId!==x.linkedAppointmentId)}else data.finance=data.finance.filter(f=>String(f.id)!==String(id));save();finance()}
@@ -499,7 +585,7 @@ function queueCloudSave(){if(!window.__supabase||!window.__cloudUser)return;clea
 async function cloudSaveNow(){if(!window.__supabase||!window.__cloudUser)return;const payload=JSON.parse(JSON.stringify(data));const {error}=await window.__supabase.from("apollo_cloud").upsert({user_id:window.__cloudUser.id,payload,updated_at:new Date().toISOString()});if(error)console.warn("Cloud save",error.message);}
 async function cloudLoad(showAlert=false){if(!window.__supabase||!window.__cloudUser)return;const {data:row,error}=await window.__supabase.from("apollo_cloud").select("payload").eq("user_id",window.__cloudUser.id).maybeSingle();if(error){console.warn("Cloud load",error.message);if(showAlert)alert(error.message);return}if(row?.payload){data.appointments=Array.isArray(row.payload.appointments)?row.payload.appointments:[];data.customers=Array.isArray(row.payload.customers)?row.payload.customers:[];data.designs=Array.isArray(row.payload.designs)?row.payload.designs:[];data.finance=Array.isArray(row.payload.finance)?row.payload.finance:[];data.profile={...data.profile,...(row.payload.profile||{})};data.settings={...data.settings,...(row.payload.settings||{}),theme:"dark"};migrateLegacy();localStorage.setItem(KEY,JSON.stringify(data));renderScreen(document.querySelector(".screen.active")?.id||"home");if(showAlert)alert("Buluttaki verilerin yüklendi.");}else{await cloudSaveNow();if(showAlert)alert("Bu hesap için bulutta kayıt bulunamadı. Mevcut cihaz verilerin yüklendi.");}}
 async function cloudSyncNow(){await cloudSaveNow();await cloudLoad(true)}
-function initCloud(){if(!window.__supabase){authGate(false);return}window.__supabase.auth.getSession().then(async({data:{session}})=>{if(session?.user){window.__cloudUser=session.user;authGate(false);await cloudLoad(false);profile()}else{window.__cloudUser=null;authGate(true)}});window.__supabase.auth.onAuthStateChange((_e,session)=>{window.__cloudUser=session?.user||null;if(session?.user){authGate(false);profile()}else{authGate(true);profile()}});}
+function initCloud(){if(!window.__supabase){authGate(true);authMsg("Bulut bağlantısı henüz yapılandırılmadı. Önce Supabase proje bilgilerini config.js dosyasına eklemeliyiz.");return}window.__supabase.auth.getSession().then(async({data:{session}})=>{if(session?.user){window.__cloudUser=session.user;authGate(false);await cloudLoad(false);profile()}else{window.__cloudUser=null;authGate(true)}});window.__supabase.auth.onAuthStateChange((_e,session)=>{window.__cloudUser=session?.user||null;if(session?.user){authGate(false);profile()}else{authGate(true);profile()}});}
 function toggleTheme(){data.settings.theme="dark";applyTheme();save();profile()}
 function applyTheme(){data.settings.theme="dark";document.documentElement.classList.remove("light");document.body.classList.remove("light");document.querySelector('meta[name="theme-color"]').setAttribute("content","#09090b")}
 async function requestNotifications(){

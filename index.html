@@ -79,13 +79,14 @@ button:disabled{opacity:.45}
 .iban-content>b{display:block;font-size:18px;font-weight:950;line-height:1.15}
 .iban-owner{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px!important;font-weight:850!important;margin-top:6px!important}
 .iban-number{width:100%;box-sizing:border-box;margin-top:14px!important;padding:14px 8px;border:1px solid var(--line);border-radius:13px;background:#0d0d0f;text-align:center;overflow:hidden}
-.iban-number code{display:block;width:100%;white-space:nowrap;overflow:hidden;text-overflow:clip;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;font-size:clamp(15px,4.55vw,20px);line-height:1.3;font-weight:950;letter-spacing:.1px;color:#fff;font-variant-numeric:tabular-nums}
+.iban-number code{display:block;width:100%;white-space:nowrap;overflow:hidden;text-overflow:clip;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;font-size:clamp(13px,3.7vw,20px);line-height:1.3;font-weight:950;letter-spacing:0;color:#fff;font-variant-numeric:tabular-nums}
 .iban-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px!important}
 .iban-actions .iconbtn{width:100%;min-height:52px!important;height:auto!important;padding:7px 4px!important;border-radius:13px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important;font-size:10px!important;font-weight:900!important;color:var(--text)!important}
 .iban-actions .iconbtn svg{width:22px!important;height:22px!important}
 .iban-actions .iban-copy-action svg{stroke-width:1.8}
 .iban-actions .iban-delete-action{color:#ff3b30!important}
 .iban-actions .iban-delete-action svg{stroke:#ff3b30!important}
+@media(max-width:699px){.iban-number code{font-size:clamp(13px,3.7vw,15px)!important;letter-spacing:-.05px!important}}
 @media(min-width:700px){.iban-number code{font-size:20px}.iban-actions .iconbtn{min-height:56px!important;font-size:11px!important}.iban-actions .iconbtn svg{width:24px!important;height:24px!important}}
 </style>
 

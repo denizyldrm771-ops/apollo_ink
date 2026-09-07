@@ -227,7 +227,11 @@ html, body { overflow-x: hidden !important; max-width: 100%; }
 .bottom::-webkit-scrollbar{display:none}
 .nav{flex:0 0 82px!important;min-width:82px!important}
 .feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
-</style></head>
+</style>
+<style id="apollo-backup-style">
+.backup-card{padding:16px}.backup-title{display:flex;align-items:center;gap:10px;margin-bottom:8px}.backup-title svg{width:25px;height:25px;color:var(--red)}.backup-note{font-size:12px;line-height:1.5;color:var(--muted);margin:0 0 12px}.backup-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.backup-actions button{min-height:44px}.backup-status{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.4}
+</style>
+</head>
 <body>
 <div class="auth-gate open" id="authGate" aria-modal="true" role="dialog">
   <div class="auth-box">
@@ -692,6 +696,13 @@ function profile(){
   <div class="profile-card">
    <button class="row clickable" type="button" style="width:100%;text-align:left" onclick="openCloudAccount()">${icon("profile")}<div class="customer"><b>Hesap & Bulut</b><small>${cloudStatusText()}</small></div><span class="profile-arrow">›</span></button>
   </div>
+  <div class="profile-section-title">VERİ GÜVENLİĞİ</div>
+  <div class="profile-card backup-card">
+   <div class="backup-title">${icon("archive")}<b>Veri Yedekleri</b></div>
+   <p class="backup-note">Müşteriler, randevular, tasarımlar, finans, IBAN, sarf malzemeleri, arşivler, profil bilgileri ve kayıtların içindeki görseller tek yedekte saklanır. Yedeği iCloud Drive içindeki <b>Apollo Ink</b> klasörüne kaydedebilirsin.</p>
+   <div class="backup-actions"><button class="primary" type="button" onclick="backupAllData()">${icon("download")} Yedek Oluştur</button><label class="secondary" style="display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer">${icon("download")} Yedek Yükle<input id="apolloBackupImport" type="file" accept="application/json,.json,.apolloinkbackup" style="display:none" onchange="restoreAllData(this)"></label></div>
+   <div class="backup-status">Yedek dosyası tarih ve saat ile adlandırılır. iPhone/iPad'de kayıt konumunu iCloud Drive → Apollo Ink olarak seçebilirsin.</div>
+  </div>
   <div class="profile-section-title">UYGULAMA</div>
   <div class="profile-card">
    <div class="row" style="width:100%;text-align:left">${icon("moon")}<div class="customer"><b>Tema</b><small>Uygulama daima koyu temada çalışır</small></div><span class="profile-status">KOYU</span></div>
@@ -998,6 +1009,64 @@ function statistics(){
  <div class="stats-list"><div class="rowstat"><span>En yoğun gün</span><b>${esc(busy?.[0]||"—")}</b></div><div class="rowstat"><span>En çok kullanılan tür</span><b>${esc(topType?.[0]||"—")}</b></div><div class="rowstat"><span>IBAN hesabı</span><b>${data.ibans.length}</b></div><div class="rowstat"><span>Sarf malzeme</span><b>${data.materials.length}</b></div><div class="rowstat"><span>Arşiv</span><b>${data.archives.length}</b></div></div>`);
 }
 
+function backupPayload(){
+ return {
+  format:"apollo-ink-backup", version:1, app:"Apollo Ink", exportedAt:new Date().toISOString(),
+  data:JSON.parse(JSON.stringify(data))
+ };
+}
+function backupFileName(){
+ const d=new Date(), pad=n=>String(n).padStart(2,"0");
+ return `Apollo_Ink_Yedek_${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}.apolloinkbackup`;
+}
+async function backupAllData(){
+ try{
+  const payload=backupPayload();
+  const text=JSON.stringify(payload);
+  const blob=new Blob([text],{type:"application/json"});
+  const name=backupFileName();
+  const file=new File([blob],name,{type:"application/json"});
+  if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+   await navigator.share({title:"Apollo Ink Veri Yedeği",text:"Apollo Ink tam veri yedeği",files:[file]});
+   return;
+  }
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  alert("Yedek oluşturuldu. Dosyalar uygulamasında iCloud Drive → Apollo Ink klasörüne kaydedebilirsin.");
+ }catch(e){ if(e?.name!=="AbortError") alert("Yedek oluşturulamadı: "+(e?.message||e)); }
+}
+function normalizeBackupData(src){
+ const x=src&&src.data&&typeof src.data==="object"?src.data:src;
+ if(!x||typeof x!=="object")throw new Error("Geçersiz yedek");
+ const needed=["appointments","customers","designs","finance","ibans","materials","archives","profile","settings"];
+ if(!needed.some(k=>k in x))throw new Error("Apollo Ink yedeği bulunamadı");
+ return {
+  appointments:Array.isArray(x.appointments)?x.appointments:[],customers:Array.isArray(x.customers)?x.customers:[],designs:Array.isArray(x.designs)?x.designs:[],finance:Array.isArray(x.finance)?x.finance:[],ibans:Array.isArray(x.ibans)?x.ibans:[],materials:Array.isArray(x.materials)?x.materials:[],archives:Array.isArray(x.archives)?x.archives:[],profile:{...empty.profile,...(x.profile||{})},settings:{...empty.settings,...(x.settings||{}),theme:"dark"}
+ };
+}
+function restoreAllData(input){
+ const file=input.files?.[0];if(!file)return;
+ const reader=new FileReader();
+ reader.onload=()=>{
+  try{
+   const parsed=JSON.parse(reader.result);
+   const restored=normalizeBackupData(parsed);
+   const counts=`${restored.customers.length} müşteri, ${restored.appointments.length} randevu, ${restored.designs.length} tasarım ve ${restored.finance.length} finans kaydı`;
+   if(!confirm(`Bu yedekte ${counts} bulunuyor. Mevcut Apollo Ink verilerinin yerine bu yedek yüklenecek. Devam edilsin mi?`)){input.value="";return;}
+   data=restored;
+   data.appointments=data.appointments.map(a=>({...a,customerId:a.customerId||"",phone:a.phone||"",instagram:a.instagram||"",type:a.type||"",body:a.body||"",deposit:Number(a.deposit||0),note:a.note||"",modelImage:a.modelImage||"",modelImages:Array.isArray(a.modelImages)?a.modelImages:(a.modelImage?[a.modelImage]:[]),needle:a.needle||"",price:Number(a.price||0)}));
+   data.customers=data.customers.map(c=>({...c,phone:c.phone||"",instagram:c.instagram||""}));
+   data.designs=data.designs.map(d=>({...d,note:d.note||"",category:d.category||"Diğer"}));
+   data.ibans=data.ibans.map(x=>({...x,id:x.id||("iban"+Date.now()+Math.random()),accountName:String(x.accountName||""),ownerName:String(x.ownerName??x.name??""),iban:String(x.iban||"")})).filter(x=>x.iban);
+   data.materials=data.materials.map(x=>({...x,id:x.id||("mat"+Date.now()+Math.random()),name:String(x.name||""),category:String(x.category||"Sarf Malzeme"),quantity:Number(x.quantity||0),unit:String(x.unit||"adet"),note:String(x.note||"")})).filter(x=>x.name);
+   data.archives=data.archives.map(x=>({...x,id:x.id||("arc"+Date.now()+Math.random()),weekStart:String(x.weekStart||""),weekEnd:String(x.weekEnd||""),createdAt:String(x.createdAt||new Date().toISOString()),name:String(x.name||""),payload:x.payload&&typeof x.payload==="object"?x.payload:{}}));
+   migrateLegacy();localStorage.setItem(KEY,JSON.stringify(data));
+   input.value="";renderScreen(document.querySelector(".screen.active")?.id||"home");
+   alert("Apollo Ink yedeği başarıyla yüklendi. Veriler ve yedekte bulunan görseller geri getirildi.");
+  }catch(e){input.value="";alert("Yedek yüklenemedi: "+(e?.message||e));}
+ };
+ reader.readAsText(file);
+}
 function closeModal(){document.getElementById("modal").classList.remove("open")}
 document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")closeModal()};
 document.getElementById("topAction").innerHTML=icon("calendar");document.getElementById("topAction").onclick=openCalendar;

@@ -1,140 +1,15 @@
-<!doctype html>
-<html lang="tr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f7f4ed">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="screen-orientation" content="portrait">
-<title>Ink Artist Studio Assistant</title>
-<style>
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}
-body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;touch-action:pan-x;color:#171717}
-#viewport{position:fixed;inset:0;overflow:hidden;background:#000}
-#track{width:200%;height:100%;display:flex;transition:transform .34s cubic-bezier(.22,.61,.36,1)}
-.page{width:50%;height:100%;flex:0 0 50%;overflow:hidden;position:relative}
-.opening{display:flex;align-items:center;justify-content:center;background:#000}
-.opening img{width:100%;height:100%;object-fit:contain;object-position:center;display:block;user-select:none;-webkit-user-drag:none;pointer-events:none}
-.main{background:#f7f4ed;display:flex;justify-content:center}
-.app-shell{width:100%;height:100%;max-width:600px;position:relative;overflow:hidden;background:#f7f4ed}
-.main-content{height:100%;overflow:auto;padding:calc(env(safe-area-inset-top) + 26px) 18px calc(88px + env(safe-area-inset-bottom));scrollbar-width:none}
-.main-content::-webkit-scrollbar{display:none}
-.header{display:flex;align-items:flex-start;justify-content:space-between;padding:2px 2px 18px}
-.greeting{font-family:Georgia,"Times New Roman",serif;font-size:32px;line-height:.96;letter-spacing:-1.6px;margin:0}
-.greeting span{display:block}
-.quote{font-family:Georgia,"Times New Roman",serif;font-size:13px;line-height:1.28;margin-top:16px;color:#292724;max-width:190px}
-.date{font-size:13px;margin-top:16px;color:#45423d}
-.avatar{width:52px;height:52px;border-radius:50%;background:#eee9df;display:grid;place-items:center;flex:0 0 auto;overflow:hidden;border:1px solid #ded9cf}
-.avatar img{width:70%;height:70%;object-fit:contain;display:block}
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:0 2px 22px}
-.stat{height:72px;border:1px solid #ded9cf;border-radius:10px;background:rgba(255,255,255,.24);display:flex;flex-direction:column;align-items:center;justify-content:center}
-.stat strong{font-size:22px;line-height:1;font-weight:700;color:#171717}
-.stat small{font-size:11px;margin-top:7px;color:#4b4843}
-.section-head{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 10px}
-.section-head h2{font-size:18px;margin:0;font-weight:700;letter-spacing:-.35px}
-.section-head button{border:0;background:none;padding:2px;font-size:12px;color:#5a5751}
-.empty-list{border:1px solid #e1ddd4;border-radius:11px;background:rgba(255,255,255,.25);min-height:112px;display:flex;align-items:center;justify-content:center;margin:0 2px 22px}
-.empty-list span{font-size:13px;color:#8a867f}
-.promo{height:128px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(135deg,#242422,#0e0e0d);margin:0 0 10px}
-.promo::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 35%,rgba(255,255,255,.12),transparent 38%),linear-gradient(115deg,transparent 38%,rgba(255,255,255,.07) 39%,transparent 58%);opacity:.65}
-.promo-text{position:absolute;left:20px;top:32px;color:#f4f1ea;font-family:Georgia,"Times New Roman",serif;font-size:24px;line-height:1.02;z-index:2}
-.promo-arrow{position:absolute;right:16px;top:38px;width:46px;height:46px;border-radius:50%;background:#f2eee6;color:#242321;display:grid;place-items:center;font-size:24px;z-index:3}
-.bottom-nav{position:absolute;left:0;right:0;bottom:0;height:82px;padding:7px 13px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr 62px 1fr 1fr;align-items:center;background:rgba(247,244,237,.97);border-top:1px solid #ded9cf;backdrop-filter:blur(12px)}
-.nav-item{border:0;background:none;color:#34322e;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11px;padding:5px;letter-spacing:.05px}
-.nav-item svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.nav-item.active{color:#ef1c2d}
-.add{width:54px;height:54px;border-radius:50%;background:#f21e2e;color:#fff;display:grid;place-items:center;box-shadow:0 3px 9px rgba(0,0,0,.18);justify-self:center;margin-top:-18px}
-.add svg{width:27px;height:27px;stroke-width:1.8}
-
-/* Phone: keep the application portrait even if the physical phone is rotated. */
-@media (max-width:600px){
-  #viewport{width:100vh;height:100vw;max-width:100vw;max-height:100vh;transform-origin:top left}
-  @media (orientation:portrait){#viewport{width:100vw;height:100dvh;transform:none}}
-  @media (orientation:landscape){#viewport{width:100vh;height:100vw;transform:rotate(90deg) translateY(-100%)}}
-}
-/* Tablet: allow either orientation without stretching the content. */
-@media (min-width:601px){#viewport{width:100vw;height:100dvh}.app-shell{max-width:600px}}
-</style>
-</head>
-<body>
-<div id="viewport">
-  <div id="track">
-    <section class="page opening"><img src="opening-screen.jpg" alt=""></section>
-    <section class="page main">
-      <div class="app-shell">
-        <main class="main-content">
-          <header class="header">
-            <div>
-              <h1 class="greeting"><span>Günaydın</span><span>Deniz.</span></h1>
-              <div class="quote">“Disiplin, özgürlüğün<br>başlangıcıdır.”</div>
-              <div class="date">8 Eylül 2026 · Salı</div>
-            </div>
-            <div class="avatar" aria-label="Profil">
-              <img src="profile-logo.png" alt="Profil">
-            </div>
-          </header>
-
-          <section class="cards" aria-label="Özet">
-            <div class="stat"><strong>—</strong><small>Randevu</small></div>
-            <div class="stat"><strong>—</strong><small>Bekleyen</small></div>
-            <div class="stat"><strong>—</strong><small>Günlük Gelir</small></div>
-          </section>
-
-          <div class="section-head">
-            <h2>Bugünün Randevuları</h2>
-            <button type="button">Tümünü Gör</button>
-          </div>
-          <section class="empty-list"><span>Henüz randevu eklenmedi.</span></section>
-
-          <section class="promo" aria-label="Tanıtım alanı">
-            <div class="promo-text">Sanat<br>planla büyür.</div>
-            <div class="promo-arrow">→</div>
-          </section>
-        </main>
-
-        <nav class="bottom-nav" aria-label="Alt menü">
-          <button class="nav-item active" type="button" aria-label="Ana Sayfa">
-            <svg viewBox="0 0 24 24"><path d="M3.5 10.7 12 4l8.5 6.7v8.2a1.6 1.6 0 0 1-1.6 1.6H5.1a1.6 1.6 0 0 1-1.6-1.6z"/><path d="M9.1 20.5v-5.8h5.8v5.8"/></svg><span>Ana Sayfa</span>
-          </button>
-          <button class="nav-item" type="button" aria-label="Randevular">
-            <svg viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M7.5 3.5v4M16.5 3.5v4M3.5 10h17"/><path d="M7.5 14h.01M12 14h.01M16.5 14h.01M7.5 17.5h.01M12 17.5h.01"/></svg><span>Randevular</span>
-          </button>
-          <button class="nav-item add" type="button" aria-label="Yeni">
-            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-          </button>
-          <button class="nav-item" type="button" aria-label="Çalışmalar">
-            <svg viewBox="0 0 24 24"><path d="m6 18 9.8-9.8 2 2L8 20H6z"/><path d="m14.8 6.2 2-2 2 2-2 2"/><path d="M4 5.5h6M4 9.5h4"/></svg><span>Çalışmalar</span>
-          </button>
-          <button class="nav-item" type="button" aria-label="Profil">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="7.8" r="3.2"/><path d="M5 20c.8-3.8 3.2-5.8 7-5.8s6.2 2 7 5.8"/><path d="M4 20h16"/></svg><span>Profil</span>
-          </button>
-        </nav>
-      </div>
-    </section>
-  </div>
-</div>
-<script>
-(()=>{
-  const viewport=document.getElementById('viewport');
-  const track=document.getElementById('track');
-  let sx=0,sy=0,tracking=false;
-  const goMain=()=>track.style.transform='translate3d(-50%,0,0)';
-  const goOpening=()=>track.style.transform='translate3d(0,0,0)';
-  viewport.addEventListener('touchstart',e=>{
-    if(!e.touches.length)return;
-    sx=e.touches[0].clientX;sy=e.touches[0].clientY;tracking=true;
-  },{passive:true});
-  viewport.addEventListener('touchend',e=>{
-    if(!tracking||!e.changedTouches.length)return;
-    tracking=false;
-    const dx=e.changedTouches[0].clientX-sx;
-    const dy=e.changedTouches[0].clientY-sy;
-    if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)) dx<0?goMain():goOpening();
-  },{passive:true});
-  window.addEventListener('resize',()=>{});
-  window.addEventListener('orientationchange',()=>setTimeout(()=>{},100));
-})();
-</script>
-</body>
-</html>
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#000"><title>Ink Artist Studio Assistant</title><style>
+@font-face{font-family:DidotLocal;src:url('didot.otf') format('opentype');font-weight:400;font-style:normal}
+@font-face{font-family:DidotLocal;src:url('didot-bold.otf') format('opentype');font-weight:700;font-style:normal}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}body{color:#161616;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;touch-action:pan-x}
+#viewport{position:fixed;inset:0;overflow:hidden;background:#000}#track{width:200%;height:100%;display:flex;transition:transform .34s cubic-bezier(.22,.61,.36,1)}.page{width:50%;height:100%;flex:0 0 50%;position:relative;overflow:hidden}.opening{display:flex;align-items:center;justify-content:center;background:#000}.opening img{width:100%;height:100%;object-fit:contain;display:block;user-select:none;pointer-events:none}
+.main{background:#f7f4ed}.app-shell{position:relative;width:100%;height:100%;background:#f7f4ed;overflow:hidden}.main-content{height:calc(100% - 82px);padding:calc(env(safe-area-inset-top) + 26px) 29px 10px;display:flex;flex-direction:column;overflow:hidden}
+.header{display:flex;justify-content:space-between;align-items:flex-start;flex:0 0 auto}.greeting{font-family:DidotLocal,Georgia,serif;font-weight:700;font-size:48px;line-height:.90;letter-spacing:-1.9px;margin:0}.greeting .small{font-size:41px}.greeting .name{font-size:48px}.quote{font-family:DidotLocal,Georgia,serif;font-size:20px;line-height:1.15;margin-top:24px;letter-spacing:-.2px;max-width:310px}.date{font-size:18px;line-height:1.2;margin-top:25px;color:#55514a}.avatar{width:76px;height:76px;border-radius:50%;background:#dedbd3;overflow:hidden;display:grid;place-items:center;flex:0 0 auto;margin-top:12px}.avatar img{width:88%;height:88%;object-fit:contain}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:26px;flex:0 0 auto}.stat{height:84px;border:2px solid #dfdbd2;border-radius:13px;background:rgba(255,255,255,.18);display:flex;flex-direction:column;align-items:center;justify-content:center}.stat strong{font-size:25px;line-height:1;font-weight:700}.stat small{font-size:14px;margin-top:9px;color:#4c4943}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-top:24px;margin-bottom:10px;flex:0 0 auto}.section-head h2{font-size:21px;line-height:1.1;margin:0;font-weight:750;letter-spacing:-.45px}.section-head button{border:0;background:none;font-size:14px;color:#5b5750;padding:0}
+.empty-list{height:178px;border:2px solid #dfdbd2;border-radius:15px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex:0 0 auto}.empty-list span{font-size:17px;color:#92908a}
+.promo{margin-top:14px;min-height:138px;border-radius:20px;overflow:hidden;position:relative;background:linear-gradient(135deg,#242422,#0e0e0d);flex:1 1 auto;max-height:170px}.promo::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 35%,rgba(255,255,255,.12),transparent 38%),linear-gradient(115deg,transparent 38%,rgba(255,255,255,.07) 39%,transparent 58%)}.promo-text{position:absolute;left:29px;top:50%;transform:translateY(-50%);color:#f4f1ea;font-family:DidotLocal,Georgia,serif;font-size:29px;line-height:.98;z-index:2}.promo-arrow{position:absolute;right:24px;top:50%;transform:translateY(-50%);width:58px;height:58px;border-radius:50%;background:#f2eee6;color:#242321;display:grid;place-items:center;font-size:32px;z-index:3}
+.bottom-nav{position:absolute;left:0;right:0;bottom:0;height:82px;padding:7px 20px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr 74px 1fr 1fr;align-items:center;background:rgba(247,244,237,.98);border-top:1px solid #ddd8cf;backdrop-filter:blur(12px)}.nav-item{border:0;background:none;color:#36332e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:14px;padding:3px}.nav-item svg{width:25px;height:25px;stroke:currentColor;fill:none;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round}.nav-item.active{color:#e91e2b}.add{width:58px;height:58px;border-radius:50%;background:#ed1c2b;color:#fff;display:grid;place-items:center;box-shadow:0 3px 9px rgba(0,0,0,.18);justify-self:center;margin-top:-18px}.add svg{width:31px;height:31px;stroke-width:1.8}
+@media(min-width:601px){.app-shell{max-width:430px;margin:0 auto}.main-content{padding-left:25px;padding-right:25px}}
+@media(max-width:600px){#viewport{width:100vw;height:100dvh;transform:none}}
+</style></head><body><div id="viewport"><div id="track"><section class="page opening"><img src="opening-screen.jpg"></section><section class="page main"><div class="app-shell"><main class="main-content"><header class="header"><div><h1 class="greeting"><span class="small">Günaydın</span><br><span class="name">Deniz.</span></h1><div class="quote">“Disiplin, özgürlüğün<br>başlangıcıdır.”</div><div class="date">8 Eylül 2026 · Salı</div></div><div class="avatar"><img src="profile-logo.png"></div></header><section class="cards"><div class="stat"><strong>—</strong><small>Randevu</small></div><div class="stat"><strong>—</strong><small>Bekleyen</small></div><div class="stat"><strong>—</strong><small>Günlük Gelir</small></div></section><div class="section-head"><h2>Bugünün Randevuları</h2><button>Tümünü Gör</button></div><section class="empty-list"><span>Henüz randevu eklenmedi.</span></section><section class="promo"><div class="promo-text">Sanat<br>planla büyür.</div><div class="promo-arrow">→</div></section></main><nav class="bottom-nav"><button class="nav-item active"><svg viewBox="0 0 24 24"><path d="M3.5 10.7 12 4l8.5 6.7v8.2a1.6 1.6 0 0 1-1.6 1.6H5.1a1.6 1.6 0 0 1-1.6-1.6z"/><path d="M9.1 20.5v-5.8h5.8v5.8"/></svg><span>Ana Sayfa</span></button><button class="nav-item"><svg viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="15" rx="2"/><path d="M8 3.5v4M16 3.5v4M4 10h16"/></svg><span>Randevular</span></button><button class="nav-item add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><button class="nav-item"><svg viewBox="0 0 24 24"><path d="m5 19 9.8-9.8 2 2L7 21H5z"/><path d="m14.8 6.2 2-2 2 2-2 2"/><path d="M4 5h5"/></svg><span>Çalışmalar</span></button><button class="nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3"/><path d="M5.2 20c.8-3.5 3.1-5.4 6.8-5.4s6 1.9 6.8 5.4"/></svg><span>Profil</span></button></nav></div></section></div></div><script>(()=>{const v=document.getElementById('viewport'),t=document.getElementById('track');let sx=0,sy=0;v.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});v.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy))t.style.transform=dx<0?'translate3d(-50%,0,0)':'translate3d(0,0,0)'},{passive:true})})();</script></body></html>

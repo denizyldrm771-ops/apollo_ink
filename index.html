@@ -555,7 +555,59 @@ document.addEventListener('click',function(e){const b=e.target.closest('button')
 document.addEventListener('click',function(e){const b=e.target.closest('button[type="submit"],input[type="submit"]');if(!b||b.disabled)return;const f=b.form||b.closest('form');if(f&&f.requestSubmit&&typeof f.onsubmit!=='function'&&(!f.noValidate&&f.checkValidity()))f.requestSubmit(b)});
 })();</script>
 </body></html>
-<style>
+<style
+<style id="v71-fixes">
+/* V71: reliable modal controls + final blue-to-black UI cleanup */
+.design-search-btn{display:none!important;width:0!important;visibility:hidden!important}
+.design-top{grid-template-columns:1fr!important}
+.iban-page *{--iban-blue:#171614}
+.iban-page a,.iban-page .iban-card-title small,.iban-page .iban-detail label,.iban-page .iban-brand small,.iban-page .iban-empty{color:#171614!important}
+.iban-page [style*="#4d91d9"],.iban-page [style*="#2196"],.iban-page [style*="#1976"],.iban-page [style*="#3b82f6"]{color:#171614!important}
+.stock-page a,.stock-page .stock-category,.stock-page .stock-search svg{color:#171614!important}
+/* Modal controls must be directly tappable above every overlay layer. */
+.stock-modal-backdrop .stock-modal button,
+.iban-modal-backdrop .iban-modal button{position:relative;z-index:1000;pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent}
+</style>
+<script id="v71-reliable-controls">
+(function(){
+  function replaceButton(id, handler){
+    const old=document.getElementById(id); if(!old) return null;
+    const b=old.cloneNode(true); old.replaceWith(b);
+    b.disabled=false; b.removeAttribute('disabled'); b.style.pointerEvents='auto'; b.style.touchAction='manipulation';
+    b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();handler(e)},false);
+    b.addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();handler(e)},{passive:false});
+    return b;
+  }
+  function boot(){
+    // Remove the design search icon node entirely.
+    document.querySelectorAll('.design-search-btn').forEach(x=>x.remove());
+
+    // Stock modal: bypass conflicting inherited handlers and invoke the real functions directly.
+    replaceButton('stockCancel',()=>{try{closeStockModal()}catch(e){console.error(e)}});
+    replaceButton('stockModalClose',()=>{try{closeStockModal()}catch(e){console.error(e)}});
+    replaceButton('stockSave',()=>{
+      const f=document.getElementById('stockForm');
+      if(!f)return;
+      if(typeof f.checkValidity==='function'&&!f.checkValidity()){f.reportValidity?.();return;}
+      try{ if(typeof saveStockV67==='function') saveStockV67(); else if(typeof saveStockItem==='function') saveStockItem(); }
+      catch(e){console.error(e)}
+    });
+
+    // IBAN modal: same direct path.
+    replaceButton('ibanCancel',()=>{try{closeIbanModal()}catch(e){console.error(e)}});
+    replaceButton('ibanModalClose',()=>{try{closeIbanModal()}catch(e){console.error(e)}});
+    replaceButton('ibanSave',()=>{
+      const f=document.getElementById('ibanForm');
+      if(!f)return;
+      if(typeof f.checkValidity==='function'&&!f.checkValidity()){f.reportValidity?.();return;}
+      try{ if(typeof saveIbanV67==='function') saveIbanV67(); else if(typeof saveIban==='function') saveIban(); }
+      catch(e){console.error(e)}
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
+</script>
+>
 #viewport{width:100vw;max-width:100vw;overflow:hidden!important}
 .page{width:100vw!important;min-width:100vw!important;max-width:100vw!important}
 .app-shell{width:100%;max-width:430px;margin:0 auto}

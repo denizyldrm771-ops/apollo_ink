@@ -321,10 +321,9 @@ function openProfileEditor(){document.getElementById('profileNameInput').value=p
 function closeProfileEditor(){document.getElementById('profileEditBackdrop').classList.remove('show')}
 document.getElementById('openProfileEdit').onclick=openProfileEditor;document.getElementById('profileEditClose').onclick=closeProfileEditor;document.getElementById('profileEditCancel').onclick=closeProfileEditor;document.getElementById('profileEditBackdrop').addEventListener('click',e=>{if(e.target.id==='profileEditBackdrop')closeProfileEditor()});document.getElementById('chooseProfilePhoto').onclick=()=>document.getElementById('profilePhotoInput').click();document.getElementById('profilePhotoInput').onchange=()=>{const f=document.getElementById('profilePhotoInput').files[0];if(!f)return;const r=new FileReader();r.onload=()=>{profileData.photo=r.result;updateProfileUI()};r.readAsDataURL(f)};document.getElementById('profileEditSave').onclick=()=>{profileData.name=document.getElementById('profileNameInput').value.trim()||'Deniz';profileData.email=document.getElementById('profileEmailInput').value.trim();profileData.studio=document.getElementById('profileStudioInput').value.trim();profileData.city=document.getElementById('profileCityInput').value.trim();saveProfile();closeProfileEditor()};updateProfileUI();
 function stamp(){const d=new Date();const pad=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`}
-/* V76 — Evrensel tam yedekleme
-   Kullanıcının uygulamada değiştirebildiği tüm localStorage + sessionStorage + IndexedDB verilerini,
-   özellikle Müşteriler, Tasarım Çalışmaları ve bunların görsellerini birlikte yedekler.
-   Yeni IndexedDB alanları eklendiğinde de keşfedilebildiği sürece otomatik olarak kapsama girer. */
+/* V83 — Yedekleme
+   Uygulama verilerini yedekler; Tasarım Çalışmaları metadata ve görselleri
+   yeni yedeklere dahil edilmez ve eski yedeklerden de geri yüklenmez. */
 const EXPLICIT_IMAGE_DBS=['apolloInkAppointmentImagesV1'];
 const BACKUP_DB_NAMES=[...EXPLICIT_IMAGE_DBS];
 async function blobToBase64(blob){
@@ -514,7 +513,18 @@ async function restoreIndexedDBBackup(dbs){
 }
 function applyBackupLocalData(stores,manifest){
   const src=stores||{};
-  Object.entries(src.localStorage||{}).forEach(([k,v])=>{if(v!=null)localStorage.setItem(k,v)});
+  /* Tasarım Çalışmaları hiçbir koşulda yedekten içeri alınmaz.
+     Özellikle eski V76-V82 yedeklerinde bulunan tasarım metadata anahtarlarını
+     da uygulamanın mevcut localStorage'ına yazma. Böylece metadata geri gelip
+     görseli bulunamadı / yükleniyor kartları oluşturamaz. */
+  const BLOCKED_BACKUP_KEYS=new Set([
+    'apolloInkDesignsV1',
+    'apolloInkDesignCategoriesV1'
+  ]);
+  Object.entries(src.localStorage||{}).forEach(([k,v])=>{
+    if(BLOCKED_BACKUP_KEYS.has(k))return;
+    if(v!=null)localStorage.setItem(k,v);
+  });
   Object.entries(src.sessionStorage||{}).forEach(([k,v])=>{if(v!=null)sessionStorage.setItem(k,v)});
   /* Manifest fallback: kritik kayıtlar localStorage'da yoksa/anahtar adı değişmişse geri getir. */
   const map={customers:'apolloInkCustomersV1',appointments:'apolloInkAppointmentsV1',finance:'apolloInkFinanceV1',materials:'apolloInkMaterialsV1',ibans:'apolloInkIbanV1',profile:'apolloInkProfileV1'};
@@ -598,9 +608,10 @@ document.getElementById('restoreBackup').onclick=()=>document.getElementById('ba
          designImages ve designBackup alanları özellikle yok sayılır. */
       if(Array.isArray(payload.appointmentImages))await restoreExplicitImageBackups({appointments:payload.appointmentImages});
       await restoreIndexedDBBackup(payload.indexedDB||[]);
-      /* Eski yedeklerdeki tasarım DB'si hiçbir koşulda geri yüklenmez.
-         Yalnızca eski randevu görselleri alanı varsa onu destekle. */
-      if(!payload.appointmentImages && payload.appointmentImageBackup?.name)await restoreOneIndexedDBBackup(payload.appointmentImageBackup);try{profileData={...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}')}}catch{}try{appointments=JSON.parse(localStorage.getItem('apolloInkAppointmentsV1')||'[]')}catch{appointments=[]}try{customers=JSON.parse(localStorage.getItem('apolloInkCustomersV1')||'[]')}catch{customers=[]}try{designs=JSON.parse(localStorage.getItem('apolloInkDesignsV1')||'[]')}catch{designs=[]}try{designCategories=JSON.parse(localStorage.getItem('apolloInkDesignCategoriesV1')||'null')||['Tümü','Minimal','Blackwork','Realism','Fine Line','Geometric','Traditional','Neo Traditional','Lettering','Cover Up','Ornamental']}catch{}syncCustomersFromAppointments();updateProfileUI();renderDesigns();renderMain();render();renderCustomers();renderFinance();st.textContent='Yedek başarıyla yüklendi. Müşteriler, randevular ve yedek kapsamındaki veriler geri getirildi; Tasarım Çalışmaları yedekten geri yüklenmedi.'}catch(e){console.error(e);st.textContent='Yedek dosyası okunamadı veya geri yüklenemedi.'}finally{document.getElementById('backupFile').value=''}};
+      /* Eski yedeklerde bulunabilen appointmentImageBackup gibi alternatif alanlar
+         da tasarım DB'si olmadığı için yalnızca randevu görseli mantığında desteklenir.
+         Tasarım metadata/görselleri hiçbir koşulda restore edilmez. */
+      if(!payload.appointmentImages && payload.appointmentImageBackup?.name && payload.appointmentImageBackup.name==='apolloInkAppointmentImagesV1')await restoreOneIndexedDBBackup(payload.appointmentImageBackup);try{profileData={...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}')}}catch{}try{appointments=JSON.parse(localStorage.getItem('apolloInkAppointmentsV1')||'[]')}catch{appointments=[]}try{customers=JSON.parse(localStorage.getItem('apolloInkCustomersV1')||'[]')}catch{customers=[]}syncCustomersFromAppointments();updateProfileUI();renderDesigns();renderMain();render();renderCustomers();renderFinance();st.textContent='Yedek başarıyla yüklendi. Müşteriler, randevular ve yedek kapsamındaki veriler geri getirildi; Tasarım Çalışmaları yedekten geri yüklenmedi.'}catch(e){console.error(e);st.textContent='Yedek dosyası okunamadı veya geri yüklenemedi.'}finally{document.getElementById('backupFile').value=''}};
 
 /* V63 IBAN / Ödeme Bilgileri */
 const IBAN_KEY='apolloInkIbanV1';let ibanQrData='',openIbanId='',ibanEditId='';

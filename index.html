@@ -325,7 +325,8 @@ function stamp(){const d=new Date();const pad=n=>String(n).padStart(2,'0');retur
    Kullanıcının uygulamada değiştirebildiği tüm localStorage + sessionStorage + IndexedDB verilerini,
    özellikle Müşteriler, Tasarım Çalışmaları ve bunların görsellerini birlikte yedekler.
    Yeni IndexedDB alanları eklendiğinde de keşfedilebildiği sürece otomatik olarak kapsama girer. */
-const BACKUP_DB_NAMES=['apolloInkAppointmentImagesV1','apolloInkDesignDBV1'];
+const BACKUP_DB_NAMES=[];
+const EXPLICIT_IMAGE_DBS=['apolloInkAppointmentImagesV1','apolloInkDesignDBV1'];
 async function blobToBase64(blob){
   const buf=await blob.arrayBuffer();
   const bytes=new Uint8Array(buf);let bin='';const CHUNK=0x8000;
@@ -390,6 +391,64 @@ async function readIndexedDBBackup(){
   const out=[];for(const name of BACKUP_DB_NAMES)out.push(await readOneIndexedDBBackup(name));return out;
 }
 function backupStorageSnapshot(storage){const out={};for(let i=0;i<storage.length;i++){const k=storage.key(i);if(k!=null)out[k]=storage.getItem(k)}return out}
+async function readExplicitImageBackup(dbName,storeName){
+  let db=null;
+  try{
+    db=await idbOpen(dbName);
+    if(!db.objectStoreNames.contains(storeName))return [];
+    const tx=db.transaction(storeName,'readonly'),st=tx.objectStore(storeName);
+    const keys=await new Promise((res,rej)=>{const q=st.getAllKeys();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error)});
+    const vals=await new Promise((res,rej)=>{const q=st.getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error)});
+    const out=[];
+    for(let i=0;i<vals.length;i++){
+      const v=vals[i];
+      let data=v;
+      if(v instanceof Blob){data={__apolloType:'blob',type:v.type||'application/octet-stream',data:await blobToBase64(v),encoding:'base64'};}
+      else if(v instanceof ArrayBuffer)data={__apolloType:'arraybuffer',data:await blobToBase64(new Blob([v])),encoding:'base64'};
+      else if(ArrayBuffer.isView(v))data={__apolloType:'typedarray',name:v.constructor?.name||'Uint8Array',data:await backupEncode(v.buffer)};
+      else data=await backupEncode(v);
+      out.push({key:await backupEncode(keys[i]),value:data});
+    }
+    return out;
+  }finally{try{db?.close()}catch{}}
+}
+async function readExplicitImageBackups(){
+  return {
+    designs:await readExplicitImageBackup('apolloInkDesignDBV1','designs'),
+    appointments:await readExplicitImageBackup('apolloInkAppointmentImagesV1','images')
+  };
+}
+async function restoreExplicitImageBackup(dbName,storeName,records){
+  if(!Array.isArray(records))return;
+  let db=null;
+  try{
+    db=await idbOpen(dbName);
+    if(!db.objectStoreNames.contains(storeName)){
+      const old=db.version;db.close();db=null;
+      db=await idbOpen(dbName,Math.max(1,old+1),r=>{if(!r.objectStoreNames.contains(storeName))r.createObjectStore(storeName)});
+    }
+    const decoded=[];
+    for(const rec of records){
+      const key=await backupDecode(rec.key);
+      let value=await backupDecode(rec.value);
+      if(value instanceof File)value=new Blob([await value.arrayBuffer()],{type:value.type||'application/octet-stream'});
+      decoded.push({key,value});
+    }
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(storeName,'readwrite'),st=tx.objectStore(storeName);
+      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('image transaction error'));tx.onabort=()=>reject(tx.error||new Error('image transaction aborted'));
+      st.clear();
+      for(const rec of decoded){
+        if(st.keyPath===null)st.put(rec.value,rec.key);else st.put(rec.value);
+      }
+    });
+  }finally{try{db?.close()}catch{}}
+}
+async function restoreExplicitImageBackups(images){
+  if(!images||typeof images!=='object')return;
+  await restoreExplicitImageBackup('apolloInkDesignDBV1','designs',images.designs||[]);
+  await restoreExplicitImageBackup('apolloInkAppointmentImagesV1','images',images.appointments||[]);
+}
 async function createBackupPayload(){
   const local=backupStorageSnapshot(localStorage),session=backupStorageSnapshot(sessionStorage);
   /* Kritik uygulama verilerini açık manifestte de tutuyoruz; böylece eski/yeni sürüm anahtar adı değişse bile
@@ -405,9 +464,8 @@ async function createBackupPayload(){
     designCategories:local.apolloInkDesignCategoriesV1||'[]'
   };
   const indexedDBData=await readIndexedDBBackup();
-  const designDB=indexedDBData.find(x=>x?.name==='apolloInkDesignDBV1')||{name:'apolloInkDesignDBV1',version:1,stores:[]};
-  const appointmentDB=indexedDBData.find(x=>x?.name==='apolloInkAppointmentImagesV1')||{name:'apolloInkAppointmentImagesV1',version:1,stores:[]};
-  return {format:'Apollo Ink Backup',version:8,createdAt:new Date().toISOString(),scope:'all-app-data',manifest,storage:{localStorage:local,sessionStorage:session},indexedDB:indexedDBData,designBackup:designDB,appointmentImageBackup:appointmentDB};
+  const explicitImages=await readExplicitImageBackups();
+  return {format:'Apollo Ink Backup',version:9,createdAt:new Date().toISOString(),scope:'all-app-data',manifest,storage:{localStorage:local,sessionStorage:session},indexedDB:indexedDBData,designImages:explicitImages.designs,appointmentImages:explicitImages.appointments};
 }
 async function restoreOneIndexedDBBackup(item){
   if(!item?.name)return;
@@ -533,12 +591,14 @@ function openFinanceEntry(type){const back=document.getElementById('financeEntry
 function closeFinanceEntry(){document.getElementById('financeEntryBackdrop').classList.remove('show')}
 function saveFinanceEntry(){const type=document.getElementById('financeEntryBackdrop').dataset.type||'income',amount=Number(document.getElementById('financeEntryAmount').value||0),commission=type==='income'?Number(document.getElementById('financeEntryCommission').value||0):0,category=document.getElementById('financeEntryCategory').value.trim(),description=document.getElementById('financeEntryDescription').value.trim(),date=document.getElementById('financeEntryDate').value;if(!amount||amount<0)return alert('Lütfen geçerli bir tutar gir.');if(commission<0||commission>100)return alert('Komisyon 0 ile 100 arasında olmalı.');if(!date)return alert('Lütfen tarih seç.');const rows=financeRows(),createdAt=Date.now(),id='fin_'+createdAt+'_'+Math.random().toString(36).slice(2,7),rec=type==='income'?{id,type:'income',source:'manual',date,name:'Gelir',category,description,income:amount,expense:amount*commission/100,commission,netIncome:amount*(1-commission/100),deposit:0,createdAt}:{id,type:'expense',source:'manual',date,name:'Gider',category,description,income:0,expense:amount,commission:0,netIncome:0,deposit:0,createdAt};rows.push(rec);localStorage.setItem('apolloInkFinanceV1',JSON.stringify(rows));closeFinanceEntry();renderFinance()}
 document.querySelectorAll('[data-finance-period]').forEach(b=>b.onclick=()=>{financePeriod=b.dataset.financePeriod;renderFinance()});document.getElementById('financeAddIncome').onclick=()=>openFinanceEntry('income');document.getElementById('financeAddExpense').onclick=()=>openFinanceEntry('expense');document.getElementById('financeEntryClose').onclick=closeFinanceEntry;document.getElementById('financeEntryCancel').onclick=closeFinanceEntry;document.getElementById('financeEntrySave').onclick=saveFinanceEntry;document.getElementById('financeEntryBackdrop').addEventListener('click',e=>{if(e.target.id==='financeEntryBackdrop')closeFinanceEntry()});
-document.getElementById('restoreBackup').onclick=()=>document.getElementById('backupFile').click();document.getElementById('profileAdd').onclick=()=>document.getElementById('quickPanel').classList.add('show');document.getElementById('quickStock').onclick=()=>{document.getElementById('quickPanel').classList.remove('show');showPage('stock');setTimeout(openStockModal,120)};document.getElementById('backupFile').onchange=async()=>{const f=document.getElementById('backupFile').files[0];if(!f)return;const st=document.getElementById('backupStatus');try{const payload=JSON.parse(await f.text());if(payload.format!=='Apollo Ink Backup')throw new Error('invalid');const ok=confirm('Bu yedeği yüklemek mevcut uygulama verilerinin üzerine yazabilir. Yedekte bulunan tüm veriler ve görseller geri yüklenecek. Devam etmek istiyor musun?');if(!ok){st.textContent='Yedek yükleme iptal edildi.';return}const stores=payload.storage||{};applyBackupLocalData(stores,payload.manifest||{});await restoreIndexedDBBackup(payload.indexedDB||[]);
-      /* designBackup / appointmentImageBackup eski yedeklerdeki geriye dönük alanlardır;
-         indexedDB listesinde aynı kayıt varsa ikinci kez restore etme. */
+document.getElementById('restoreBackup').onclick=()=>document.getElementById('backupFile').click();document.getElementById('profileAdd').onclick=()=>document.getElementById('quickPanel').classList.add('show');document.getElementById('quickStock').onclick=()=>{document.getElementById('quickPanel').classList.remove('show');showPage('stock');setTimeout(openStockModal,120)};document.getElementById('backupFile').onchange=async()=>{const f=document.getElementById('backupFile').files[0];if(!f)return;const st=document.getElementById('backupStatus');try{const raw=await f.text();if(raw.length>150000000)throw new Error('backup-too-large');const payload=JSON.parse(raw);if(payload.format!=='Apollo Ink Backup')throw new Error('invalid');const ok=confirm('Bu yedeği yüklemek mevcut uygulama verilerinin üzerine yazabilir. Yedekte bulunan tüm veriler ve görseller geri yüklenecek. Devam etmek istiyor musun?');if(!ok){st.textContent='Yedek yükleme iptal edildi.';return}const stores=payload.storage||{};applyBackupLocalData(stores,payload.manifest||{});
+      /* Görsel verilerini genel IndexedDB geri yüklemesinden ayırıyoruz. Böylece büyük Blob
+         verileri Safari'de yedek yükleme ekranını kilitlemeden doğrudan uygulamanın iki görsel DB'sine yazılır. */
+      if(Array.isArray(payload.designImages)||Array.isArray(payload.appointmentImages))await restoreExplicitImageBackups({designs:payload.designImages||[],appointments:payload.appointmentImages||[]});
+      await restoreIndexedDBBackup(payload.indexedDB||[]);
+      /* Eski V76-V79 yedekleri için geriye dönük destek. */
       const legacyDbs=[payload.designBackup,payload.appointmentImageBackup].filter(x=>x?.name);
-      const already=new Set((payload.indexedDB||[]).map(x=>x?.name));
-      for(const item of legacyDbs)if(!already.has(item.name))await restoreOneIndexedDBBackup(item);try{profileData={...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}')}}catch{}try{appointments=JSON.parse(localStorage.getItem('apolloInkAppointmentsV1')||'[]')}catch{appointments=[]}try{customers=JSON.parse(localStorage.getItem('apolloInkCustomersV1')||'[]')}catch{customers=[]}try{designs=JSON.parse(localStorage.getItem('apolloInkDesignsV1')||'[]')}catch{designs=[]}try{designCategories=JSON.parse(localStorage.getItem('apolloInkDesignCategoriesV1')||'null')||['Tümü','Minimal','Blackwork','Realism','Fine Line','Geometric','Traditional','Neo Traditional','Lettering','Cover Up','Ornamental']}catch{}syncCustomersFromAppointments();updateProfileUI();renderDesigns();renderMain();render();renderCustomers();renderFinance();st.textContent='Tam yedek başarıyla yüklendi: müşteriler, tasarımlar, randevular ve görseller geri getirildi.'}catch(e){console.error(e);st.textContent='Yedek dosyası okunamadı veya geri yüklenemedi.'}finally{document.getElementById('backupFile').value=''}};
+      if(!payload.designImages&&!payload.appointmentImages){for(const item of legacyDbs)await restoreOneIndexedDBBackup(item)}try{profileData={...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}')}}catch{}try{appointments=JSON.parse(localStorage.getItem('apolloInkAppointmentsV1')||'[]')}catch{appointments=[]}try{customers=JSON.parse(localStorage.getItem('apolloInkCustomersV1')||'[]')}catch{customers=[]}try{designs=JSON.parse(localStorage.getItem('apolloInkDesignsV1')||'[]')}catch{designs=[]}try{designCategories=JSON.parse(localStorage.getItem('apolloInkDesignCategoriesV1')||'null')||['Tümü','Minimal','Blackwork','Realism','Fine Line','Geometric','Traditional','Neo Traditional','Lettering','Cover Up','Ornamental']}catch{}syncCustomersFromAppointments();updateProfileUI();renderDesigns();renderMain();render();renderCustomers();renderFinance();st.textContent='Tam yedek başarıyla yüklendi: müşteriler, tasarımlar, randevular ve görseller geri getirildi.'}catch(e){console.error(e);st.textContent='Yedek dosyası okunamadı veya geri yüklenemedi.'}finally{document.getElementById('backupFile').value=''}};
 
 /* V63 IBAN / Ödeme Bilgileri */
 const IBAN_KEY='apolloInkIbanV1';let ibanQrData='',openIbanId='',ibanEditId='';

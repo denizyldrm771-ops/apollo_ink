@@ -89,10 +89,10 @@ button{pointer-events:auto!important;cursor:pointer!important;-webkit-tap-highli
       const id=b.id;
       if(id==='stockModalClose'){e.preventDefault();e.stopPropagation();closeBy('stockModalBackdrop');return;}
       if(id==='stockCancel'){e.preventDefault();e.stopPropagation();closeBy('stockModalBackdrop');return;}
-      if(id==='stockSave'){e.preventDefault();e.stopPropagation();submitForm('stockForm');return;}
+      if(id==='stockSave'){return;}
       if(id==='ibanModalClose'){e.preventDefault();e.stopPropagation();closeBy('ibanModalBackdrop');return;}
       if(id==='ibanCancel'){e.preventDefault();e.stopPropagation();closeBy('ibanModalBackdrop');return;}
-      if(id==='ibanSave'){e.preventDefault();e.stopPropagation();submitForm('ibanForm');return;}
+      if(id==='ibanSave'){return;}
     },true);
     document.addEventListener('touchend',function(e){
       const b=e.target.closest('button'); if(!b || b.disabled)return;
@@ -101,9 +101,9 @@ button{pointer-events:auto!important;cursor:pointer!important;-webkit-tap-highli
         e.preventDefault();
         // click will normally follow; invoke immediately for iOS WebView reliability.
         if(id==='stockModalClose'||id==='stockCancel')closeBy('stockModalBackdrop');
-        else if(id==='stockSave')submitForm('stockForm');
+        else if(id==='stockSave')return;
         else if(id==='ibanModalClose'||id==='ibanCancel')closeBy('ibanModalBackdrop');
-        else if(id==='ibanSave')submitForm('ibanForm');
+        else if(id==='ibanSave')return;
       }
     },{capture:true,passive:false});
   }
@@ -512,6 +512,7 @@ document.getElementById('ibanAddButton').onclick=openIbanModal;document.getEleme
   }
   document.getElementById('stockAddButton').onclick=openStockNew;
   document.getElementById('stockForm').onsubmit=function(e){e.preventDefault();saveStockV67()};
+document.getElementById('stockSave').onclick=function(e){e.preventDefault();e.stopPropagation();saveStockV67()};
   document.getElementById('stockList').addEventListener('click',function(e){
     const edit=e.target.closest('[data-stock-edit]');
     if(edit){e.preventDefault();e.stopPropagation();openStockEdit(edit.dataset.stockEdit);return;}
@@ -562,6 +563,7 @@ document.getElementById('ibanAddButton').onclick=openIbanModal;document.getEleme
   }
   document.getElementById('ibanAddButton').onclick=openIbanNewV67;
   document.getElementById('ibanForm').onsubmit=function(e){e.preventDefault();saveIbanV67()};
+document.getElementById('ibanSave').onclick=function(e){e.preventDefault();e.stopPropagation();saveIbanV67()};
   document.getElementById('ibanCancel').onclick=function(){ibanEditingId='';closeIbanModal()};
   document.getElementById('ibanModalClose').onclick=function(){ibanEditingId='';closeIbanModal()};
   document.getElementById('ibanList').addEventListener('click',function(e){

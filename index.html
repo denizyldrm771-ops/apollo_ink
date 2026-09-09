@@ -101,9 +101,9 @@ button{pointer-events:auto!important;cursor:pointer!important;-webkit-tap-highli
         e.preventDefault();
         // click will normally follow; invoke immediately for iOS WebView reliability.
         if(id==='stockModalClose'||id==='stockCancel')closeBy('stockModalBackdrop');
-        else if(id==='stockSave')return;
+        else if(id==='stockSave'){ if(typeof window.saveStockV67==='function') window.saveStockV67(); return; }
         else if(id==='ibanModalClose'||id==='ibanCancel')closeBy('ibanModalBackdrop');
-        else if(id==='ibanSave')return;
+        else if(id==='ibanSave'){ if(typeof window.saveIbanV67==='function') window.saveIbanV67(); return; }
       }
     },{capture:true,passive:false});
   }
@@ -510,6 +510,7 @@ document.getElementById('ibanAddButton').onclick=openIbanModal;document.getEleme
     }
     saveMaterials(rows);closeStockModal();stockEditingId='';renderStock();
   }
+  window.saveStockV67=saveStockV67;
   document.getElementById('stockAddButton').onclick=openStockNew;
   document.getElementById('stockForm').onsubmit=function(e){e.preventDefault();saveStockV67()};
 document.getElementById('stockSave').onclick=function(e){e.preventDefault();e.stopPropagation();saveStockV67()};
@@ -561,6 +562,7 @@ document.getElementById('stockSave').onclick=function(e){e.preventDefault();e.st
     }
     saveIbans(rows);closeIbanModal();ibanEditingId='';renderIban();
   }
+  window.saveIbanV67=saveIbanV67;
   document.getElementById('ibanAddButton').onclick=openIbanNewV67;
   document.getElementById('ibanForm').onsubmit=function(e){e.preventDefault();saveIbanV67()};
 document.getElementById('ibanSave').onclick=function(e){e.preventDefault();e.stopPropagation();saveIbanV67()};

@@ -326,150 +326,279 @@ function stamp(){const d=new Date();const pad=n=>String(n).padStart(2,'0');retur
    özellikle Müşteriler, Tasarım Çalışmaları ve bunların görsellerini birlikte yedekler.
    Yeni IndexedDB alanları eklendiğinde de keşfedilebildiği sürece otomatik olarak kapsama girer. */
 const EXPLICIT_IMAGE_DBS=['apolloInkAppointmentImagesV1','apolloInkDesignDBV1'];
-async function backupIdbStore(name,storeName){
-  return new Promise((resolve,reject)=>{
-    const req=indexedDB.open(name);
-    req.onerror=()=>resolve([]);
-    req.onsuccess=()=>{
-      const db=req.result;
-      if(!db.objectStoreNames.contains(storeName)){db.close();resolve([]);return}
-      try{
-        const tx=db.transaction(storeName,'readonly'),st=tx.objectStore(storeName);
-        const qk=st.getAllKeys(),qv=st.getAll();
-        tx.onabort=()=>{db.close();reject(tx.error||new Error('IndexedDB okunamadı'))};
-        tx.onerror=()=>{db.close();reject(tx.error||new Error('IndexedDB okunamadı'))};
-        qk.onerror=()=>{db.close();reject(qk.error)};qv.onerror=()=>{db.close();reject(qv.error)};
-        tx.oncomplete=async()=>{
-          try{const keys=qk.result||[],vals=qv.result||[],out=[];for(let i=0;i<vals.length;i++)out.push({key:keys[i],value:await mediaToBackup(vals[i])});db.close();resolve(out)}catch(e){db.close();reject(e)}
-        };
-      }catch(err){db.close();reject(err)}
-    };
-  });
-}
+const BACKUP_DB_NAMES=[...EXPLICIT_IMAGE_DBS];
 async function blobToBase64(blob){
-  const buf=await blob.arrayBuffer(),bytes=new Uint8Array(buf);let bin='';const CHUNK=0x8000;
+  const buf=await blob.arrayBuffer();
+  const bytes=new Uint8Array(buf);let bin='';const CHUNK=0x8000;
   for(let i=0;i<bytes.length;i+=CHUNK)bin+=String.fromCharCode(...bytes.subarray(i,i+CHUNK));
   return btoa(bin);
 }
 function base64ToBlob(data,type){
-  const bin=atob(data||''),bytes=new Uint8Array(bin.length);
-  for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+  const bin=atob(data||'');const bytes=new Uint8Array(bin.length);const CHUNK=0x8000;
+  for(let i=0;i<bin.length;i+=CHUNK){const part=bin.slice(i,i+CHUNK);for(let j=0;j<part.length;j++)bytes[i+j]=part.charCodeAt(j)}
   return new Blob([bytes],{type:type||'application/octet-stream'});
 }
-async function mediaToBackup(value){
-  if(value instanceof Blob)return {type:'blob',mime:value.type||'application/octet-stream',data:await blobToBase64(value)};
-  if(value instanceof ArrayBuffer)return {type:'arraybuffer',mime:'application/octet-stream',data:await blobToBase64(new Blob([value]))};
-  if(ArrayBuffer.isView(value))return {type:'arraybuffer',mime:'application/octet-stream',data:await blobToBase64(new Blob([value.buffer.slice(value.byteOffset,value.byteOffset+value.byteLength)]))};
-  if(typeof value==='string')return {type:'string',data:value};
-  return {type:'json',data:value};
+async function backupEncode(value){
+  if(value instanceof File){return {__apolloType:'file',name:value.name||'dosya',lastModified:value.lastModified||Date.now(),type:value.type||'application/octet-stream',data:await blobToBase64(value),encoding:'base64'}}
+  if(value instanceof Blob){return {__apolloType:'blob',type:value.type||'application/octet-stream',data:await blobToBase64(value),encoding:'base64'}}
+  if(value instanceof ArrayBuffer){return {__apolloType:'arraybuffer',data:await blobToBase64(new Blob([value])),encoding:'base64'}}
+  if(ArrayBuffer.isView(value)){return {__apolloType:'typedarray',name:value.constructor?.name||'Uint8Array',data:await backupEncode(value.buffer)}}
+  if(value instanceof Date)return {__apolloType:'date',data:value.toISOString()};
+  if(Array.isArray(value)){const out=[];for(const v of value)out.push(await backupEncode(v));return out}
+  if(value&&typeof value==='object'){const out={};for(const [k,v] of Object.entries(value))out[k]=await backupEncode(v);return out}
+  return value;
 }
-async function backupMediaDB(){
-  return {version:2,appointments:await backupIdbStore('apolloInkAppointmentImagesV1','images'),designs:await backupIdbStore('apolloInkDesignDBV1','designs')};
+async function backupDecode(value){
+  if(Array.isArray(value)){const out=[];for(const v of value)out.push(await backupDecode(v));return out}
+  if(value&&typeof value==='object'&&value.__apolloType){
+    if(value.__apolloType==='file'||value.__apolloType==='blob'){
+      let blob;
+      if(value.encoding==='base64')blob=base64ToBlob(value.data,value.type);
+      else if(typeof value.data==='string'&&value.data.startsWith('data:'))blob=await (await fetch(value.data)).blob();
+      else blob=new Blob([], {type:value.type||'application/octet-stream'});
+      return value.__apolloType==='file'?new File([blob],value.name||'dosya',{type:value.type||blob.type||'application/octet-stream',lastModified:value.lastModified||Date.now()}):blob;
+    }
+    if(value.__apolloType==='arraybuffer'){
+      if(value.encoding==='base64')return base64ToBlob(value.data,'application/octet-stream').arrayBuffer();
+      const bin=atob(value.data),buf=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)buf[i]=bin.charCodeAt(i);return buf.buffer;
+    }
+    if(value.__apolloType==='typedarray'){const ab=await backupDecode(value.data),ctor=window[value.name]||Uint8Array;try{return new ctor(ab)}catch{return new Uint8Array(ab)}}
+    if(value.__apolloType==='date')return new Date(value.data);
+  }
+  if(value&&typeof value==='object'){const out={};for(const [k,v] of Object.entries(value))out[k]=await backupDecode(v);return out}
+  return value;
 }
-async function backupMediaDecode(v){
-  if(v==null)return null;
-  if(v.type==='blob')return base64ToBlob(v.data,v.mime);
-  if(v.type==='arraybuffer')return await base64ToBlob(v.data,v.mime||'application/octet-stream').arrayBuffer();
-  if(v.type==='string')return v.data||'';
-  if(v.__apolloType==='blob'||v.__apolloType==='file')return base64ToBlob(v.data,v.mime||v.type||'application/octet-stream');
-  if(v.__apolloType==='arraybuffer')return await base64ToBlob(v.data,'application/octet-stream').arrayBuffer();
-  if(v.__apolloType==='typedarray')return await backupMediaDecode(v.data);
-  return v.data!==undefined?v.data:v;
+function idbOpen(name,version,upgrade){return new Promise((resolve,reject)=>{const r=version?indexedDB.open(name,version):indexedDB.open(name);r.onupgradeneeded=e=>{try{upgrade?.(r.result,e.oldVersion,e.newVersion)}catch(err){try{e.target.transaction.abort()}catch{};reject(err)}};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function readOneIndexedDBBackup(name){
+  let db=null;
+  try{
+    db=await idbOpen(name);
+    const stores=[];
+    for(const storeName of Array.from(db.objectStoreNames)){
+      const tx=db.transaction(storeName,'readonly'),st=tx.objectStore(storeName);
+      const keys=await new Promise((res,rej)=>{const q=st.getAllKeys();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error)});
+      const vals=await new Promise((res,rej)=>{const q=st.getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error)});
+      const records=[];for(let i=0;i<vals.length;i++)records.push({key:await backupEncode(keys[i]),value:await backupEncode(vals[i])});
+      stores.push({name:storeName,keyPath:st.keyPath,autoIncrement:st.autoIncrement,records});
+    }
+    return {name:db.name,version:db.version,stores};
+  }catch(e){return {name,version:1,stores:[],error:String(e)}}finally{try{db?.close()}catch{}}
 }
-async function restoreMediaStore(name,storeName,records){
-  if(!Array.isArray(records))return;
-  const decoded=[];
-  for(const rec of records)decoded.push({key:rec.key,value:await backupMediaDecode(rec.value)});
-  await new Promise((resolve,reject)=>{
-    const req=indexedDB.open(name);
-    req.onerror=()=>reject(req.error||new Error('IndexedDB açılamadı'));
-    req.onsuccess=()=>{
-      let db=req.result;
-      const write=()=>{try{
-        const tx=db.transaction(storeName,'readwrite'),st=tx.objectStore(storeName);st.clear();
-        for(const rec of decoded){if(st.keyPath===null)st.put(rec.value,rec.key);else st.put(rec.value)}
-        tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error||new Error('Görsel verisi yazılamadı'))};tx.onabort=()=>{db.close();reject(tx.error||new Error('Görsel aktarımı iptal edildi'))};
-      }catch(e){db.close();reject(e)}};
-      if(db.objectStoreNames.contains(storeName)){write();return}
-      const old=db.version;db.close();
-      const up=indexedDB.open(name,Math.max(1,old+1));
-      up.onupgradeneeded=()=>{if(!up.result.objectStoreNames.contains(storeName))up.result.createObjectStore(storeName)};
-      up.onsuccess=()=>{db=up.result;write()};up.onerror=()=>reject(up.error||new Error('IndexedDB oluşturulamadı'));
-    };
-  });
-}
-async function restoreMediaBackup(media){
-  if(!media||typeof media!=='object')return;
-  await restoreMediaStore('apolloInkAppointmentImagesV1','images',media.appointments||[]);
-  await restoreMediaStore('apolloInkDesignDBV1','designs',media.designs||[]);
+async function readIndexedDBBackup(){
+  /* Yalnızca Apollo Ink'in kendi veritabanlarını yedekle. Tarayıcının/eklenti veya auth
+     katmanının başka IndexedDB'lerini geri yüklemek uygulamayı bozabilir. Yeni bir uygulama
+     DB'si eklediğimizde BACKUP_DB_NAMES listesine eklenir. */
+  const out=[];for(const name of BACKUP_DB_NAMES)out.push(await readOneIndexedDBBackup(name));return out;
 }
 function backupStorageSnapshot(storage){const out={};for(let i=0;i<storage.length;i++){const k=storage.key(i);if(k!=null)out[k]=storage.getItem(k)}return out}
-function applyBackupLocalData(src,manifest){
-  const local=src.localStorage||{};
-  Object.keys(localStorage).forEach(k=>localStorage.removeItem(k));
-  Object.entries(local).forEach(([k,v])=>{if(v!=null)localStorage.setItem(k,v)});
-  const legacyMap={apolloInkDesignMetaV1:'apolloInkDesignsV1',apolloInkDesignCatsV1:'apolloInkDesignCategoriesV1'};
-  for(const [oldKey,newKey] of Object.entries(legacyMap))if(local[oldKey]!=null&&!local[newKey])localStorage.setItem(newKey,local[oldKey]);
-  if(src.sessionStorage){Object.keys(sessionStorage).forEach(k=>sessionStorage.removeItem(k));Object.entries(src.sessionStorage).forEach(([k,v])=>{if(v!=null)sessionStorage.setItem(k,v)})}
-  const map={customers:'apolloInkCustomersV1',appointments:'apolloInkAppointmentsV1',finance:'apolloInkFinanceV1',materials:'apolloInkMaterialsV1',ibans:'apolloInkIbanV1',designs:'apolloInkDesignsV1',designCategories:'apolloInkDesignCategoriesV1',profile:'apolloInkProfileV1'};
-  if(manifest&&typeof manifest==='object')for(const [field,key] of Object.entries(map))if(manifest[field]!=null)localStorage.setItem(key,manifest[field]);
+async function readExplicitImageBackup(dbName,storeName){
+  let db=null;
+  try{
+    db=await idbOpen(dbName);
+    if(!db.objectStoreNames.contains(storeName))return [];
+    const tx=db.transaction(storeName,'readonly'),st=tx.objectStore(storeName);
+    const keys=await new Promise((res,rej)=>{const q=st.getAllKeys();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error)});
+    const vals=await new Promise((res,rej)=>{const q=st.getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error)});
+    const out=[];
+    for(let i=0;i<vals.length;i++){
+      const v=vals[i];
+      let data=v;
+      if(v instanceof Blob){data={__apolloType:'blob',type:v.type||'application/octet-stream',data:await blobToBase64(v),encoding:'base64'};}
+      else if(v instanceof ArrayBuffer)data={__apolloType:'arraybuffer',data:await blobToBase64(new Blob([v])),encoding:'base64'};
+      else if(ArrayBuffer.isView(v))data={__apolloType:'typedarray',name:v.constructor?.name||'Uint8Array',data:await backupEncode(v.buffer)};
+      else data=await backupEncode(v);
+      out.push({key:await backupEncode(keys[i]),value:data});
+    }
+    return out;
+  }finally{try{db?.close()}catch{}}
 }
-async function restoreLegacyV81(payload){
-  const legacyLocal=payload.localStorage||payload.storage?.localStorage||{};
-  applyBackupLocalData({localStorage:legacyLocal,sessionStorage:payload.storage?.sessionStorage||{}},{});
-  if(Array.isArray(payload.designs)&&payload.designs.length){
-    const records=[];
-    for(const d of payload.designs){if(!d.imageId||!d.blobData)continue;records.push({key:d.imageId,value:{type:'string',data:d.blobData}})}
-    if(records.length)await restoreMediaStore('apolloInkDesignDBV1','designs',records);
-  }
+async function readExplicitImageBackups(){
+  return {
+    designs:await readExplicitImageBackup('apolloInkDesignDBV1','designs'),
+    appointments:await readExplicitImageBackup('apolloInkAppointmentImagesV1','images')
+  };
 }
-function legacyMediaFromPayload(payload){
-  if(Array.isArray(payload.designImages)||Array.isArray(payload.appointmentImages))return {designs:payload.designImages||[],appointments:payload.appointmentImages||[]};
-  if(Array.isArray(payload.designBackup)||Array.isArray(payload.appointmentImageBackup))return {designs:payload.designBackup||[],appointments:payload.appointmentImageBackup||[]};
-  if(Array.isArray(payload.designs)){return {designs:payload.designs.filter(x=>x&&x.imageId&&x.blobData).map(x=>({key:x.imageId,value:{type:'string',data:x.blobData}})),appointments:[]}}
-  return null;
+async function restoreExplicitImageBackup(dbName,storeName,records){
+  if(!Array.isArray(records))return;
+  let db=null;
+  try{
+    db=await idbOpen(dbName);
+    if(!db.objectStoreNames.contains(storeName)){
+      const old=db.version;db.close();db=null;
+      db=await idbOpen(dbName,Math.max(1,old+1),r=>{if(!r.objectStoreNames.contains(storeName))r.createObjectStore(storeName)});
+    }
+    const decoded=[];
+    for(const rec of records){
+      const key=await backupDecode(rec.key);
+      let value=await backupDecode(rec.value);
+      if(value instanceof File)value=new Blob([await value.arrayBuffer()],{type:value.type||'application/octet-stream'});else if(typeof value==='string'&&value.startsWith('data:')){try{value=await (await fetch(value)).blob()}catch{}}else if(value instanceof ArrayBuffer)value=new Blob([value],{type:'application/octet-stream'});else if(ArrayBuffer.isView(value))value=new Blob([value.buffer],{type:'application/octet-stream'});
+      decoded.push({key,value});
+    }
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(storeName,'readwrite'),st=tx.objectStore(storeName);
+      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('image transaction error'));tx.onabort=()=>reject(tx.error||new Error('image transaction aborted'));
+      st.clear();
+      for(const rec of decoded){
+        if(st.keyPath===null)st.put(rec.value,rec.key);else st.put(rec.value);
+      }
+    });
+  }finally{try{db?.close()}catch{}}
+}
+async function restoreExplicitImageBackups(images){
+  if(!images||typeof images!=='object')return;
+  await restoreExplicitImageBackup('apolloInkDesignDBV1','designs',images.designs||[]);
+  await restoreExplicitImageBackup('apolloInkAppointmentImagesV1','images',images.appointments||[]);
 }
 async function createBackupPayload(){
-  const local=backupStorageSnapshot(localStorage),session=backupStorageSnapshot(sessionStorage),media=await backupMediaDB();
-  const manifest={profile:local.apolloInkProfileV1||null,customers:local.apolloInkCustomersV1||'[]',appointments:local.apolloInkAppointmentsV1||'[]',finance:local.apolloInkFinanceV1||'[]',materials:local.apolloInkMaterialsV1||'[]',ibans:local.apolloInkIbanV1||'[]',designs:local.apolloInkDesignsV1||local.apolloInkDesignMetaV1||'[]',designCategories:local.apolloInkDesignCategoriesV1||local.apolloInkDesignCatsV1||'[]',media:{designs:media.designs.length,appointments:media.appointments.length}};
-  return {format:'Apollo Ink Backup',version:12,createdAt:new Date().toISOString(),scope:'all-app-data',manifest,storage:{localStorage:local,sessionStorage:session},media};
+  const local=backupStorageSnapshot(localStorage),session=backupStorageSnapshot(sessionStorage);
+  /* Kritik uygulama verilerini açık manifestte de tutuyoruz; böylece eski/yeni sürüm anahtar adı değişse bile
+     Müşteriler ve Tasarım Çalışmaları yedeğin içinde açıkça bulunur. */
+  const manifest={
+    profile:local.apolloInkProfileV1||null,
+    customers:local.apolloInkCustomersV1||'[]',
+    appointments:local.apolloInkAppointmentsV1||'[]',
+    finance:local.apolloInkFinanceV1||'[]',
+    materials:local.apolloInkMaterialsV1||'[]',
+    ibans:local.apolloInkIbanV1||'[]',
+    designs:local.apolloInkDesignsV1||'[]',
+    designCategories:local.apolloInkDesignCategoriesV1||'[]'
+  };
+  const indexedDBData=await readIndexedDBBackup();
+  const explicitImages=await readExplicitImageBackups();
+  return {format:'Apollo Ink Backup',version:9,createdAt:new Date().toISOString(),scope:'all-app-data',manifest,storage:{localStorage:local,sessionStorage:session},indexedDB:indexedDBData,designImages:explicitImages.designs,appointmentImages:explicitImages.appointments};
 }
-async function downloadBackupBlob(blob,name){
-  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.rel='noopener';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+async function restoreOneIndexedDBBackup(item){
+  if(!item?.name)return;
+  /* Sadece uygulamanın tanıdığı DB'leri kabul et. */
+  if(!BACKUP_DB_NAMES.includes(item.name))return;
+  const targetVersion=Math.max(1,Number(item.version)||1);
+  let db=null;
+  try{
+    db=await idbOpen(item.name);
+    const needed=(item.stores||[]).filter(st=>st?.name);
+    const missing=needed.filter(st=>!db.objectStoreNames.contains(st.name));
+    if(missing.length){
+      const oldVersion=db.version;db.close();db=null;
+      db=await idbOpen(item.name,Math.max(oldVersion+1,targetVersion),r=>{for(const st of missing)if(!r.objectStoreNames.contains(st.name))r.createObjectStore(st.name,{keyPath:st.keyPath??null,autoIncrement:!!st.autoIncrement})});
+    }
+    for(const stData of needed){
+      if(!db.objectStoreNames.contains(stData.name))continue;
+      const decoded=[];
+      for(const rec of (stData.records||[])){
+        const key=await backupDecode(rec.key);
+        let value=await backupDecode(rec.value);
+        /* Design ve randevu görsellerini Safari'de daha kararlı saklamak için File yerine Blob tut. */
+        if((item.name==='apolloInkDesignDBV1'||item.name==='apolloInkAppointmentImagesV1') && value instanceof File){
+          value=new Blob([await value.arrayBuffer()],{type:value.type||'application/octet-stream'});
+        }
+        decoded.push({key,value});
+      }
+      await new Promise((resolve,reject)=>{
+        const tx=db.transaction(stData.name,'readwrite'),store=tx.objectStore(stData.name);
+        tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('transaction error'));tx.onabort=()=>reject(tx.error||new Error('transaction aborted'));
+        store.clear();
+        for(const rec of decoded){if(store.keyPath===null)store.put(rec.value,rec.key);else store.put(rec.value)}
+      });
+    }
+  }catch(e){console.warn('IndexedDB geri yükleme hatası',item.name,e);throw e}
+  finally{try{db?.close()}catch{}}
 }
-document.getElementById('createBackup').onclick=async()=>{
-  const st=document.getElementById('backupStatus');st.textContent='Tüm veriler ve görseller hazırlanıyor…';
-  try{
-    const payload=await createBackupPayload(),blob=new Blob([JSON.stringify(payload)],{type:'application/json'}),name=`Apollo_Ink_Yedek_${stamp()}.json`,file=new File([blob],name,{type:'application/json'});
-    let shared=false;
-    try{if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Apollo Ink Tam Yedek'});shared=true}}catch(e){if(e?.name==='AbortError'){st.textContent='Yedek paylaşımı iptal edildi.';return}}
-    if(!shared)await downloadBackupBlob(blob,name);
-    st.textContent=`Tam yedek hazır. ${payload.manifest.media.designs} tasarım görseli, ${payload.manifest.media.appointments} randevu görseli kaydedildi.`;
-  }catch(e){console.error(e);st.textContent='Yedek oluşturulamadı: '+(e?.message||'Bilinmeyen hata')}
-};
-document.getElementById('restoreBackup').onclick=()=>document.getElementById('backupFile').click();
-document.getElementById('profileAdd').onclick=()=>document.getElementById('quickPanel').classList.add('show');
-document.getElementById('quickStock').onclick=()=>{document.getElementById('quickPanel').classList.remove('show');showPage('stock');setTimeout(openStockModal,120)};
-document.getElementById('backupFile').onchange=async()=>{
-  const f=document.getElementById('backupFile').files[0];if(!f)return;const st=document.getElementById('backupStatus');
-  try{
-    const raw=await f.text();if(raw.length>150000000)throw new Error('Yedek dosyası çok büyük');
-    const payload=JSON.parse(raw);if(payload.format!=='Apollo Ink Backup')throw new Error('Geçersiz Apollo Ink yedeği');
-    const isModern=!!payload.media,legacyMedia=!isModern?legacyMediaFromPayload(payload):null;
-    const designCount=isModern?(payload.media?.designs?.length||0):(legacyMedia?.designs?.length||0),appointmentCount=isModern?(payload.media?.appointments?.length||0):(legacyMedia?.appointments?.length||0);
-    if(!confirm(`Bu yedek mevcut uygulama verilerinin üzerine yazacak.\n\nYedek: ${designCount} tasarım görseli, ${appointmentCount} randevu görseli.\n\nDevam etmek istiyor musun?`)){st.textContent='Yedek yükleme iptal edildi.';return}
-    if(payload.storage||payload.manifest)applyBackupLocalData(payload.storage||{},payload.manifest||{});else await restoreLegacyV81(payload);
-    if(isModern)await restoreMediaBackup(payload.media);
-    else if(legacyMedia)await restoreMediaBackup(legacyMedia);
-    try{profileData={...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}')}}catch{}
-    try{appointments=JSON.parse(localStorage.getItem('apolloInkAppointmentsV1')||'[]')}catch{appointments=[]}
-    try{customers=JSON.parse(localStorage.getItem('apolloInkCustomersV1')||'[]')}catch{customers=[]}
-    try{designs=JSON.parse(localStorage.getItem('apolloInkDesignsV1')||localStorage.getItem('apolloInkDesignMetaV1')||'[]')}catch{designs=[]}
-    try{designCategories=JSON.parse(localStorage.getItem('apolloInkDesignCategoriesV1')||localStorage.getItem('apolloInkDesignCatsV1')||'null')||['Tümü','Minimal','Blackwork','Realism','Fine Line','Geometric','Traditional','Neo Traditional','Lettering','Cover Up','Ornamental']}catch{}
-    syncCustomersFromAppointments();updateProfileUI();renderDesigns();renderMain();render();renderCustomers();renderFinance();
-    st.textContent=`Yedek başarıyla yüklendi. ${designCount} tasarım görseli ve ${appointmentCount} randevu görseli geri yüklendi.`;
-  }catch(e){console.error(e);st.textContent='Yedek dosyası okunamadı veya geri yüklenemedi: '+(e?.message||'Bilinmeyen hata')}finally{document.getElementById('backupFile').value=''}
-};
+async function restoreIndexedDBBackup(dbs){
+  if(!Array.isArray(dbs))return;
+  const seen=new Set();
+  for(const item of dbs){
+    if(!item?.name||seen.has(item.name))continue;
+    seen.add(item.name);
+    try{await restoreOneIndexedDBBackup(item)}catch(e){console.warn('Yedek DB atlandı:',item?.name,e)}
+  }
+}
+function applyBackupLocalData(stores,manifest){
+  const src=stores||{};
+  Object.entries(src.localStorage||{}).forEach(([k,v])=>{if(v!=null)localStorage.setItem(k,v)});
+  Object.entries(src.sessionStorage||{}).forEach(([k,v])=>{if(v!=null)sessionStorage.setItem(k,v)});
+  /* Manifest fallback: kritik kayıtlar localStorage'da yoksa/anahtar adı değişmişse geri getir. */
+  const map={customers:'apolloInkCustomersV1',appointments:'apolloInkAppointmentsV1',finance:'apolloInkFinanceV1',materials:'apolloInkMaterialsV1',ibans:'apolloInkIbanV1',designs:'apolloInkDesignsV1',designCategories:'apolloInkDesignCategoriesV1',profile:'apolloInkProfileV1'};
+  if(manifest&&typeof manifest==='object')for(const [field,key] of Object.entries(map)){if((!localStorage.getItem(key)||localStorage.getItem(key)==='[]')&&manifest[field]!=null)localStorage.setItem(key,manifest[field])}
+}
+document.getElementById('createBackup').onclick=async()=>{const st=document.getElementById('backupStatus');st.textContent='Tüm veriler, müşteriler, tasarımlar ve görseller yedekleniyor…';try{const payload=await createBackupPayload();const blob=new Blob([JSON.stringify(payload)],{type:'application/json'});const name=`Apollo_Ink_Yedek_${stamp()}.json`;const file=new File([blob],name,{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Apollo Ink Tam Yedek'});st.textContent='Tam yedek paylaşım menüsüne gönderildi.'}else{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);st.textContent='Tam yedek dosyası hazırlandı.'}}catch(e){console.error(e);st.textContent='Yedek oluşturulamadı veya paylaşım iptal edildi.'}};
+let financePeriod='month',financeMonths=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+function financeRows(){try{return JSON.parse(localStorage.getItem('apolloInkFinanceV1')||'[]')}catch{return[]}}
+function financeMoney(n){return '₺'+Number(n||0).toLocaleString('tr-TR',{maximumFractionDigits:0})}
+function financeDateObj(v){const d=new Date(String(v||'')+'T00:00:00');return Number.isNaN(d.getTime())?null:d}
+function financeInRange(row){const d=financeDateObj(row.date);if(!d)return false;const now=new Date();if(financePeriod==='all')return true;if(financePeriod==='month')return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();if(financePeriod==='year')return d.getFullYear()===now.getFullYear();const start=new Date(now.getFullYear(),now.getMonth()-2,1);return d>=start&&d<=new Date(now.getFullYear(),now.getMonth()+1,0,23,59,59)}
+function financeIsExpense(row){return row.type==='expense'||(row.type!=='income'&&Number(row.income||0)===0&&Number(row.expense||0)>0)}
+function financeNetIncome(row){if(financeIsExpense(row))return 0;return Number(row.netIncome!=null?row.netIncome:Number(row.income||0)-Number(row.expense||0))}
+function financeGrossIncome(row){return financeIsExpense(row)?0:Number(row.income||0)}
+function financeExpense(row){return Number(row.expense||0)}
+function financePeriodRows(){return financeRows().filter(financeInRange)}
+function financePeriodLabel(){const now=new Date();if(financePeriod==='month')return 'Bu Ay · '+financeMonths[now.getMonth()]+' '+now.getFullYear();if(financePeriod==='3months')return 'Son 3 Ay';if(financePeriod==='year')return 'Bu Yıl · '+now.getFullYear();return 'Tüm Kayıtlar'}
+function financeChartData(rows){const now=new Date();if(financePeriod==='month'){const days=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();const values=Array(days).fill(0);rows.forEach(r=>{const d=financeDateObj(r.date);if(d&&d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth())values[d.getDate()-1]+=financeNetIncome(r)});return {values,labels:values.map((_,i)=>String(i+1))}}
+ if(financePeriod==='3months'){const values=[],labels=[];for(let i=2;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);values.push(rows.filter(r=>{const x=financeDateObj(r.date);return x&&x.getFullYear()===d.getFullYear()&&x.getMonth()===d.getMonth()}).reduce((a,r)=>a+financeGrossIncome(r),0));labels.push(financeMonths[d.getMonth()].slice(0,3))}return {values,labels}}
+ if(financePeriod==='year'){const values=[],labels=[];for(let i=0;i<12;i++){values.push(rows.filter(r=>{const d=financeDateObj(r.date);return d&&d.getFullYear()===now.getFullYear()&&d.getMonth()===i}).reduce((a,r)=>a+financeGrossIncome(r),0));labels.push(financeMonths[i].slice(0,3))}return {values,labels}}
+ const groups=new Map();rows.forEach(r=>{const d=financeDateObj(r.date);if(!d)return;const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');groups.set(k,(groups.get(k)||0)+financeGrossIncome(r))});const keys=[...groups.keys()].sort();const last=keys.slice(-12);return {values:last.map(k=>groups.get(k)),labels:last.map(k=>{const [yy,mm]=k.split('-');return financeMonths[Number(mm)-1].slice(0,3)})} }
+function financeSmoothPath(pts){
+ if(!pts.length)return '';
+ if(pts.length===1)return `M ${pts[0][0]} ${pts[0][1]}`;
+ let d=`M ${pts[0][0]} ${pts[0][1]}`;
+ for(let i=0;i<pts.length-1;i++){
+  const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+  const c1x=p1[0]+(p2[0]-p0[0])/6,c1y=p1[1]+(p2[1]-p0[1])/6;
+  const c2x=p2[0]-(p3[0]-p1[0])/6,c2y=p2[1]-(p3[1]-p1[1])/6;
+  d+=` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2[0]} ${p2[1]}`;
+ }
+ return d;
+}
+function financeDayRows(rows,day){return rows.filter(r=>{const d=financeDateObj(r.date);return d&&d.getDate()===day})}
+function updateFinanceDaySummary(rows,day){const box=document.getElementById('financeDaySummary');if(!box)return;const now=new Date(),d=new Date(now.getFullYear(),now.getMonth(),day),dayRows=financeDayRows(rows,day),gross=dayRows.reduce((a,r)=>a+financeGrossIncome(r),0),expense=dayRows.reduce((a,r)=>a+financeExpense(r),0),net=gross-expense;document.getElementById('financeDaySummaryDate').textContent=day+' '+financeMonths[d.getMonth()]+' '+d.getFullYear();document.getElementById('financeDaySummaryIncome').textContent=financeMoney(gross);document.getElementById('financeDaySummaryExpense').textContent=financeMoney(expense);document.getElementById('financeDaySummaryNet').textContent=financeMoney(net);document.getElementById('financeDaySummaryCount').textContent=financeTransactionItems(dayRows).length}
+function renderFinanceChart(rows,selectedDay=null){
+ const svg=document.getElementById('financeChart'),axis=document.getElementById('financeAxis');if(!svg||!axis)return;
+ const {values,labels}=financeChartData(rows);svg.innerHTML='';axis.innerHTML='';
+ const W=360,H=168,padX=2,top=22,bottom=18,base=H-bottom,plotH=base-top;
+ for(let i=0;i<=4;i++){const y=top+plotH*(i/4),line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1','0');line.setAttribute('x2',W);line.setAttribute('y1',y);line.setAttribute('y2',y);line.setAttribute('class','finance-chart-grid');svg.appendChild(line)}
+ const max=Math.max(...values.map(v=>Number(v||0)),1),pts=values.map((v,i)=>{const x=padX+(W-padX*2)*(i/Math.max(values.length-1,1));const y=base-(Number(v||0)/max)*(plotH*.82);return [x,y]});
+ if(pts.length){const linePath=financeSmoothPath(pts),area=document.createElementNS('http://www.w3.org/2000/svg','path');area.setAttribute('d',`${linePath} L ${pts[pts.length-1][0]} ${base} L ${pts[0][0]} ${base} Z`);area.setAttribute('class','finance-chart-fill');svg.appendChild(area);const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',linePath);path.setAttribute('class','finance-chart-line');svg.appendChild(path);
+  let day=selectedDay;if(!day||day<1||day>values.length)day=values.findLastIndex(v=>Number(v)>0)+1;if(day<1)day=1;const idx=day-1,sp=pts[idx],sv=Number(values[idx]||0);
+  const guide=document.createElementNS('http://www.w3.org/2000/svg','line');guide.setAttribute('x1',sp[0]);guide.setAttribute('x2',sp[0]);guide.setAttribute('y1',top);guide.setAttribute('y2',base);guide.setAttribute('class','finance-chart-selected-line');svg.appendChild(guide);
+  const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.setAttribute('cx',sp[0]);dot.setAttribute('cy',sp[1]);dot.setAttribute('r','5');dot.setAttribute('class','finance-chart-point');svg.appendChild(dot);
+  const tw=92,th=48,tx=Math.max(3,Math.min(W-tw-3,sp[0]-tw/2)),ty=Math.max(2,sp[1]-th-10),box=document.createElementNS('http://www.w3.org/2000/svg','rect');box.setAttribute('x',tx);box.setAttribute('y',ty);box.setAttribute('width',tw);box.setAttribute('height',th);box.setAttribute('rx','10');box.setAttribute('class','finance-chart-tooltip');svg.appendChild(box);const t1=document.createElementNS('http://www.w3.org/2000/svg','text');t1.setAttribute('x',tx+tw/2);t1.setAttribute('y',ty+20);t1.setAttribute('text-anchor','middle');t1.setAttribute('class','finance-chart-tooltip-main');t1.textContent=financeMoney(sv);svg.appendChild(t1);const t2=document.createElementNS('http://www.w3.org/2000/svg','text');t2.setAttribute('x',tx+tw/2);t2.setAttribute('y',ty+36);t2.setAttribute('text-anchor','middle');t2.setAttribute('class','finance-chart-tooltip-sub');t2.textContent=(labels[idx]||day)+' Eylül';svg.appendChild(t2);
+  if(financePeriod==='month')updateFinanceDaySummary(rows,day);
+ }
+ const axisLabels=financePeriod==='month'?['1','7','14','21','28','30']:(labels.length?labels.slice(0,6):['1','7','14','21','28','30']);axisLabels.forEach(label=>{const sp=document.createElement('span');sp.textContent=label;axis.appendChild(sp)});
+ if(financePeriod==='month'){[1,7,14,21,28,30].forEach(day=>{if(day>values.length)return;const i=day-1,x=padX+(W-padX*2)*(i/Math.max(values.length-1,1)),line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',x);line.setAttribute('x2',x);line.setAttribute('y1',top);line.setAttribute('y2',base);line.setAttribute('class','finance-chart-day-line');svg.appendChild(line)})}
+ svg.onpointerdown=e=>{if(financePeriod!=='month')return;const rect=svg.getBoundingClientRect(),ratio=(e.clientX-rect.left)/rect.width,day=Math.max(1,Math.min(values.length,Math.round(ratio*(values.length-1))+1));renderFinanceChart(rows,day);};
+}
+function financeMonthRows(offset=0){const now=new Date();const d=new Date(now.getFullYear(),now.getMonth()+offset,1),y=d.getFullYear(),m=d.getMonth();return financeRows().filter(r=>{const x=financeDateObj(r.date);return x&&x.getFullYear()===y&&x.getMonth()===m})}
+function financePercent(current,previous){if(!previous)return current>0?100:null;return ((current-previous)/previous)*100}
+function financeChangeText(pct){if(pct===null||!Number.isFinite(pct))return '—';const sign=pct>0?'+':'';return sign+pct.toLocaleString('tr-TR',{maximumFractionDigits:0})+'%'}
+function financeChangeClass(el,pct){el.classList.remove('up','down','neutral');el.classList.add(pct===null?'neutral':pct>0?'up':pct<0?'down':'neutral')}
+function financeCreatedAt(row){const n=Number(row?.createdAt);if(Number.isFinite(n)&&n>0)return n;const m=String(row?.id||'').match(/(?:fin_)?(\d{10,})/);if(m)return Number(m[1]);const d=financeDateObj(row?.date);return d?d.getTime():0}
+function financeTransactionItems(rows){return rows.map(r=>{const createdAt=financeCreatedAt(r);if(financeIsExpense(r)){const amount=Number(r.expense||0);return amount>0?{kind:'expense',amount,name:r.name||'Gider',category:r.category,description:r.description,date:r.date,id:r.id,createdAt,part:'expense'}:null}const income=Number(r.income||0),commission=Number(r.commission||0);if(income<=0)return null;return {kind:'income',amount:income,name:r.name||'Gelir',category:r.category,description:r.description,date:r.date,id:r.id,createdAt,commission,net:financeNetIncome(r),expense:income*commission/100,part:'income'}}).filter(Boolean).sort((a,b)=>b.createdAt-a.createdAt)}
+function renderFinance(){
+ const rows=financePeriodRows(),gross=rows.reduce((a,r)=>a+financeGrossIncome(r),0),expense=rows.reduce((a,r)=>a+financeExpense(r),0),net=gross-expense;
+ document.querySelectorAll('[data-finance-period]').forEach(b=>b.classList.toggle('active',b.dataset.financePeriod===financePeriod));
+ document.getElementById('financePeriodLabel').textContent=financePeriodLabel();document.getElementById('financeIncomeHeadline').textContent=financeMoney(gross);document.getElementById('financeIncomeTotal').textContent=financeMoney(gross);document.getElementById('financeExpenseTotal').textContent=financeMoney(expense);document.getElementById('financeNetTotal').textContent=financeMoney(net);document.getElementById('financeNetCard').classList.toggle('negative',net<0);document.getElementById('financeNetCard').classList.toggle('positive',net>=0);
+ const currentMonth=financeMonthRows(0),prevMonth=financeMonthRows(-1),curGross=currentMonth.reduce((a,r)=>a+financeGrossIncome(r),0),prevGross=prevMonth.reduce((a,r)=>a+financeGrossIncome(r),0),pct=financePercent(curGross,prevGross);const change=document.getElementById('financeIncomeChange');change.textContent=financeChangeText(pct)+' geçen aya göre';financeChangeClass(change,pct);
+ const curNet=currentMonth.reduce((a,r)=>a+financeGrossIncome(r)-financeExpense(r),0),prevNet=prevMonth.reduce((a,r)=>a+financeGrossIncome(r)-financeExpense(r),0);const curTx=financeTransactionItems(currentMonth).length,prevTx=financeTransactionItems(prevMonth).length;const customerKey=a=>a.customerId||((a.phone||'')+'|'+(a.instagram||'')).trim()||((a.name||'').trim().toLocaleLowerCase('tr-TR'));const currentCustomers=new Set(appointments.filter(a=>{const d=financeDateObj(a.date),x=d&&d.getFullYear()===new Date().getFullYear()&&d.getMonth()===new Date().getMonth();return x}).map(customerKey));const previousCustomers=new Set(appointments.filter(a=>{const d=financeDateObj(a.date),p=new Date();p.setMonth(p.getMonth()-1);return d&&d.getFullYear()===p.getFullYear()&&d.getMonth()===p.getMonth()}).map(customerKey));
+ const setDiff=(id,current,previous,mode='number')=>{const el=document.getElementById(id);if(!el)return;const diff=current-previous;el.textContent=mode==='money'?(diff>=0?'+':'')+financeMoney(diff):((diff>=0?'+':'')+diff);el.classList.remove('up','down','neutral');el.classList.add(diff>0?'up':diff<0?'down':'neutral')};
+ document.getElementById('financeSummaryTransactions').textContent=curTx;setDiff('financeSummaryTransactionsDiff',curTx,prevTx);document.getElementById('financeSummaryCustomers').textContent=currentCustomers.size;setDiff('financeSummaryCustomersDiff',currentCustomers.size,previousCustomers.size);document.getElementById('financeSummaryIncome').textContent=financeMoney(curGross);const spct=financePercent(curGross,prevGross);const sie=document.getElementById('financeSummaryIncomeDiff');sie.textContent=financeChangeText(spct);sie.classList.remove('up','down','neutral');sie.classList.add(spct===null?'neutral':spct>0?'up':spct<0?'down':'neutral');setDiff('financeSummaryNetDiff',curNet,prevNet,'money');
+ renderFinanceChart(rows);
+ const tx=document.getElementById('financeTransactions');tx.innerHTML='';const items=financeTransactionItems(rows);if(!items.length){tx.innerHTML='<div class="finance-empty">Bu dönemde henüz finans işlemi bulunmuyor.</div>';return}
+ items.slice(0,50).forEach(item=>{const el=document.createElement('div');el.className='finance-transaction '+item.kind;const detail=[item.category,item.description].filter(Boolean).join(' · ');if(item.kind==='income'){const commission=item.commission>0?`<div class="finance-transaction-subrow commission-line"><span>Komisyon %${item.commission}</span><strong>-${financeMoney(item.expense)}</strong></div>`:'';el.innerHTML=`<div class="finance-transaction-main"><div class="finance-transaction-title"><span class="finance-transaction-dot"></span><strong>${esc(item.name)}</strong></div><small>${esc(item.date||'')}${detail?' · '+esc(detail):''}</small><div class="finance-transaction-subrow income-line"><span>Gelir</span><strong>+${financeMoney(item.amount)}</strong></div>${commission}<div class="finance-transaction-net"><span>Net</span><strong>${financeMoney(item.net)}</strong></div></div><div class="finance-transaction-actions"><button class="finance-delete" type="button" data-finance-delete="${esc(item.id)}" aria-label="İşlemi sil">×</button></div>`}else{el.innerHTML=`<div class="finance-transaction-main"><div class="finance-transaction-title"><span class="finance-transaction-dot"></span><strong>${esc(item.name)}</strong></div><small>${esc(item.date||'')}${detail?' · '+esc(detail):''}</small></div><div class="finance-transaction-actions"><div class="amount">-${financeMoney(item.amount)}</div><button class="finance-delete" type="button" data-finance-delete="${esc(item.id)}" aria-label="İşlemi sil">×</button></div>`}tx.appendChild(el);})
+}
+function deleteFinanceRecord(id){const rows=financeRows();const next=rows.filter(r=>String(r.id)!==String(id));if(next.length===rows.length)return false;localStorage.setItem('apolloInkFinanceV1',JSON.stringify(next));renderFinance();return true}
+if(!window.__apolloFinanceDeleteBound){window.__apolloFinanceDeleteBound=true;document.addEventListener('click',e=>{const btn=e.target?.closest?.('[data-finance-delete]');if(!btn)return;e.preventDefault();e.stopPropagation();deleteFinanceRecord(btn.dataset.financeDelete)},true);document.addEventListener('pointerup',e=>{const btn=e.target?.closest?.('[data-finance-delete]');if(!btn)return;e.preventDefault();e.stopPropagation();deleteFinanceRecord(btn.dataset.financeDelete)},true)}
+function openFinanceEntry(type){const back=document.getElementById('financeEntryBackdrop');back.dataset.type=type;document.getElementById('financeEntryTitle').textContent=type==='income'?'Gelir Ekle':'Gider Ekle';document.getElementById('financeEntryAmount').value='';document.getElementById('financeEntryCommission').value='';document.getElementById('financeEntryCategory').value='';document.getElementById('financeEntryDescription').value='';document.getElementById('financeEntryDate').value=new Date().toISOString().slice(0,10);document.getElementById('financeCommissionWrap').style.display=type==='income'?'block':'none';back.classList.add('show');setTimeout(()=>document.getElementById('financeEntryAmount').focus(),50)}
+function closeFinanceEntry(){document.getElementById('financeEntryBackdrop').classList.remove('show')}
+function saveFinanceEntry(){const type=document.getElementById('financeEntryBackdrop').dataset.type||'income',amount=Number(document.getElementById('financeEntryAmount').value||0),commission=type==='income'?Number(document.getElementById('financeEntryCommission').value||0):0,category=document.getElementById('financeEntryCategory').value.trim(),description=document.getElementById('financeEntryDescription').value.trim(),date=document.getElementById('financeEntryDate').value;if(!amount||amount<0)return alert('Lütfen geçerli bir tutar gir.');if(commission<0||commission>100)return alert('Komisyon 0 ile 100 arasında olmalı.');if(!date)return alert('Lütfen tarih seç.');const rows=financeRows(),createdAt=Date.now(),id='fin_'+createdAt+'_'+Math.random().toString(36).slice(2,7),rec=type==='income'?{id,type:'income',source:'manual',date,name:'Gelir',category,description,income:amount,expense:amount*commission/100,commission,netIncome:amount*(1-commission/100),deposit:0,createdAt}:{id,type:'expense',source:'manual',date,name:'Gider',category,description,income:0,expense:amount,commission:0,netIncome:0,deposit:0,createdAt};rows.push(rec);localStorage.setItem('apolloInkFinanceV1',JSON.stringify(rows));closeFinanceEntry();renderFinance()}
+document.querySelectorAll('[data-finance-period]').forEach(b=>b.onclick=()=>{financePeriod=b.dataset.financePeriod;renderFinance()});document.getElementById('financeAddIncome').onclick=()=>openFinanceEntry('income');document.getElementById('financeAddExpense').onclick=()=>openFinanceEntry('expense');document.getElementById('financeEntryClose').onclick=closeFinanceEntry;document.getElementById('financeEntryCancel').onclick=closeFinanceEntry;document.getElementById('financeEntrySave').onclick=saveFinanceEntry;document.getElementById('financeEntryBackdrop').addEventListener('click',e=>{if(e.target.id==='financeEntryBackdrop')closeFinanceEntry()});
+document.getElementById('restoreBackup').onclick=()=>document.getElementById('backupFile').click();document.getElementById('profileAdd').onclick=()=>document.getElementById('quickPanel').classList.add('show');document.getElementById('quickStock').onclick=()=>{document.getElementById('quickPanel').classList.remove('show');showPage('stock');setTimeout(openStockModal,120)};document.getElementById('backupFile').onchange=async()=>{const f=document.getElementById('backupFile').files[0];if(!f)return;const st=document.getElementById('backupStatus');try{const raw=await f.text();if(raw.length>150000000)throw new Error('backup-too-large');const payload=JSON.parse(raw);if(payload.format!=='Apollo Ink Backup')throw new Error('invalid');const ok=confirm('Bu yedeği yüklemek mevcut uygulama verilerinin üzerine yazabilir. Yedekte bulunan tüm veriler ve görseller geri yüklenecek. Devam etmek istiyor musun?');if(!ok){st.textContent='Yedek yükleme iptal edildi.';return}const stores=payload.storage||{};applyBackupLocalData(stores,payload.manifest||{});
+      /* Görsel verilerini genel IndexedDB geri yüklemesinden ayırıyoruz. Böylece büyük Blob
+         verileri Safari'de yedek yükleme ekranını kilitlemeden doğrudan uygulamanın iki görsel DB'sine yazılır. */
+      if(Array.isArray(payload.designImages)||Array.isArray(payload.appointmentImages))await restoreExplicitImageBackups({designs:payload.designImages||[],appointments:payload.appointmentImages||[]});
+      await restoreIndexedDBBackup(payload.indexedDB||[]);
+      /* Eski V76-V79 yedekleri için geriye dönük destek. */
+      const legacyDbs=[payload.designBackup,payload.appointmentImageBackup].filter(x=>x?.name);
+      if(!payload.designImages&&!payload.appointmentImages){for(const item of legacyDbs)await restoreOneIndexedDBBackup(item)}try{profileData={...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}')}}catch{}try{appointments=JSON.parse(localStorage.getItem('apolloInkAppointmentsV1')||'[]')}catch{appointments=[]}try{customers=JSON.parse(localStorage.getItem('apolloInkCustomersV1')||'[]')}catch{customers=[]}try{designs=JSON.parse(localStorage.getItem('apolloInkDesignsV1')||'[]')}catch{designs=[]}try{designCategories=JSON.parse(localStorage.getItem('apolloInkDesignCategoriesV1')||'null')||['Tümü','Minimal','Blackwork','Realism','Fine Line','Geometric','Traditional','Neo Traditional','Lettering','Cover Up','Ornamental']}catch{}syncCustomersFromAppointments();updateProfileUI();renderDesigns();renderMain();render();renderCustomers();renderFinance();st.textContent='Tam yedek başarıyla yüklendi: müşteriler, tasarımlar, randevular ve görseller geri getirildi.'}catch(e){console.error(e);st.textContent='Yedek dosyası okunamadı veya geri yüklenemedi.'}finally{document.getElementById('backupFile').value=''}};
 
 /* V63 IBAN / Ödeme Bilgileri */
 const IBAN_KEY='apolloInkIbanV1';let ibanQrData='',openIbanId='',ibanEditId='';

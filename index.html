@@ -290,8 +290,8 @@ let designCategories=JSON.parse(localStorage.getItem(DESIGN_CAT_KEY)||'null')||[
 let designFilter='Tümü', designQuery='';
 function saveDesignMeta(){localStorage.setItem(DESIGN_META_KEY,JSON.stringify(designs));localStorage.setItem(DESIGN_CAT_KEY,JSON.stringify(designCategories))}
 function openDesignDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open('apolloInkDesignDBV1',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('designs'))r.result.createObjectStore('designs')};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
-async function putDesignBlob(id,file){const db=await openDesignDB();return new Promise((res,rej)=>{const tx=db.transaction('designs','readwrite');tx.objectStore('designs').put(file,id);tx.oncomplete=()=>{db.close();res()};tx.onerror=()=>{db.close();rej(tx.error)}})}
-async function getDesignBlob(id){const db=await openDesignDB();return new Promise((res,rej)=>{const q=db.transaction('designs','readonly').objectStore('designs').get(id);q.onsuccess=()=>{const v=q.result;db.close();res(v)};q.onerror=()=>{db.close();rej(q.error)}})}
+async function putDesignBlob(id,file){const db=await openDesignDB();try{const blob=file instanceof Blob?file:new Blob([file],{type:'application/octet-stream'});return await new Promise((res,rej)=>{const tx=db.transaction('designs','readwrite');tx.objectStore('designs').put(blob,id);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error||new Error('design image transaction failed'));tx.onabort=()=>rej(tx.error||new Error('design image transaction aborted'))})}finally{try{db.close()}catch{}}}
+async function getDesignBlob(id){const db=await openDesignDB();try{return await new Promise((res,rej)=>{const q=db.transaction('designs','readonly').objectStore('designs').get(id);q.onsuccess=()=>res(q.result||null);q.onerror=()=>rej(q.error||new Error('design image read failed'))})}finally{try{db.close()}catch{}}}
 async function deleteDesignBlob(id){const db=await openDesignDB();return new Promise(res=>{const tx=db.transaction('designs','readwrite');tx.objectStore('designs').delete(id);tx.oncomplete=()=>{db.close();res()};tx.onerror=()=>{db.close();res()}})}
 function renderCustomers(){const box=document.getElementById('customerList');if(!box)return;const q=customerQuery.trim().toLocaleLowerCase('tr-TR');const list=customers.filter(c=>!c.deleted&&(!q||(String(c.name||'').toLocaleLowerCase('tr-TR').includes(q)||normalizePhone(c.phone).includes(normalizePhone(q))))).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'tr'));box.innerHTML='';if(!list.length){const e=document.createElement('div');e.className='customer-empty';e.textContent=q?'Aramana uygun müşteri bulunamadı.':'Henüz kayıtlı müşteri yok.';box.appendChild(e);return}list.forEach(c=>{const appts=customerAppointments(c);const avatar=c.photo?`<div class="customer-avatar"><img src="${esc(c.photo)}" alt=""></div>`:`<div class="customer-avatar">${esc(initials(c.name))}</div>`;const card=document.createElement('div');card.className='customer-card';card.innerHTML=`${avatar}<button class="customer-card-main" type="button"><strong>${esc(c.name)}</strong><small>${esc(c.phone||c.instagram||'İletişim bilgisi eklenmemiş')}</small></button><div class="customer-card-right"><div class="customer-count"><span>${appts.length}</span></div><button class="customer-add-appt" type="button" aria-label="Randevu ekle"><svg viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="15" rx="2"></rect><path d="M8 3.5v4M16 3.5v4M4 10h16M12 13v5M9.5 15.5h5"></path></svg></button></div>`;card.querySelector('.customer-card-main').onclick=()=>openClientDetail(c.id);card.querySelector('.customer-add-appt').onclick=e=>{e.stopPropagation();openAppointmentForCustomer(c.id)};box.appendChild(card)})}
 function openAppointmentForCustomer(customerId){const c=customers.find(x=>x.id===customerId);if(!c)return;go(2);setTimeout(()=>openModal(null,c),80)}
@@ -384,9 +384,10 @@ async function readOneIndexedDBBackup(name){
   }catch(e){return {name,version:1,stores:[],error:String(e)}}finally{try{db?.close()}catch{}}
 }
 async function readIndexedDBBackup(){
-  const names=new Set(BACKUP_DB_NAMES);
-  try{if(indexedDB.databases){const dbs=await indexedDB.databases();for(const info of dbs||[])if(info?.name)names.add(info.name)}}catch(e){console.warn('IndexedDB listesi alınamadı',e)}
-  const out=[];for(const name of names)out.push(await readOneIndexedDBBackup(name));return out;
+  /* Yalnızca Apollo Ink'in kendi veritabanlarını yedekle. Tarayıcının/eklenti veya auth
+     katmanının başka IndexedDB'lerini geri yüklemek uygulamayı bozabilir. Yeni bir uygulama
+     DB'si eklediğimizde BACKUP_DB_NAMES listesine eklenir. */
+  const out=[];for(const name of BACKUP_DB_NAMES)out.push(await readOneIndexedDBBackup(name));return out;
 }
 function backupStorageSnapshot(storage){const out={};for(let i=0;i<storage.length;i++){const k=storage.key(i);if(k!=null)out[k]=storage.getItem(k)}return out}
 async function createBackupPayload(){
@@ -406,10 +407,12 @@ async function createBackupPayload(){
   const indexedDBData=await readIndexedDBBackup();
   const designDB=indexedDBData.find(x=>x?.name==='apolloInkDesignDBV1')||{name:'apolloInkDesignDBV1',version:1,stores:[]};
   const appointmentDB=indexedDBData.find(x=>x?.name==='apolloInkAppointmentImagesV1')||{name:'apolloInkAppointmentImagesV1',version:1,stores:[]};
-  return {format:'Apollo Ink Backup',version:7,createdAt:new Date().toISOString(),scope:'all-app-data',manifest,storage:{localStorage:local,sessionStorage:session},indexedDB:indexedDBData,designBackup:designDB,appointmentImageBackup:appointmentDB};
+  return {format:'Apollo Ink Backup',version:8,createdAt:new Date().toISOString(),scope:'all-app-data',manifest,storage:{localStorage:local,sessionStorage:session},indexedDB:indexedDBData,designBackup:designDB,appointmentImageBackup:appointmentDB};
 }
 async function restoreOneIndexedDBBackup(item){
   if(!item?.name)return;
+  /* Sadece uygulamanın tanıdığı DB'leri kabul et. */
+  if(!BACKUP_DB_NAMES.includes(item.name))return;
   const targetVersion=Math.max(1,Number(item.version)||1);
   let db=null;
   try{
@@ -423,7 +426,15 @@ async function restoreOneIndexedDBBackup(item){
     for(const stData of needed){
       if(!db.objectStoreNames.contains(stData.name))continue;
       const decoded=[];
-      for(const rec of (stData.records||[]))decoded.push({key:await backupDecode(rec.key),value:await backupDecode(rec.value)});
+      for(const rec of (stData.records||[])){
+        const key=await backupDecode(rec.key);
+        let value=await backupDecode(rec.value);
+        /* Design ve randevu görsellerini Safari'de daha kararlı saklamak için File yerine Blob tut. */
+        if((item.name==='apolloInkDesignDBV1'||item.name==='apolloInkAppointmentImagesV1') && value instanceof File){
+          value=new Blob([await value.arrayBuffer()],{type:value.type||'application/octet-stream'});
+        }
+        decoded.push({key,value});
+      }
       await new Promise((resolve,reject)=>{
         const tx=db.transaction(stData.name,'readwrite'),store=tx.objectStore(stData.name);
         tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('transaction error'));tx.onabort=()=>reject(tx.error||new Error('transaction aborted'));
@@ -436,10 +447,10 @@ async function restoreOneIndexedDBBackup(item){
 }
 async function restoreIndexedDBBackup(dbs){
   if(!Array.isArray(dbs))return;
-  const ordered=[...dbs].sort((a,b)=>{
-    const rank=x=>x?.name==='apolloInkDesignDBV1'?0:x?.name==='apolloInkAppointmentImagesV1'?1:2;return rank(a)-rank(b)
-  });
-  for(const item of ordered){
+  const seen=new Set();
+  for(const item of dbs){
+    if(!item?.name||seen.has(item.name))continue;
+    seen.add(item.name);
     try{await restoreOneIndexedDBBackup(item)}catch(e){console.warn('Yedek DB atlandı:',item?.name,e)}
   }
 }
@@ -523,8 +534,11 @@ function closeFinanceEntry(){document.getElementById('financeEntryBackdrop').cla
 function saveFinanceEntry(){const type=document.getElementById('financeEntryBackdrop').dataset.type||'income',amount=Number(document.getElementById('financeEntryAmount').value||0),commission=type==='income'?Number(document.getElementById('financeEntryCommission').value||0):0,category=document.getElementById('financeEntryCategory').value.trim(),description=document.getElementById('financeEntryDescription').value.trim(),date=document.getElementById('financeEntryDate').value;if(!amount||amount<0)return alert('Lütfen geçerli bir tutar gir.');if(commission<0||commission>100)return alert('Komisyon 0 ile 100 arasında olmalı.');if(!date)return alert('Lütfen tarih seç.');const rows=financeRows(),createdAt=Date.now(),id='fin_'+createdAt+'_'+Math.random().toString(36).slice(2,7),rec=type==='income'?{id,type:'income',source:'manual',date,name:'Gelir',category,description,income:amount,expense:amount*commission/100,commission,netIncome:amount*(1-commission/100),deposit:0,createdAt}:{id,type:'expense',source:'manual',date,name:'Gider',category,description,income:0,expense:amount,commission:0,netIncome:0,deposit:0,createdAt};rows.push(rec);localStorage.setItem('apolloInkFinanceV1',JSON.stringify(rows));closeFinanceEntry();renderFinance()}
 document.querySelectorAll('[data-finance-period]').forEach(b=>b.onclick=()=>{financePeriod=b.dataset.financePeriod;renderFinance()});document.getElementById('financeAddIncome').onclick=()=>openFinanceEntry('income');document.getElementById('financeAddExpense').onclick=()=>openFinanceEntry('expense');document.getElementById('financeEntryClose').onclick=closeFinanceEntry;document.getElementById('financeEntryCancel').onclick=closeFinanceEntry;document.getElementById('financeEntrySave').onclick=saveFinanceEntry;document.getElementById('financeEntryBackdrop').addEventListener('click',e=>{if(e.target.id==='financeEntryBackdrop')closeFinanceEntry()});
 document.getElementById('restoreBackup').onclick=()=>document.getElementById('backupFile').click();document.getElementById('profileAdd').onclick=()=>document.getElementById('quickPanel').classList.add('show');document.getElementById('quickStock').onclick=()=>{document.getElementById('quickPanel').classList.remove('show');showPage('stock');setTimeout(openStockModal,120)};document.getElementById('backupFile').onchange=async()=>{const f=document.getElementById('backupFile').files[0];if(!f)return;const st=document.getElementById('backupStatus');try{const payload=JSON.parse(await f.text());if(payload.format!=='Apollo Ink Backup')throw new Error('invalid');const ok=confirm('Bu yedeği yüklemek mevcut uygulama verilerinin üzerine yazabilir. Yedekte bulunan tüm veriler ve görseller geri yüklenecek. Devam etmek istiyor musun?');if(!ok){st.textContent='Yedek yükleme iptal edildi.';return}const stores=payload.storage||{};applyBackupLocalData(stores,payload.manifest||{});await restoreIndexedDBBackup(payload.indexedDB||[]);
-      if(payload.designBackup?.name)await restoreOneIndexedDBBackup(payload.designBackup);
-      if(payload.appointmentImageBackup?.name)await restoreOneIndexedDBBackup(payload.appointmentImageBackup);try{profileData={...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}')}}catch{}try{appointments=JSON.parse(localStorage.getItem('apolloInkAppointmentsV1')||'[]')}catch{appointments=[]}try{customers=JSON.parse(localStorage.getItem('apolloInkCustomersV1')||'[]')}catch{customers=[]}try{designs=JSON.parse(localStorage.getItem('apolloInkDesignsV1')||'[]')}catch{designs=[]}try{designCategories=JSON.parse(localStorage.getItem('apolloInkDesignCategoriesV1')||'null')||['Tümü','Minimal','Blackwork','Realism','Fine Line','Geometric','Traditional','Neo Traditional','Lettering','Cover Up','Ornamental']}catch{}syncCustomersFromAppointments();updateProfileUI();renderDesigns();renderMain();render();renderCustomers();renderFinance();st.textContent='Tam yedek başarıyla yüklendi: müşteriler, tasarımlar, randevular ve görseller geri getirildi.'}catch(e){console.error(e);st.textContent='Yedek dosyası okunamadı veya geri yüklenemedi.'}finally{document.getElementById('backupFile').value=''}};
+      /* designBackup / appointmentImageBackup eski yedeklerdeki geriye dönük alanlardır;
+         indexedDB listesinde aynı kayıt varsa ikinci kez restore etme. */
+      const legacyDbs=[payload.designBackup,payload.appointmentImageBackup].filter(x=>x?.name);
+      const already=new Set((payload.indexedDB||[]).map(x=>x?.name));
+      for(const item of legacyDbs)if(!already.has(item.name))await restoreOneIndexedDBBackup(item);try{profileData={...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}')}}catch{}try{appointments=JSON.parse(localStorage.getItem('apolloInkAppointmentsV1')||'[]')}catch{appointments=[]}try{customers=JSON.parse(localStorage.getItem('apolloInkCustomersV1')||'[]')}catch{customers=[]}try{designs=JSON.parse(localStorage.getItem('apolloInkDesignsV1')||'[]')}catch{designs=[]}try{designCategories=JSON.parse(localStorage.getItem('apolloInkDesignCategoriesV1')||'null')||['Tümü','Minimal','Blackwork','Realism','Fine Line','Geometric','Traditional','Neo Traditional','Lettering','Cover Up','Ornamental']}catch{}syncCustomersFromAppointments();updateProfileUI();renderDesigns();renderMain();render();renderCustomers();renderFinance();st.textContent='Tam yedek başarıyla yüklendi: müşteriler, tasarımlar, randevular ve görseller geri getirildi.'}catch(e){console.error(e);st.textContent='Yedek dosyası okunamadı veya geri yüklenemedi.'}finally{document.getElementById('backupFile').value=''}};
 
 /* V63 IBAN / Ödeme Bilgileri */
 const IBAN_KEY='apolloInkIbanV1';let ibanQrData='',openIbanId='',ibanEditId='';

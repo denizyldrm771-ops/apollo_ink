@@ -321,9 +321,16 @@ function openProfileEditor(){document.getElementById('profileNameInput').value=p
 function closeProfileEditor(){document.getElementById('profileEditBackdrop').classList.remove('show')}
 document.getElementById('openProfileEdit').onclick=openProfileEditor;document.getElementById('profileEditClose').onclick=closeProfileEditor;document.getElementById('profileEditCancel').onclick=closeProfileEditor;document.getElementById('profileEditBackdrop').addEventListener('click',e=>{if(e.target.id==='profileEditBackdrop')closeProfileEditor()});document.getElementById('chooseProfilePhoto').onclick=()=>document.getElementById('profilePhotoInput').click();document.getElementById('profilePhotoInput').onchange=()=>{const f=document.getElementById('profilePhotoInput').files[0];if(!f)return;const r=new FileReader();r.onload=()=>{profileData.photo=r.result;updateProfileUI()};r.readAsDataURL(f)};document.getElementById('profileEditSave').onclick=()=>{profileData.name=document.getElementById('profileNameInput').value.trim()||'Deniz';profileData.email=document.getElementById('profileEmailInput').value.trim();profileData.studio=document.getElementById('profileStudioInput').value.trim();profileData.city=document.getElementById('profileCityInput').value.trim();saveProfile();closeProfileEditor()};updateProfileUI();
 function stamp(){const d=new Date();const pad=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`}
-/* Evrensel yedekleme: localStorage + sessionStorage + TÜM IndexedDB verileri.
-   Böylece bugün kullanılan ve ileride eklenecek ayarlar/veri alanları da otomatik olarak kapsama girer. */
+/* V76 — Evrensel tam yedekleme
+   Kullanıcının uygulamada değiştirebildiği tüm localStorage + sessionStorage + IndexedDB verilerini,
+   özellikle Müşteriler, Tasarım Çalışmaları ve bunların görsellerini birlikte yedekler.
+   Yeni IndexedDB alanları eklendiğinde de keşfedilebildiği sürece otomatik olarak kapsama girer. */
+const BACKUP_DB_NAMES=['apolloInkAppointmentImagesV1','apolloInkDesignDBV1'];
 async function backupEncode(value){
+  if(value instanceof File){
+    const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.readAsDataURL(value)});
+    return {__apolloType:'file',name:value.name||'dosya',lastModified:value.lastModified||Date.now(),type:value.type||'application/octet-stream',data};
+  }
   if(value instanceof Blob){
     const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.readAsDataURL(value)});
     return {__apolloType:'blob',type:value.type||'application/octet-stream',data};
@@ -338,7 +345,8 @@ async function backupEncode(value){
 async function backupDecode(value){
   if(Array.isArray(value)){const out=[];for(const v of value)out.push(await backupDecode(v));return out}
   if(value&&typeof value==='object'&&value.__apolloType){
-    if(value.__apolloType==='blob'){const res=await fetch(value.data);return await res.blob()}
+    if(value.__apolloType==='file'){const blob=await (await fetch(value.data)).blob();return new File([blob],value.name||'dosya',{type:value.type||blob.type||'application/octet-stream',lastModified:value.lastModified||Date.now()})}
+    if(value.__apolloType==='blob'){return await (await fetch(value.data)).blob()}
     if(value.__apolloType==='arraybuffer'){const bin=atob(value.data),buf=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)buf[i]=bin.charCodeAt(i);return buf.buffer}
     if(value.__apolloType==='typedarray'){const ab=await backupDecode(value.data),ctor=window[value.name]||Uint8Array;try{return new ctor(ab)}catch{return new Uint8Array(ab)}}
     if(value.__apolloType==='date')return new Date(value.data);
@@ -346,16 +354,43 @@ async function backupDecode(value){
   if(value&&typeof value==='object'){const out={};for(const [k,v] of Object.entries(value))out[k]=await backupDecode(v);return out}
   return value;
 }
-function idbOpen(name,version,upgrade){return new Promise((resolve,reject)=>{const r=version?indexedDB.open(name,version):indexedDB.open(name);r.onupgradeneeded=e=>{try{upgrade?.(r.result,e.oldVersion,e.newVersion)}catch(err){e.target.transaction.abort();reject(err)}};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
-async function readIndexedDBBackup(){
-  const out=[];if(!indexedDB.databases)return out;
-  const dbs=await indexedDB.databases();
-  for(const info of dbs){if(!info?.name)continue;let db;try{db=await idbOpen(info.name);const stores=[];for(const name of Array.from(db.objectStoreNames)){const tx=db.transaction(name,'readonly'),st=tx.objectStore(name);const keys=await new Promise((res,rej)=>{const q=st.getAllKeys();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error)});const vals=await new Promise((res,rej)=>{const q=st.getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error)});const records=[];for(let i=0;i<vals.length;i++)records.push({key:await backupEncode(keys[i]),value:await backupEncode(vals[i])});stores.push({name,keyPath:st.keyPath,autoIncrement:st.autoIncrement,records})}out.push({name:db.name,version:db.version,stores})}catch(e){out.push({name:info.name,version:info.version||1,stores:[],error:String(e)})}finally{try{db?.close()}catch{}}}
-  return out;
+function idbOpen(name,version,upgrade){return new Promise((resolve,reject)=>{const r=version?indexedDB.open(name,version):indexedDB.open(name);r.onupgradeneeded=e=>{try{upgrade?.(r.result,e.oldVersion,e.newVersion)}catch(err){try{e.target.transaction.abort()}catch{};reject(err)}};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function readOneIndexedDBBackup(name){
+  let db=null;
+  try{
+    db=await idbOpen(name);
+    const stores=[];
+    for(const storeName of Array.from(db.objectStoreNames)){
+      const tx=db.transaction(storeName,'readonly'),st=tx.objectStore(storeName);
+      const keys=await new Promise((res,rej)=>{const q=st.getAllKeys();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error)});
+      const vals=await new Promise((res,rej)=>{const q=st.getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error)});
+      const records=[];for(let i=0;i<vals.length;i++)records.push({key:await backupEncode(keys[i]),value:await backupEncode(vals[i])});
+      stores.push({name:storeName,keyPath:st.keyPath,autoIncrement:st.autoIncrement,records});
+    }
+    return {name:db.name,version:db.version,stores};
+  }catch(e){return {name,version:1,stores:[],error:String(e)}}finally{try{db?.close()}catch{}}
 }
+async function readIndexedDBBackup(){
+  const names=new Set(BACKUP_DB_NAMES);
+  try{if(indexedDB.databases){const dbs=await indexedDB.databases();for(const info of dbs||[])if(info?.name)names.add(info.name)}}catch(e){console.warn('IndexedDB listesi alınamadı',e)}
+  const out=[];for(const name of names)out.push(await readOneIndexedDBBackup(name));return out;
+}
+function backupStorageSnapshot(storage){const out={};for(let i=0;i<storage.length;i++){const k=storage.key(i);if(k!=null)out[k]=storage.getItem(k)}return out}
 async function createBackupPayload(){
-  const local={},session={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k)local[k]=localStorage.getItem(k)}for(let i=0;i<sessionStorage.length;i++){const k=sessionStorage.key(i);if(k)session[k]=sessionStorage.getItem(k)}
-  return {format:'Apollo Ink Backup',version:5,createdAt:new Date().toISOString(),scope:'all-app-data',storage:{localStorage:local,sessionStorage:session},indexedDB:await readIndexedDBBackup()};
+  const local=backupStorageSnapshot(localStorage),session=backupStorageSnapshot(sessionStorage);
+  /* Kritik uygulama verilerini açık manifestte de tutuyoruz; böylece eski/yeni sürüm anahtar adı değişse bile
+     Müşteriler ve Tasarım Çalışmaları yedeğin içinde açıkça bulunur. */
+  const manifest={
+    profile:local.apolloInkProfileV1||null,
+    customers:local.apolloInkCustomersV1||'[]',
+    appointments:local.apolloInkAppointmentsV1||'[]',
+    finance:local.apolloInkFinanceV1||'[]',
+    materials:local.apolloInkMaterialsV1||'[]',
+    ibans:local.apolloInkIbanV1||'[]',
+    designs:local.apolloInkDesignsV1||'[]',
+    designCategories:local.apolloInkDesignCategoriesV1||'[]'
+  };
+  return {format:'Apollo Ink Backup',version:6,createdAt:new Date().toISOString(),scope:'all-app-data',manifest,storage:{localStorage:local,sessionStorage:session},indexedDB:await readIndexedDBBackup()};
 }
 async function restoreIndexedDBBackup(dbs){
   if(!Array.isArray(dbs))return;
@@ -364,10 +399,24 @@ async function restoreIndexedDBBackup(dbs){
     const missing=(item.stores||[]).filter(st=>!db?.objectStoreNames.contains(st.name));
     if(missing.length){const oldVersion=db?.version||0;try{db?.close()}catch{};db=await idbOpen(item.name,Math.max(oldVersion+1,Number(item.version)||1),r=>{for(const st of missing)r.createObjectStore(st.name,{keyPath:st.keyPath??null,autoIncrement:!!st.autoIncrement})})}
     if(!db)continue;
-    for(const stData of (item.stores||[])){if(!db.objectStoreNames.contains(stData.name))continue;const tx=db.transaction(stData.name,'readwrite'),store=tx.objectStore(stData.name);store.clear();for(const rec of (stData.records||[])){const value=await backupDecode(rec.value),key=await backupDecode(rec.key);if(store.keyPath===null)store.put(value,key);else store.put(value)}await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error||new Error('transaction aborted'))})}
+    for(const stData of (item.stores||[])){
+      if(!db.objectStoreNames.contains(stData.name))continue;
+      const decoded=[];for(const rec of (stData.records||[]))decoded.push({key:await backupDecode(rec.key),value:await backupDecode(rec.value)});
+      const tx=db.transaction(stData.name,'readwrite'),store=tx.objectStore(stData.name);store.clear();
+      for(const rec of decoded){if(store.keyPath===null)store.put(rec.value,rec.key);else store.put(rec.value)}
+      await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error||new Error('transaction aborted'))});
+    }
   }catch(e){console.warn('IndexedDB geri yükleme hatası',item.name,e)}finally{try{db?.close()}catch{}}}
 }
-document.getElementById('createBackup').onclick=async()=>{const st=document.getElementById('backupStatus');st.textContent='Tüm veriler ve görseller yedekleniyor…';try{const payload=await createBackupPayload();const blob=new Blob([JSON.stringify(payload)],{type:'application/json'});const name=`Apollo_Ink_Yedek_${stamp()}.json`;const file=new File([blob],name,{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Apollo Ink Tam Yedek'});st.textContent='Tam yedek paylaşım menüsüne gönderildi.'}else{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);st.textContent='Tam yedek dosyası hazırlandı.'}}catch(e){console.error(e);st.textContent='Yedek oluşturulamadı veya paylaşım iptal edildi.'}};
+function applyBackupLocalData(stores,manifest){
+  const src=stores||{};
+  Object.entries(src.localStorage||{}).forEach(([k,v])=>{if(v!=null)localStorage.setItem(k,v)});
+  Object.entries(src.sessionStorage||{}).forEach(([k,v])=>{if(v!=null)sessionStorage.setItem(k,v)});
+  /* Manifest fallback: kritik kayıtlar localStorage'da yoksa/anahtar adı değişmişse geri getir. */
+  const map={customers:'apolloInkCustomersV1',appointments:'apolloInkAppointmentsV1',finance:'apolloInkFinanceV1',materials:'apolloInkMaterialsV1',ibans:'apolloInkIbanV1',designs:'apolloInkDesignsV1',designCategories:'apolloInkDesignCategoriesV1',profile:'apolloInkProfileV1'};
+  if(manifest&&typeof manifest==='object')for(const [field,key] of Object.entries(map)){if((!localStorage.getItem(key)||localStorage.getItem(key)==='[]')&&manifest[field]!=null)localStorage.setItem(key,manifest[field])}
+}
+document.getElementById('createBackup').onclick=async()=>{const st=document.getElementById('backupStatus');st.textContent='Tüm veriler, müşteriler, tasarımlar ve görseller yedekleniyor…';try{const payload=await createBackupPayload();const blob=new Blob([JSON.stringify(payload)],{type:'application/json'});const name=`Apollo_Ink_Yedek_${stamp()}.json`;const file=new File([blob],name,{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Apollo Ink Tam Yedek'});st.textContent='Tam yedek paylaşım menüsüne gönderildi.'}else{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);st.textContent='Tam yedek dosyası hazırlandı.'}}catch(e){console.error(e);st.textContent='Yedek oluşturulamadı veya paylaşım iptal edildi.'}};
 let financePeriod='month',financeMonths=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 function financeRows(){try{return JSON.parse(localStorage.getItem('apolloInkFinanceV1')||'[]')}catch{return[]}}
 function financeMoney(n){return '₺'+Number(n||0).toLocaleString('tr-TR',{maximumFractionDigits:0})}
@@ -438,7 +487,7 @@ function openFinanceEntry(type){const back=document.getElementById('financeEntry
 function closeFinanceEntry(){document.getElementById('financeEntryBackdrop').classList.remove('show')}
 function saveFinanceEntry(){const type=document.getElementById('financeEntryBackdrop').dataset.type||'income',amount=Number(document.getElementById('financeEntryAmount').value||0),commission=type==='income'?Number(document.getElementById('financeEntryCommission').value||0):0,category=document.getElementById('financeEntryCategory').value.trim(),description=document.getElementById('financeEntryDescription').value.trim(),date=document.getElementById('financeEntryDate').value;if(!amount||amount<0)return alert('Lütfen geçerli bir tutar gir.');if(commission<0||commission>100)return alert('Komisyon 0 ile 100 arasında olmalı.');if(!date)return alert('Lütfen tarih seç.');const rows=financeRows(),createdAt=Date.now(),id='fin_'+createdAt+'_'+Math.random().toString(36).slice(2,7),rec=type==='income'?{id,type:'income',source:'manual',date,name:'Gelir',category,description,income:amount,expense:amount*commission/100,commission,netIncome:amount*(1-commission/100),deposit:0,createdAt}:{id,type:'expense',source:'manual',date,name:'Gider',category,description,income:0,expense:amount,commission:0,netIncome:0,deposit:0,createdAt};rows.push(rec);localStorage.setItem('apolloInkFinanceV1',JSON.stringify(rows));closeFinanceEntry();renderFinance()}
 document.querySelectorAll('[data-finance-period]').forEach(b=>b.onclick=()=>{financePeriod=b.dataset.financePeriod;renderFinance()});document.getElementById('financeAddIncome').onclick=()=>openFinanceEntry('income');document.getElementById('financeAddExpense').onclick=()=>openFinanceEntry('expense');document.getElementById('financeEntryClose').onclick=closeFinanceEntry;document.getElementById('financeEntryCancel').onclick=closeFinanceEntry;document.getElementById('financeEntrySave').onclick=saveFinanceEntry;document.getElementById('financeEntryBackdrop').addEventListener('click',e=>{if(e.target.id==='financeEntryBackdrop')closeFinanceEntry()});
-document.getElementById('restoreBackup').onclick=()=>document.getElementById('backupFile').click();document.getElementById('profileAdd').onclick=()=>document.getElementById('quickPanel').classList.add('show');document.getElementById('quickStock').onclick=()=>{document.getElementById('quickPanel').classList.remove('show');showPage('stock');setTimeout(openStockModal,120)};document.getElementById('backupFile').onchange=async()=>{const f=document.getElementById('backupFile').files[0];if(!f)return;const st=document.getElementById('backupStatus');try{const payload=JSON.parse(await f.text());if(payload.format!=='Apollo Ink Backup')throw new Error('invalid');const ok=confirm('Bu yedeği yüklemek mevcut uygulama verilerinin üzerine yazabilir. Yedekte bulunan veriler ve görseller geri yüklenecek. Devam etmek istiyor musun?');if(!ok){st.textContent='Yedek yükleme iptal edildi.';return}const stores=payload.storage||{};Object.entries(stores.localStorage||payload.localStorage||{}).forEach(([k,v])=>{if(v!=null)localStorage.setItem(k,v)});Object.entries(stores.sessionStorage||{}).forEach(([k,v])=>{if(v!=null)sessionStorage.setItem(k,v)});await restoreIndexedDBBackup(payload.indexedDB||[]);if(payload.localStorage?.apolloInkProfileV1||stores.localStorage?.apolloInkProfileV1)try{profileData={...DEFAULT_PROFILE,...JSON.parse((stores.localStorage||payload.localStorage).apolloInkProfileV1)}}catch{}if((stores.localStorage||payload.localStorage)?.apolloInkAppointmentsV1)try{appointments=JSON.parse((stores.localStorage||payload.localStorage).apolloInkAppointmentsV1)}catch{}if((stores.localStorage||payload.localStorage)?.apolloInkDesignMetaV1)try{designs=JSON.parse((stores.localStorage||payload.localStorage).apolloInkDesignMetaV1)}catch{}if((stores.localStorage||payload.localStorage)?.apolloInkDesignCatsV1)try{designCategories=JSON.parse((stores.localStorage||payload.localStorage).apolloInkDesignCatsV1)}catch{}updateProfileUI();renderDesigns();renderMain();render();renderCustomers();renderFinance();st.textContent='Tam yedek başarıyla yüklendi.'}catch(e){console.error(e);st.textContent='Yedek dosyası okunamadı veya geri yüklenemedi.'}finally{document.getElementById('backupFile').value=''}};
+document.getElementById('restoreBackup').onclick=()=>document.getElementById('backupFile').click();document.getElementById('profileAdd').onclick=()=>document.getElementById('quickPanel').classList.add('show');document.getElementById('quickStock').onclick=()=>{document.getElementById('quickPanel').classList.remove('show');showPage('stock');setTimeout(openStockModal,120)};document.getElementById('backupFile').onchange=async()=>{const f=document.getElementById('backupFile').files[0];if(!f)return;const st=document.getElementById('backupStatus');try{const payload=JSON.parse(await f.text());if(payload.format!=='Apollo Ink Backup')throw new Error('invalid');const ok=confirm('Bu yedeği yüklemek mevcut uygulama verilerinin üzerine yazabilir. Yedekte bulunan tüm veriler ve görseller geri yüklenecek. Devam etmek istiyor musun?');if(!ok){st.textContent='Yedek yükleme iptal edildi.';return}const stores=payload.storage||{};applyBackupLocalData(stores,payload.manifest||{});await restoreIndexedDBBackup(payload.indexedDB||[]);try{profileData={...DEFAULT_PROFILE,...JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}')}}catch{}try{appointments=JSON.parse(localStorage.getItem('apolloInkAppointmentsV1')||'[]')}catch{appointments=[]}try{customers=JSON.parse(localStorage.getItem('apolloInkCustomersV1')||'[]')}catch{customers=[]}try{designs=JSON.parse(localStorage.getItem('apolloInkDesignsV1')||'[]')}catch{designs=[]}try{designCategories=JSON.parse(localStorage.getItem('apolloInkDesignCategoriesV1')||'null')||['Tümü','Minimal','Blackwork','Realism','Fine Line','Geometric','Traditional','Neo Traditional','Lettering','Cover Up','Ornamental']}catch{}syncCustomersFromAppointments();updateProfileUI();renderDesigns();renderMain();render();renderCustomers();renderFinance();st.textContent='Tam yedek başarıyla yüklendi: müşteriler, tasarımlar, randevular ve görseller geri getirildi.'}catch(e){console.error(e);st.textContent='Yedek dosyası okunamadı veya geri yüklenemedi.'}finally{document.getElementById('backupFile').value=''}};
 
 /* V63 IBAN / Ödeme Bilgileri */
 const IBAN_KEY='apolloInkIbanV1';let ibanQrData='',openIbanId='',ibanEditId='';

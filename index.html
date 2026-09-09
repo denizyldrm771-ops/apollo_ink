@@ -578,6 +578,42 @@ document.getElementById('ibanSave').onclick=function(e){e.preventDefault();e.sto
 
 </body></html>
 <style
+<script id="v75-save-button-bridge">
+(function(){
+  function invoke(id, fnName, formId){
+    var b=document.getElementById(id);
+    if(!b || b.dataset.v75bound==='1') return;
+    b.dataset.v75bound='1';
+    b.type='button';
+    function run(ev){
+      if(ev){ ev.preventDefault(); ev.stopPropagation(); ev.stopImmediatePropagation(); }
+      var form=formId?document.getElementById(formId):null;
+      if(form && typeof form.checkValidity==='function' && !form.checkValidity()){
+        if(typeof form.reportValidity==='function') form.reportValidity();
+        return false;
+      }
+      try{
+        var fn=window[fnName];
+        if(typeof fn!=='function') throw new Error('Kaydet fonksiyonu bulunamadı: '+fnName);
+        fn();
+      }catch(err){
+        console.error(err);
+        alert('Kaydetme sırasında bir hata oluştu.');
+      }
+      return false;
+    }
+    ['pointerdown','touchstart','click'].forEach(function(type){
+      b.addEventListener(type,run,{capture:true,passive:false});
+    });
+  }
+  function bind(){
+    invoke('stockSave','saveStockV67','stockForm');
+    invoke('ibanSave','saveIbanV67','ibanForm');
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind); else bind();
+})();
+</script>
+
 >
 #viewport{width:100vw;max-width:100vw;overflow:hidden!important}
 .page{width:100vw!important;min-width:100vw!important;max-width:100vw!important}

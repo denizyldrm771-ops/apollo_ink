@@ -1110,6 +1110,61 @@ const dur=byId('fDuration');if(dur)dur.value=data.duration;const tm=byId('fTime'
 .page:not(.opening) input::placeholder,.page:not(.opening) textarea::placeholder{color:#8a867f!important;opacity:1!important;-webkit-text-fill-color:#8a867f!important}
 .page:not(.opening) button:not(.add):not(.finance-add-btn):not(.save):not(.new-appt):not(.iban-add-btn):not(.iban-delete-btn):not(.finance-form-actions button):not(.form-actions .save){-webkit-text-fill-color:currentColor}
 .main .sun{opacity:.18!important}
+/* Form ve modal metin kontrasti - mobilde tüm giriş panelleri */
+.modal-backdrop .modal,
+.modal-backdrop .modal *,
+.design-upload-backdrop .design-modal,
+.design-upload-backdrop .design-modal *,
+.category-backdrop .category-modal,
+.category-backdrop .category-modal *,
+.design-detail-backdrop .design-detail,
+.design-detail-backdrop .design-detail *,
+.customer-profile-backdrop .customer-profile,
+.customer-profile-backdrop .customer-profile *,
+.profile-edit-backdrop .profile-edit-sheet,
+.profile-edit-backdrop .profile-edit-sheet *,
+.completion-backdrop .completion-sheet,
+.completion-backdrop .completion-sheet *,
+.settings-finance-backdrop .settings-finance-sheet,
+.settings-finance-backdrop .settings-finance-sheet *,
+.settings-appearance-backdrop .settings-appearance-sheet,
+.settings-appearance-backdrop .settings-appearance-sheet * {
+  color:#171715;
+  -webkit-text-fill-color:#171715;
+}
+.modal-backdrop .modal input,
+.modal-backdrop .modal select,
+.modal-backdrop .modal textarea,
+.design-upload-backdrop .design-modal input,
+.design-upload-backdrop .design-modal select,
+.design-upload-backdrop .design-modal textarea,
+.category-backdrop .category-modal input,
+.category-backdrop .category-modal select,
+.category-backdrop .category-modal textarea,
+.profile-edit-backdrop .profile-edit-sheet input,
+.profile-edit-backdrop .profile-edit-sheet select,
+.profile-edit-backdrop .profile-edit-sheet textarea,
+.completion-backdrop .completion-sheet input,
+.completion-backdrop .completion-sheet select,
+.completion-backdrop .completion-sheet textarea {
+  color:#171715!important;
+  -webkit-text-fill-color:#171715!important;
+  background:#fffdf8!important;
+}
+.modal-backdrop .modal input::placeholder,
+.modal-backdrop .modal textarea::placeholder,
+.design-upload-backdrop .design-modal input::placeholder,
+.design-upload-backdrop .design-modal textarea::placeholder,
+.category-backdrop .category-modal input::placeholder,
+.category-backdrop .category-modal textarea::placeholder,
+.profile-edit-backdrop .profile-edit-sheet input::placeholder,
+.profile-edit-backdrop .profile-edit-sheet textarea::placeholder,
+.completion-backdrop .completion-sheet input::placeholder,
+.completion-backdrop .completion-sheet textarea::placeholder {
+  color:#77736c!important;
+  opacity:1!important;
+  -webkit-text-fill-color:#77736c!important;
+}
 /* Ayarlar ve açılan alt paneller */
 #settingsScreen.show,.settings-screen.show .settings-screen-inner,
 #assistantPanel.show,.profile-edit-backdrop.show .profile-edit-sheet,

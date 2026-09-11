@@ -142,7 +142,7 @@ body.accent-red .appearance-switch-row input:checked + .appearance-switch{backgr
 <div class="quick-panel" id="quickPanel"><div class="quick-sheet"><div class="quick-head"><h3>Hızlı Ekle</h3><button class="quick-close" id="quickClose">×</button></div><div class="quick-grid"><button class="quick-item" id="quickAppointment"><strong>Yeni Randevu</strong><small>Takvimine yeni randevu ekle</small></button><button class="quick-item" type="button"><strong>Yeni Müşteri</strong><small>Müşteri kaydı oluştur</small></button><button class="quick-item" type="button"><strong>Yeni Tasarım</strong><small>Tasarım çalışması ekle</small></button><button class="quick-item" type="button"><strong>Ödeme / Kapora</strong><small>Finans kaydı oluştur</small></button><button class="quick-item" id="quickStock" type="button"><strong>Stok Girişi</strong><small>Sarf malzemesi ekle</small></button></div></div></div>
 <aside class="filter-panel" id="filterPanel"><div class="filter-head"><h3>Randevu Filtreleri</h3><button class="close-filter" id="closeFilter">×</button></div><div class="filter-section"><label>Durum</label><div class="filter-row"><button class="filter-chip active" data-status="all">Tümü</button><button class="filter-chip" data-status="planned">Planlandı</button><button class="filter-chip" data-status="waiting">Onay Bekliyor</button><button class="filter-chip" data-status="done">Tamamlandı</button><button class="filter-chip" data-status="cancelled">İptal Edildi</button><button class="filter-chip" data-status="no_show">Gelmedi</button></div></div><div class="filter-section"><label>Stil</label><div class="filter-row" id="styleFilters"><button class="filter-chip active" data-style="all">Tümü</button></div></div><button class="filter-apply" id="filterApply">Filtreleri Uygula</button></aside>
 <style>
-.main-header-left{display:flex;align-items:flex-start;gap:13px}.menu-trigger{width:34px;height:34px;border:0;background:transparent;padding:7px 4px;display:flex;flex-direction:column;justify-content:center;gap:5px;margin-top:2px}.menu-trigger span{display:block;width:24px;height:1.8px;background:#171715;border-radius:2px}.side-menu-backdrop{pointer-events:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:500;opacity:0;visibility:hidden;transition:opacity .26s ease,visibility .26s ease}.side-menu-backdrop.open{opacity:1;visibility:visible;pointer-events:auto}.side-menu{position:absolute;left:0;top:0;bottom:0;width:min(88vw,390px);overflow:hidden;background:#111;color:#f8f6ef;box-shadow:12px 0 38px rgba(0,0,0,.34);transform:translateX(-102%);transition:transform .32s cubic-bezier(.22,.61,.36,1)}.side-menu-backdrop.open .side-menu{transform:translateX(0)}.side-menu-bg{position:absolute;inset:0;background-image:linear-gradient(90deg,rgba(8,8,8,.94) 0%,rgba(8,8,8,.89) 58%,rgba(8,8,8,.74) 100%),url('opening-screen.jpg');background-size:cover;background-position:center right;filter:saturate(.78)}.side-menu-inner{position:relative;height:100%;padding:calc(env(safe-area-inset-top) + 18px) 18px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column}.side-menu-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px}.brand-row{display:flex;align-items:center;gap:11px}.menu-logo{width:88px;height:88px;object-fit:contain;object-position:center;display:block;flex:0 0 88px}.brand-copy{font-family:DidotLocal,Georgia,serif;line-height:.9;letter-spacing:1.8px;font-size:18px}.brand-copy div:last-child{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;font-size:8px;letter-spacing:3px;margin-top:7px;color:#d8d4cb}.menu-close{width:32px;height:32px;border:0;background:transparent;color:#fff;font-size:30px;line-height:28px;padding:0}.side-menu-list{display:flex;flex-direction:column;gap:5px;overflow:auto;padding-right:1px}.side-menu-item{height:45px;border:0;border-radius:10px;background:transparent;color:#f4f2ec;display:flex;align-items:center;gap:12px;padding:0 12px;text-align:left;font-size:13px}.side-menu-item .menu-icon{width:24px;height:24px;display:grid;place-items:center;color:#f2efe8;opacity:.95;flex:0 0 24px}.side-menu-item .menu-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}.side-menu-item.active{background:linear-gradient(90deg,#df1828 0%,rgba(223,24,40,.78) 56%,rgba(223,24,40,0) 100%);box-shadow:0 8px 20px rgba(0,0,0,.16);font-weight:650}.assistant-item b{margin-left:auto;border:1px solid #ed1c2b;border-radius:5px;color:#ed1c2b;font-size:10px;line-height:17px;padding:0 6px;font-weight:700}.side-menu-footer{margin-top:auto;padding:18px 8px 5px;font-family:DidotLocal,Georgia,serif;font-style:italic;font-size:18px;line-height:1.15;color:#e9e5dc;letter-spacing:.2px}.side-menu-footer:after{content:"";display:block;width:55px;height:1px;background:#ed1c2b;margin-top:13px}
+.main-header-left{display:flex;align-items:flex-start;gap:13px}.menu-trigger{width:34px;height:34px;border:0;background:transparent;padding:7px 4px;display:flex;flex-direction:column;justify-content:center;gap:5px;margin-top:2px}.menu-trigger span{display:block;width:24px;height:1.8px;background:#171715;border-radius:2px}.side-menu-backdrop{pointer-events:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:10000;opacity:0;visibility:hidden;transition:opacity .26s ease,visibility .26s ease}.side-menu-backdrop.open{opacity:1;visibility:visible;pointer-events:auto}.side-menu{position:absolute;left:0;top:0;bottom:0;width:min(88vw,390px);z-index:10001;overflow:hidden;background:#111;color:#f8f6ef;box-shadow:12px 0 38px rgba(0,0,0,.34);transform:translateX(-102%);transition:transform .32s cubic-bezier(.22,.61,.36,1)}.side-menu-backdrop.open .side-menu{transform:translateX(0)}.side-menu-bg{position:absolute;inset:0;background-image:linear-gradient(90deg,rgba(8,8,8,.94) 0%,rgba(8,8,8,.89) 58%,rgba(8,8,8,.74) 100%),url('opening-screen.jpg');background-size:cover;background-position:center right;filter:saturate(.78)}.side-menu-inner{position:relative;height:100%;padding:calc(env(safe-area-inset-top) + 18px) 18px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column}.side-menu-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px}.brand-row{display:flex;align-items:center;gap:11px}.menu-logo{width:88px;height:88px;object-fit:contain;object-position:center;display:block;flex:0 0 88px}.brand-copy{font-family:DidotLocal,Georgia,serif;line-height:.9;letter-spacing:1.8px;font-size:18px}.brand-copy div:last-child{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;font-size:8px;letter-spacing:3px;margin-top:7px;color:#d8d4cb}.menu-close{width:32px;height:32px;border:0;background:transparent;color:#fff;font-size:30px;line-height:28px;padding:0}.side-menu-list{display:flex;flex-direction:column;gap:5px;overflow:auto;padding-right:1px}.side-menu-item{height:45px;border:0;border-radius:10px;background:transparent;color:#f4f2ec;display:flex;align-items:center;gap:12px;padding:0 12px;text-align:left;font-size:13px}.side-menu-item .menu-icon{width:24px;height:24px;display:grid;place-items:center;color:#f2efe8;opacity:.95;flex:0 0 24px}.side-menu-item .menu-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}.side-menu-item.active{background:linear-gradient(90deg,#df1828 0%,rgba(223,24,40,.78) 56%,rgba(223,24,40,0) 100%);box-shadow:0 8px 20px rgba(0,0,0,.16);font-weight:650}.assistant-item b{margin-left:auto;border:1px solid #ed1c2b;border-radius:5px;color:#ed1c2b;font-size:10px;line-height:17px;padding:0 6px;font-weight:700}.side-menu-footer{margin-top:auto;padding:18px 8px 5px;font-family:DidotLocal,Georgia,serif;font-style:italic;font-size:18px;line-height:1.15;color:#e9e5dc;letter-spacing:.2px}.side-menu-footer:after{content:"";display:block;width:55px;height:1px;background:#ed1c2b;margin-top:13px}
 .global-menu-trigger{position:absolute;left:16px;top:calc(env(safe-area-inset-top) + 14px);z-index:90;width:36px;height:36px;border:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;border-radius:0;padding:7px 6px;display:flex;flex-direction:column;justify-content:center;gap:5px;box-shadow:none}.global-menu-trigger span{display:block;width:23px;height:2px;background:#171715;border-radius:2px}.opening .global-menu-trigger{position:fixed;background:transparent;box-shadow:none}.opening .global-menu-trigger span{background:#fff}.main .global-menu-trigger{display:flex}.page.has-global-menu .app-shell{padding-top:0}.page.has-global-menu .appt-content,.page.has-global-menu .design-content,.page.has-global-menu .profile-content,.page.has-global-menu .stock-content{padding-top:calc(env(safe-area-inset-top) + 62px)}.page.has-global-menu .appt-top,.page.has-global-menu .design-top{position:relative}.page.has-global-menu .back-btn{margin-left:46px}.page.has-global-menu .stock-top{position:relative}.page.has-global-menu .design-back{margin-left:0}
 </style>
 <style>
@@ -160,10 +160,10 @@ const sideMenuBackdrop=document.getElementById('sideMenuBackdrop');
 const menuClose=document.getElementById('menuClose');
 function routeIndex(route){if(typeof route==='number')return route;if(typeof route==='string'&&Object.prototype.hasOwnProperty.call(ROUTES,route))return ROUTES[route];const n=Number(route);return Number.isInteger(n)?n:-1}
 function syncNav(){const settingsOpen=document.getElementById('settingsScreen')?.classList.contains('show');const assistantOpen=document.getElementById('assistantPanel')?.classList.contains('show');document.querySelectorAll('[data-route]').forEach(b=>b.classList.toggle('active',!settingsOpen&&!assistantOpen&&routeIndex(b.dataset.route)===page));document.querySelectorAll('[data-menu-page]').forEach(b=>b.classList.toggle('active',!settingsOpen&&!assistantOpen&&routeIndex(b.dataset.menuPage)===page));document.querySelectorAll('.side-menu-item[data-label="Ayarlar"]').forEach(b=>b.classList.toggle('active',!!settingsOpen&&!assistantOpen));document.querySelectorAll('.side-menu-item[data-label="Asistan"]').forEach(b=>b.classList.toggle('active',!!assistantOpen&&!settingsOpen));if(assistantOpen&&!settingsOpen)document.querySelectorAll('[data-menu-page]').forEach(b=>b.classList.remove('active'))}
-function showPage(route){const next=routeIndex(route);if(next<0||next>=pages.length)return false;page=next;pages.forEach((p,i)=>{const active=i===page;p.classList.toggle('is-active',active);p.setAttribute('aria-hidden',active?'false':'true')});syncNav();closeSideMenu();closeSettingsScreen();['settingsFinanceBackdrop','notificationSettingsBackdrop','appointmentSettingsBackdrop'].forEach(id=>{const el=document.getElementById(id);if(el){el.classList.remove('show');el.setAttribute('aria-hidden','true')}});if(page===ROUTES.finance&&typeof renderFinance==='function')renderFinance();if(page===ROUTES.customers&&typeof renderCustomers==='function')renderCustomers();if(page===ROUTES.stock&&typeof renderStock==='function')renderStock();if(page===ROUTES.iban&&typeof renderIban==='function')renderIban();return true}
+function showPage(route){const next=routeIndex(route);if(next<0||next>=pages.length)return false;const assistant=document.getElementById('assistantPanel');if(assistant?.classList.contains('show')){assistant.classList.remove('show');assistant.setAttribute('aria-hidden','true');document.querySelectorAll('.side-menu-item[data-label="Asistan"]').forEach(b=>b.classList.remove('active'));}page=next;pages.forEach((p,i)=>{const active=i===page;p.classList.toggle('is-active',active);p.setAttribute('aria-hidden',active?'false':'true')});syncNav();closeSideMenu();closeSettingsScreen();['settingsFinanceBackdrop','notificationSettingsBackdrop','appointmentSettingsBackdrop'].forEach(id=>{const el=document.getElementById(id);if(el){el.classList.remove('show');el.setAttribute('aria-hidden','true')}});if(page===ROUTES.finance&&typeof renderFinance==='function')renderFinance();if(page===ROUTES.customers&&typeof renderCustomers==='function')renderCustomers();if(page===ROUTES.stock&&typeof renderStock==='function')renderStock();if(page===ROUTES.iban&&typeof renderIban==='function')renderIban();return true}
 function openSideMenu(){syncNav();sideMenuBackdrop?.classList.add('open')}
 function closeSideMenu(){sideMenuBackdrop?.classList.remove('open')}
-function openSettingsScreen(){const el=document.getElementById('settingsScreen');if(!el)return;closeSideMenu();el.classList.add('show');el.setAttribute('aria-hidden','false');syncNav()}
+function openSettingsScreen(){const el=document.getElementById('settingsScreen');if(!el)return;const assistant=document.getElementById('assistantPanel');if(assistant?.classList.contains('show')){assistant.classList.remove('show');assistant.setAttribute('aria-hidden','true');document.querySelectorAll('.side-menu-item[data-label="Asistan"]').forEach(b=>b.classList.remove('active'))}closeSideMenu();el.classList.add('show');el.setAttribute('aria-hidden','false');syncNav()}
 function closeSettingsScreen(){const el=document.getElementById('settingsScreen');if(!el)return;el.classList.remove('show');el.setAttribute('aria-hidden','true');syncNav()}
 function bindNavigation(){
  document.querySelectorAll('[data-global-menu]').forEach(btn=>btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openSideMenu()}));
@@ -808,7 +808,38 @@ function openIbanModal(id=''){
   document.getElementById('ibanModalBackdrop').classList.add('show');
 }
 function closeIbanModal(){document.getElementById('ibanModalBackdrop').classList.remove('show');ibanEditId='';}
-function renderIban(){const list=document.getElementById('ibanList');if(!list)return;const rows=loadIbans().sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));if(!rows.length){list.innerHTML='<div class="iban-empty">Henüz IBAN eklenmedi.</div>';return}list.innerHTML=rows.map((r,i)=>{const title=esc(r.accountName||`IBAN ${Number(r.ibanNumber)||i+1}`),owner=esc(r.ownerName||''),iban=esc(formatIban(r.iban));return `<article class="iban-card ${openIbanId===r.id?'open':''}" data-iban-id="${esc(r.id)}"><div class="iban-card-head" data-iban-toggle="${esc(r.id)}"><div class="iban-card-title"><strong>${title}</strong><small>${owner||'IBAN hesabı'} · ${esc(formatIban(r.iban).slice(-11))}</small></div><div class="iban-card-chevron"><svg viewbox="0 0 24 24"><path d="m7 10 5 5 5-5"></path></svg></div></div><div class="iban-card-body"><div class="iban-detail-grid"><div class="iban-detail"><label>Hesap Adı</label><strong>${title}</strong></div><div class="iban-detail"><label>Ad Soyad</label><strong>${owner}</strong></div><div class="iban-detail"><label>IBAN</label><strong>${iban}</strong></div></div><div class="iban-share-actions"><button class="iban-share-text" type="button" data-iban-share="${esc(r.id)}">IBAN'ı Paylaş</button><button class="iban-edit-btn" type="button" data-iban-edit="${esc(r.id)}">Düzenle</button></div><button class="iban-delete-btn" type="button" data-iban-delete="${esc(r.id)}">IBAN'ı Sil</button><div class="iban-delete-confirm" data-iban-confirm="${esc(r.id)}"><div class="iban-delete-confirm-title">Bu IBAN silinecek. Emin misin?</div><div class="iban-delete-confirm-actions"><button class="iban-delete-cancel" type="button" data-iban-delete-cancel="${esc(r.id)}">Vazgeç</button><button class="iban-delete-yes" type="button" data-iban-delete-yes="${esc(r.id)}">Sil</button></div></div></div></article>`}).join('')}
+function renderIban(){
+  const list=document.getElementById('ibanList');
+  if(!list)return;
+  const rows=loadIbans().sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
+  if(!rows.length){list.innerHTML='<div class="iban-empty">Henüz IBAN eklenmedi.</div>';return}
+  list.innerHTML=rows.map((r,i)=>{
+    const id=esc(r.id||'');
+    const titleRaw=String(r.accountName||`IBAN ${Number(r.ibanNumber)||i+1}`);
+    const ownerRaw=String(r.ownerName||'');
+    const ibanRaw=String(r.iban||'');
+    const title=esc(titleRaw), owner=esc(ownerRaw), iban=esc(formatIban(ibanRaw));
+    const shortIban=esc(formatIban(ibanRaw).slice(-11));
+    const open=openIbanId===r.id?' open':'';
+    return `<article class="iban-card${open}" data-iban-id="${id}">
+      <div class="iban-card-head" data-iban-toggle="${id}" role="button" tabindex="0" aria-expanded="${open?'true':'false'}">
+        <div class="iban-card-title"><strong>${title}</strong><small>${owner||'IBAN hesabı'} · ${shortIban||'IBAN numarası yok'}</small></div>
+        <div class="iban-card-chevron"><svg viewbox="0 0 24 24"><path d="m7 10 5 5 5-5"></path></svg></div>
+      </div>
+      <div class="iban-card-body">
+        <div class="iban-detail-grid">
+          <div class="iban-detail"><label>Hesap Adı</label><strong>${title||'—'}</strong></div>
+          <div class="iban-detail"><label>Ad Soyad</label><strong>${owner||'—'}</strong></div>
+          <div class="iban-detail"><label>IBAN</label><strong>${iban||'—'}</strong></div>
+        </div>
+        <div class="iban-share-actions"><button class="iban-share-text" type="button" data-iban-share="${id}">IBAN'ı Paylaş</button><button class="iban-edit-btn" type="button" data-iban-edit="${id}">Düzenle</button></div>
+        <button class="iban-delete-btn" type="button" data-iban-delete="${id}">IBAN'ı Sil</button>
+        <div class="iban-delete-confirm" data-iban-confirm="${id}"><div class="iban-delete-confirm-title">Bu IBAN silinecek. Emin misin?</div><div class="iban-delete-confirm-actions"><button class="iban-delete-cancel" type="button" data-iban-delete-cancel="${id}">Vazgeç</button><button class="iban-delete-yes" type="button" data-iban-delete-yes="${id}">Sil</button></div></div>
+      </div>
+    </article>`;
+  }).join('');
+} 
+
 async function shareIban(id){const r=loadIbans().find(x=>x.id===id);if(!r)return;const text=`${r.ownerName||''}\n${formatIban(r.iban)}`;try{if(navigator.share)await navigator.share({title:r.accountName||'IBAN Bilgileri',text});else{await navigator.clipboard?.writeText(text);alert('IBAN bilgileri panoya kopyalandı.')}}catch(e){if(e?.name!=='AbortError')try{await navigator.clipboard?.writeText(text);alert('IBAN bilgileri panoya kopyalandı.')}catch{}}}
 async function saveIban(){const accountName=document.getElementById('ibanAccountName').value.trim(),ownerName=document.getElementById('ibanOwnerName').value.trim(),iban=normalizeIban(document.getElementById('ibanNumber').value);if(!ownerName)return alert('Lütfen ad soyad gir.');if(!iban)return alert('Lütfen IBAN gir.');const rows=loadIbans();if(ibanEditId){const r=rows.find(x=>x.id===ibanEditId);if(!r)return;if(accountName)r.accountName=accountName;else r.accountName='';r.ownerName=ownerName;r.iban=iban;r.qr=ibanQrData||r.qr||'';r.updatedAt=Date.now();saveIbans(rows)}else{const nextNumber=Math.max(0,...rows.map(x=>Number(x.ibanNumber)||0))+1;rows.push({id:'iban_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),ibanNumber:nextNumber,accountName,ownerName,iban,qr:ibanQrData,createdAt:Date.now()});saveIbans(rows)}closeIbanModal();renderIban()}
 document.getElementById('ibanAddButton').onclick=()=>openIbanModal();
@@ -819,7 +850,7 @@ document.getElementById('ibanModalBackdrop').addEventListener('click',e=>{if(e.t
 document.getElementById('ibanQrChoose').onclick=()=>document.getElementById('ibanQrInput').click();
 document.getElementById('ibanQrInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{ibanQrData=await compressStockPhoto(f);document.getElementById('ibanQrPreview').innerHTML=`<img src="${ibanQrData}" alt="QR">`}catch{alert('QR fotoğrafı okunamadı.')}};
 document.getElementById('ibanForm').onsubmit=e=>{e.preventDefault();saveIban()};
-document.getElementById('ibanList').onclick=e=>{const edit=e.target.closest('[data-iban-edit]');if(edit){e.stopPropagation();openIbanModal(edit.dataset.ibanEdit);return}const share=e.target.closest('[data-iban-share]');if(share){e.stopPropagation();shareIban(share.dataset.ibanShare);return}const del=e.target.closest('[data-iban-delete]');if(del){e.stopPropagation();const box=document.querySelector(`[data-iban-confirm="${CSS.escape(del.dataset.ibanDelete)}"]`);if(box)box.classList.add('show');return}const cancel=e.target.closest('[data-iban-delete-cancel]');if(cancel){e.stopPropagation();const box=document.querySelector(`[data-iban-confirm="${CSS.escape(cancel.dataset.ibanDeleteCancel)}"]`);if(box)box.classList.remove('show');return}const yes=e.target.closest('[data-iban-delete-yes]');if(yes){e.stopPropagation();const id=yes.dataset.ibanDeleteYes;const rows=loadIbans().filter(x=>x.id!==id);saveIbans(rows);if(openIbanId===id)openIbanId='';renderIban();return}const toggle=e.target.closest('[data-iban-toggle]');if(toggle){openIbanId=openIbanId===toggle.dataset.ibanToggle?'':toggle.dataset.ibanToggle;renderIban()}};
+document.getElementById('ibanList').onclick=e=>{const edit=e.target.closest('[data-iban-edit]');if(edit){e.stopPropagation();openIbanModal(edit.dataset.ibanEdit);return}const share=e.target.closest('[data-iban-share]');if(share){e.stopPropagation();shareIban(share.dataset.ibanShare);return}const del=e.target.closest('[data-iban-delete]');if(del){e.stopPropagation();const box=document.querySelector(`[data-iban-confirm="${CSS.escape(del.dataset.ibanDelete)}"]`);if(box)box.classList.add('show');return}const cancel=e.target.closest('[data-iban-delete-cancel]');if(cancel){e.stopPropagation();const box=document.querySelector(`[data-iban-confirm="${CSS.escape(cancel.dataset.ibanDeleteCancel)}"]`);if(box)box.classList.remove('show');return}const yes=e.target.closest('[data-iban-delete-yes]');if(yes){e.stopPropagation();const id=yes.dataset.ibanDeleteYes;const rows=loadIbans().filter(x=>x.id!==id);saveIbans(rows);if(openIbanId===id)openIbanId='';renderIban();return}const toggle=e.target.closest('[data-iban-toggle]');if(toggle){openIbanId=openIbanId===toggle.dataset.ibanToggle?'':toggle.dataset.ibanToggle;const card=toggle.closest('.iban-card');if(card){card.classList.toggle('open',openIbanId===toggle.dataset.ibanToggle);toggle.setAttribute('aria-expanded',openIbanId===toggle.dataset.ibanToggle?'true':'false')}else renderIban()}};
 
 })();</script>
 <style id="finance-reference-chart-fix">
@@ -1110,6 +1141,282 @@ const dur=byId('fDuration');if(dur)dur.value=data.duration;const tm=byId('fTime'
 .iban-page .iban-delete-btn,.iban-page .iban-share-text{color:#fff!important;-webkit-text-fill-color:#fff!important}
 </style>
 
+<style id="apollo-v174-red-button-text-fix">
+/* V174 — all red action buttons use white text/icons */
+button.apollo-red-text-fixed,
+button.apollo-red-text-fixed *{
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+}
+button.apollo-red-text-fixed svg,
+button.apollo-red-text-fixed svg *{
+  color:#fff !important;
+  stroke:#fff !important;
+  fill:currentColor !important;
+}
+</style>
+<script id="apollo-v174-red-button-text-fix-script">
+(function(){
+  function isRedButton(btn){
+    if(!btn || btn.tagName!=='BUTTON') return false;
+    var cs=getComputedStyle(btn), bg=cs.backgroundColor||'';
+    var m=bg.match(/rgba?\\(([^)]+)\\)/i);
+    if(!m) return false;
+    var a=m[1].split(',').map(function(v){return parseFloat(v)});
+    var r=a[0],g=a[1],b=a[2],alpha=a.length>3?a[3]:1;
+    return alpha>0.05 && r>=180 && r>g*1.45 && r>b*1.35 && g<110 && b<130;
+  }
+  function fix(){
+    document.querySelectorAll('button').forEach(function(btn){
+      if(isRedButton(btn)){
+        btn.classList.add('apollo-red-text-fixed');
+        btn.style.setProperty('color','#fff','important');
+        btn.style.setProperty('-webkit-text-fill-color','#fff','important');
+        btn.querySelectorAll('*').forEach(function(el){
+          el.style.setProperty('color','#fff','important');
+          el.style.setProperty('-webkit-text-fill-color','#fff','important');
+          if(el.tagName==='svg'){
+            el.style.setProperty('stroke','#fff','important');
+            el.style.setProperty('fill','currentColor','important');
+          }
+        });
+      }
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fix); else fix();
+  window.addEventListener('load',fix);
+  var mo=new MutationObserver(function(){fix()});
+  mo.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class']});
+})();
+</script>
+
+<style id="apollo-v175-specific-button-fix">
+/* V175 — Kullanıcının tek tek bildirdiği renk sorunları. Sadece ilgili elemanlar. */
+/* Randevular — Yeni Randevu */
+.new-appt, .new-appt span, .new-appt svg, .new-appt svg * {
+  color:#fff !important; -webkit-text-fill-color:#fff !important; stroke:#fff !important; fill:#fff !important;
+}
+/* Randevular — Hafta / Ay kırmızı sayaçlar */
+.week-day .count, .month-day .count, .count {
+  color:#fff !important; -webkit-text-fill-color:#fff !important;
+}
+/* Müşteriler — Müşteri Ekle */
+.customer-add-bottom, .customer-add-bottom span, .customer-add-bottom svg, .customer-add-bottom svg * {
+  color:#fff !important; -webkit-text-fill-color:#fff !important; stroke:#fff !important; fill:#fff !important;
+}
+/* Finans — Gelir Ekle / Gider Ekle */
+.finance-add-btn, .finance-add-btn span, .finance-add-btn svg, .finance-add-btn svg * {
+  color:#fff !important; -webkit-text-fill-color:#fff !important; stroke:#fff !important; fill:#fff !important;
+}
+/* Finans — işlemler: gelir yeşil, gider kırmızı */
+.finance-transaction.income .amount,
+.finance-transaction.income .finance-transaction-subrow.income-line strong,
+.finance-transaction.income .finance-transaction-dot {
+  color:#2f9a5c !important; -webkit-text-fill-color:#2f9a5c !important; background-color:transparent !important;
+}
+.finance-transaction.expense .amount,
+.finance-transaction.expense .finance-transaction-subrow strong,
+.finance-transaction.expense .finance-transaction-dot {
+  color:#df1f2d !important; -webkit-text-fill-color:#df1f2d !important; background-color:transparent !important;
+}
+/* Stok — Ürün Ekle */
+.stock-add-card, .stock-add-card span, .stock-add-card strong, .stock-add-card svg, .stock-add-card svg * {
+  color:#fff !important; -webkit-text-fill-color:#fff !important; stroke:#fff !important; fill:#fff !important;
+}
+/* IBAN — IBAN Ekle */
+.iban-add-btn, .iban-add-btn span, .iban-add-btn svg, .iban-add-btn svg * {
+  color:#fff !important; -webkit-text-fill-color:#fff !important; stroke:#fff !important; fill:#fff !important;
+}
+/* Ayarlar > Profil & Stüdyo — Kaydet */
+#profileEditBackdrop.show #profileEditSave,
+#profileEditBackdrop.show #profileEditSave * {
+  color:#fff !important; -webkit-text-fill-color:#fff !important; stroke:#fff !important; fill:#fff !important;
+}
+</style>
+<style id="apollo-v176-finance-transaction-fix">
+/* V176 — Finans / İşlemler: gelir ve gider metinleri renkli olmalı; renkli kutu olmamalı. */
+.finance-transaction.income .amount,
+.finance-transaction.income .finance-transaction-subrow.income-line strong {
+  color:#2f9a5c !important;
+  -webkit-text-fill-color:#2f9a5c !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+}
+.finance-transaction.income .finance-transaction-dot {
+  background:#2f9a5c !important;
+}
+.finance-transaction.expense .amount,
+.finance-transaction.expense .finance-transaction-subrow strong {
+  color:#df1f2d !important;
+  -webkit-text-fill-color:#df1f2d !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+}
+.finance-transaction.expense .finance-transaction-dot {
+  background:#df1f2d !important;
+}
+</style>
+<script id="apollo-v176-finance-transaction-observer">
+(function(){
+  function fix(){
+    document.querySelectorAll('.finance-transaction.income .amount, .finance-transaction.income .finance-transaction-subrow.income-line strong').forEach(function(el){
+      el.style.setProperty('color','#2f9a5c','important');
+      el.style.setProperty('-webkit-text-fill-color','#2f9a5c','important');
+      el.style.setProperty('background','transparent','important');
+      el.style.setProperty('background-color','transparent','important');
+      el.style.setProperty('background-image','none','important');
+    });
+    document.querySelectorAll('.finance-transaction.expense .amount, .finance-transaction.expense .finance-transaction-subrow strong').forEach(function(el){
+      el.style.setProperty('color','#df1f2d','important');
+      el.style.setProperty('-webkit-text-fill-color','#df1f2d','important');
+      el.style.setProperty('background','transparent','important');
+      el.style.setProperty('background-color','transparent','important');
+      el.style.setProperty('background-image','none','important');
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fix); else fix();
+  window.addEventListener('load',fix);
+  new MutationObserver(fix).observe(document.body,{subtree:true,childList:true});
+})();
+</script>
+
+<style id="apollo-v177-exact-color-fix">
+/* V177 — Kullanıcının tek tek bildirdiği renkleri doğrudan gerçek elemanlara uygula. */
+#newAppt,
+#newAppt span,
+#newAppt svg,
+#newAppt svg * {
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  stroke:#fff !important;
+  fill:#fff !important;
+}
+#customerAddBottom,
+#customerAddBottom span,
+#customerAddBottom svg,
+#customerAddBottom svg * {
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  stroke:#fff !important;
+  fill:#fff !important;
+}
+#financeAddIncome,
+#financeAddIncome span,
+#financeAddIncome svg,
+#financeAddIncome svg *,
+#financeAddExpense,
+#financeAddExpense span,
+#financeAddExpense svg,
+#financeAddExpense svg * {
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  stroke:#fff !important;
+  fill:#fff !important;
+}
+#stockAddButton,
+#stockAddButton span,
+#stockAddButton strong,
+#stockAddButton svg,
+#stockAddButton svg * {
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  stroke:#fff !important;
+  fill:#fff !important;
+}
+#ibanAddButton,
+#ibanAddButton span,
+#ibanAddButton svg,
+#ibanAddButton svg * {
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  stroke:#fff !important;
+  fill:#fff !important;
+}
+#profileEditSave,
+#profileEditSave * {
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  stroke:#fff !important;
+  fill:#fff !important;
+}
+/* Hafta / Ay: kırmızı dairelerin içindeki sayılar beyaz */
+.week-view .week-day .count,
+.month-view .month-day .count,
+.week-day .count,
+.month-day .count {
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  background-color:#ed1c2b !important;
+}
+/* Finans > İşlemler: gelir yeşil, gider kırmızı; komisyon satırı kırmızı */
+.finance-transaction.income .finance-transaction-subrow.commission-line,
+.finance-transaction.income .finance-transaction-subrow.commission-line span,
+.finance-transaction.income .finance-transaction-subrow.commission-line strong {
+  color:#df1f2d !important;
+  -webkit-text-fill-color:#df1f2d !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+}
+.finance-transaction.income .amount,
+.finance-transaction.income .finance-transaction-subrow.income-line strong {
+  color:#2f9a5c !important;
+  -webkit-text-fill-color:#2f9a5c !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+}
+.finance-transaction.expense .amount,
+.finance-transaction.expense .finance-transaction-subrow strong {
+  color:#df1f2d !important;
+  -webkit-text-fill-color:#df1f2d !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+}
+</style>
+<script id="apollo-v177-exact-color-observer">
+(function(){
+  const whiteSelectors=[
+    '#newAppt','#newAppt span','#newAppt svg','#newAppt svg *',
+    '#customerAddBottom','#customerAddBottom span','#customerAddBottom svg','#customerAddBottom svg *',
+    '#financeAddIncome','#financeAddIncome span','#financeAddIncome svg','#financeAddIncome svg *',
+    '#financeAddExpense','#financeAddExpense span','#financeAddExpense svg','#financeAddExpense svg *',
+    '#stockAddButton','#stockAddButton span','#stockAddButton strong','#stockAddButton svg','#stockAddButton svg *',
+    '#ibanAddButton','#ibanAddButton span','#ibanAddButton svg','#ibanAddButton svg *',
+    '#profileEditSave','#profileEditSave *'
+  ];
+  function fix(){
+    whiteSelectors.forEach(sel=>document.querySelectorAll(sel).forEach(el=>{
+      el.style.setProperty('color','#fff','important');
+      el.style.setProperty('-webkit-text-fill-color','#fff','important');
+      if(el.tagName==='SVG'||el.tagName==='path'||el.tagName==='circle'||el.tagName==='rect'||el.tagName==='line'){
+        el.style.setProperty('stroke','#fff','important');
+        el.style.setProperty('fill','#fff','important');
+      }
+    }));
+    document.querySelectorAll('.week-view .week-day .count,.month-view .month-day .count,.week-day .count,.month-day .count').forEach(el=>{
+      el.style.setProperty('color','#fff','important');
+      el.style.setProperty('-webkit-text-fill-color','#fff','important');
+      el.style.setProperty('background-color','#ed1c2b','important');
+    });
+    document.querySelectorAll('.finance-transaction.income .finance-transaction-subrow.commission-line,.finance-transaction.income .finance-transaction-subrow.commission-line span,.finance-transaction.income .finance-transaction-subrow.commission-line strong').forEach(el=>{
+      el.style.setProperty('color','#df1f2d','important');
+      el.style.setProperty('-webkit-text-fill-color','#df1f2d','important');
+      el.style.setProperty('background','transparent','important');
+      el.style.setProperty('background-color','transparent','important');
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fix); else fix();
+  window.addEventListener('load',fix);
+  new MutationObserver(fix).observe(document.body,{subtree:true,childList:true});
+})();
+</script>
+<style id="v178-finance-lock-fix">
+/* V178: Finans ekranının kilitlenmesine neden olan self-triggering style observer kaldırıldı. */
+</style>
 </body></html>
 <style id="v166-ui-fix">
 /* V166: üst çubuklarda geri/menü çakışmasını ve yatay hareketi düzelt */

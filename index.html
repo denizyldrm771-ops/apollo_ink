@@ -1055,6 +1055,61 @@ const dur=byId('fDuration');if(dur)dur.value=data.duration;const tm=byId('fTime'
   panel?.addEventListener('click',e=>{if(e.target===panel)close()});
 })();
 </script>
+<style id="v173-visual-contrast-fix">
+/* V173 — Görsel katman düzeltmesi: V172'deki soluk metin/ikon görünümünü sayfa bazında normalize et. */
+.page:not(.opening){color:#171715!important;background:#f7f4ed!important}
+.page:not(.opening) .main-content,
+.page:not(.opening) .appt-content,
+.page:not(.opening) .design-content,
+.page:not(.opening) .customers-content,
+.page:not(.opening) .finance-content,
+.page:not(.opening) .stock-content,
+.page:not(.opening) .iban-content,
+.page:not(.opening) .profile-content{color:#171715!important}
+.page:not(.opening) h1,.page:not(.opening) h2,.page:not(.opening) h3,
+.page:not(.opening) p,.page:not(.opening) strong,.page:not(.opening) span,
+.page:not(.opening) label,.page:not(.opening) small,.page:not(.opening) .title,
+.page:not(.opening) .greeting,.page:not(.opening) .quote,.page:not(.opening) .section-head h2,
+.page:not(.opening) .appt-title,.page:not(.opening) .day-title,
+.page:not(.opening) .design-top h1,.page:not(.opening) .customers-title,
+.page:not(.opening) .finance-top h1,.page:not(.opening) .stock-top h1,
+.page:not(.opening) .iban-top h1{color:#171715!important;-webkit-text-fill-color:#171715!important}
+.page:not(.opening) input,.page:not(.opening) select,.page:not(.opening) textarea{
+  color:#171715!important;-webkit-text-fill-color:#171715!important;background:#fffdf8!important
+}
+.page:not(.opening) input::placeholder,.page:not(.opening) textarea::placeholder{color:#8a867f!important;opacity:1!important;-webkit-text-fill-color:#8a867f!important}
+.page:not(.opening) button:not(.add):not(.finance-add-btn):not(.save):not(.new-appt):not(.iban-add-btn):not(.iban-delete-btn):not(.finance-form-actions button):not(.form-actions .save){-webkit-text-fill-color:currentColor}
+.main .sun{opacity:.18!important}
+/* Ayarlar ve açılan alt paneller */
+#settingsScreen.show,.settings-screen.show .settings-screen-inner,
+#assistantPanel.show,.profile-edit-backdrop.show .profile-edit-sheet,
+.settings-finance-backdrop.show .settings-finance-sheet,
+.settings-appearance-backdrop.show .settings-appearance-sheet{color:#171715!important}
+#settingsScreen.show h1,#settingsScreen.show strong,#settingsScreen.show small,
+#assistantPanel.show .assistant-panel-title,#assistantPanel.show .assistant-quick h3,
+#assistantPanel.show .assistant-alerts h3{color:#171715!important;-webkit-text-fill-color:#171715!important}
+#settingsScreen.show .settings-profile-card{color:#171715!important;background:#fffdf8!important}
+#settingsScreen.show .settings-profile-card small{color:#77736c!important}
+#assistantPanel.show{background:#f7f4ed!important}
+#assistantPanel.show .assistant-summary-card{opacity:1!important;background:#171715!important;color:#f7f4ed!important}
+#assistantPanel.show .assistant-summary-card h2,
+#assistantPanel.show .assistant-summary-card p,
+#assistantPanel.show .assistant-summary-kicker{color:#f7f4ed!important;-webkit-text-fill-color:#f7f4ed!important}
+#assistantPanel.show .assistant-summary-card p{opacity:.9!important}
+#assistantPanel.show .assistant-stat,
+#assistantPanel.show .assistant-alert,
+#assistantPanel.show .assistant-quick-grid button{opacity:1!important;background:#fff!important;color:#171715!important}
+#assistantPanel.show .assistant-stat span,
+#assistantPanel.show .assistant-quick-grid button small{color:#77736b!important}
+/* Profil / IBAN: kart içi metinler soluklaşmasın. */
+#profileEditBackdrop.show .profile-edit-sheet,
+#profileEditBackdrop.show .profile-edit-sheet *{color:#171715!important;-webkit-text-fill-color:#171715!important}
+#profileEditBackdrop.show .profile-edit-sheet input::placeholder,
+#profileEditBackdrop.show .profile-edit-sheet textarea::placeholder{color:#8a867f!important;-webkit-text-fill-color:#8a867f!important}
+.iban-page .iban-card,.iban-page .iban-card *{color:#171715!important;-webkit-text-fill-color:#171715!important}
+.iban-page .iban-delete-btn,.iban-page .iban-share-text{color:#fff!important;-webkit-text-fill-color:#fff!important}
+</style>
+
 </body></html>
 <style id="v166-ui-fix">
 /* V166: üst çubuklarda geri/menü çakışmasını ve yatay hareketi düzelt */

@@ -1095,3 +1095,45 @@ const dur=byId('fDuration');if(dur)dur.value=data.duration;const tm=byId('fTime'
   },{passive:false});
 })();
 </script>
+
+<style id="v172-global-visibility-fix">
+/* V172: Uygulamanın tamamında istemeden oluşan soluk/yarı saydam görünümü kaldır. */
+html, body, #viewport, #track { opacity:1 !important; filter:none !important; -webkit-filter:none !important; }
+.page, .page .app-shell, .page main, .page nav, .page header, .page section, .page article,
+.page h1, .page h2, .page h3, .page p, .page span, .page strong, .page small,
+.page button, .page input, .page select, .page textarea, .page img, .page svg {
+  opacity:1 !important;
+  filter:none !important;
+  -webkit-filter:none !important;
+}
+/* Dekoratif görsellerin kendi tasarımındaki opaklıkları hariç, sayfa katmanı hiçbir zaman soluklaşmasın. */
+.page .sun, .page .side-menu-bg { opacity:1 !important; }
+/* Açık paneller kendi arka planlarını tam opak tutar. */
+#assistantPanel.show, #settingsScreen.show, .profile-edit-backdrop.show,
+.settings-finance-backdrop.show, .settings-appearance-backdrop.show,
+.appointment-settings-backdrop.show, .notification-settings-backdrop.show,
+.iban-modal-backdrop.show, .modal-backdrop.show { opacity:1 !important; filter:none !important; -webkit-filter:none !important; }
+#assistantPanel.show .assistant-panel-inner,
+#settingsScreen.show .settings-screen-inner,
+.profile-edit-backdrop.show .profile-edit-sheet,
+.settings-finance-backdrop.show .settings-finance-sheet,
+.settings-appearance-backdrop.show .settings-appearance-sheet { opacity:1 !important; filter:none !important; -webkit-filter:none !important; }
+</style>
+<script id="v172-global-visibility-script">
+(()=>{
+  function restoreVisibility(){
+    try{
+      const roots=['#viewport','#track','.page'];
+      document.querySelectorAll(roots.join(',')).forEach(el=>{
+        if(el.dataset.v172DimGuard==='1') return;
+        el.style.setProperty('opacity','1','important');
+        el.style.setProperty('filter','none','important');
+        el.style.setProperty('-webkit-filter','none','important');
+      });
+    }catch(e){}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',restoreVisibility);
+  else restoreVisibility();
+  window.addEventListener('load',restoreVisibility);
+})();
+</script>

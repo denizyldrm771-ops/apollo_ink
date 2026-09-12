@@ -1819,4 +1819,9 @@ html, body, #viewport, #track { opacity:1 !important; filter:none !important; -w
 }
 </style>
 
-<style id="v192-assistant-floating-button-fix">/* V192: Alt menü Asistan butonu menünün üstüne taşan merkez buton olarak konumlandırıldı. */</style>
+<style id="v193-assistant-circle-only-fix">
+/* V193: Alt menünün yüksekliği sabit. Yalnızca merkez Asistan dairesi büyütülür ve yukarı taşır. */
+.bottom-nav{height:82px!important;min-height:82px!important;}
+.bottom-nav .add{width:82px!important;height:82px!important;margin-top:-48px!important;z-index:25!important;}
+.bottom-nav .add .assistant-logo{width:52px!important;height:52px!important;}
+</style>

@@ -1064,7 +1064,7 @@ document.getElementById('ibanList').onclick=e=>{const edit=e.target.closest('[da
     </div>
   </div>
 </div>
-<div id="settingsFinanceBackdrop" class="profile-edit-backdrop settings-finance-backdrop" aria-hidden="true"><div class="profile-edit-sheet settings-finance-sheet"><button aria-label="Kapat" class="modal-close" id="settingsFinanceClose" type="button">×</button><div class="sheet-handle"></div><h2>Finans</h2><div class="finance-settings-list"><section class="finance-settings-card"><h3>Varsayılan Kapora</h3><div class="finance-settings-inline"><input id="financeDefaultDeposit" type="number" min="0" step="1" placeholder="0"><span class="finance-settings-currency" id="financeDefaultDepositCurrency">₺</span></div></section><section class="finance-settings-card"><h3>Ödeme Yöntemleri</h3><div id="financePaymentMethods" class="finance-chip-list"></div><div class="finance-add-line"><input id="financeNewPayment" type="text" placeholder="Yeni ödeme yöntemi"><button id="financeAddPayment" type="button">Ekle</button></div></section><section class="finance-settings-card"><h3>Gelir Kategorileri</h3><div id="financeIncomeCategories" class="finance-chip-list"></div><div class="finance-add-line"><input id="financeNewIncomeCategory" type="text" placeholder="Yeni gelir kategorisi"><button id="financeAddIncomeCategory" type="button">Ekle</button></div></section><section class="finance-settings-card"><h3>Gider Kategorileri</h3><div id="financeExpenseCategories" class="finance-chip-list"></div><div class="finance-add-line"><input id="financeNewExpenseCategory" type="text" placeholder="Yeni gider kategorisi"><button id="financeAddExpenseCategory" type="button">Ekle</button></div></section><section class="finance-settings-card"><h3>Para Birimi</h3><select id="financeCurrencySelect"><option value="TRY">₺ · Türk Lirası</option><option value="USD">$ · ABD Doları</option><option value="EUR">€ · Euro</option><option value="GBP">£ · İngiliz Sterlini</option></select><small>Yeni finans kayıtları seçili para biriminde oluşturulur. Eski kayıtların para birimi değişmez.</small></section></div><div class="profile-edit-actions"><button id="financeSettingsCancel" type="button">Vazgeç</button><button class="save-profile" id="financeSettingsSave" type="button">Kaydet</button></div></div><div class="app-version" aria-label="Uygulama sürümü">V2.5</div></div>
+<div id="settingsFinanceBackdrop" class="profile-edit-backdrop settings-finance-backdrop" aria-hidden="true"><div class="profile-edit-sheet settings-finance-sheet"><button aria-label="Kapat" class="modal-close" id="settingsFinanceClose" type="button">×</button><div class="sheet-handle"></div><h2>Finans</h2><div class="finance-settings-list"><section class="finance-settings-card"><h3>Varsayılan Kapora</h3><div class="finance-settings-inline"><input id="financeDefaultDeposit" type="number" min="0" step="1" placeholder="0"><span class="finance-settings-currency" id="financeDefaultDepositCurrency">₺</span></div></section><section class="finance-settings-card"><h3>Ödeme Yöntemleri</h3><div id="financePaymentMethods" class="finance-chip-list"></div><div class="finance-add-line"><input id="financeNewPayment" type="text" placeholder="Yeni ödeme yöntemi"><button id="financeAddPayment" type="button">Ekle</button></div></section><section class="finance-settings-card"><h3>Gelir Kategorileri</h3><div id="financeIncomeCategories" class="finance-chip-list"></div><div class="finance-add-line"><input id="financeNewIncomeCategory" type="text" placeholder="Yeni gelir kategorisi"><button id="financeAddIncomeCategory" type="button">Ekle</button></div></section><section class="finance-settings-card"><h3>Gider Kategorileri</h3><div id="financeExpenseCategories" class="finance-chip-list"></div><div class="finance-add-line"><input id="financeNewExpenseCategory" type="text" placeholder="Yeni gider kategorisi"><button id="financeAddExpenseCategory" type="button">Ekle</button></div></section><section class="finance-settings-card"><h3>Para Birimi</h3><select id="financeCurrencySelect"><option value="TRY">₺ · Türk Lirası</option><option value="USD">$ · ABD Doları</option><option value="EUR">€ · Euro</option><option value="GBP">£ · İngiliz Sterlini</option></select><small>Yeni finans kayıtları seçili para biriminde oluşturulur. Eski kayıtların para birimi değişmez.</small></section></div><div class="profile-edit-actions"><button id="financeSettingsCancel" type="button">Vazgeç</button><button class="save-profile" id="financeSettingsSave" type="button">Kaydet</button></div></div><div class="app-version" aria-label="Uygulama sürümü">V2.6</div></div>
 <style id="app-version-style">.app-version{position:absolute;left:0;right:0;bottom:calc(18px + env(safe-area-inset-bottom));text-align:center;font-size:10px;letter-spacing:.08em;color:#9a968e;font-weight:700;pointer-events:none}.settings-screen-inner{position:relative}</style><style id="appointment-settings-extra">.appointment-hours-grid{display:grid;gap:8px}.appointment-hour-row{display:grid;grid-template-columns:minmax(110px,1fr) 1fr 1fr;gap:7px;align-items:center}.appointment-day-toggle{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:750;color:#4f4b45}.appointment-day-toggle input{width:17px;height:17px;accent-color:#ed1c2b}.appointment-hour-row input[type=time],.appointment-settings-sheet select{height:40px;border:1px solid #d8d4cb;border-radius:10px;background:#fffdf8;padding:0 9px;font-size:11px;color:#222}.appointment-hour-row input:disabled{opacity:.45;background:#efede7}.appointment-settings-sheet .form-section{margin-top:13px}.appointment-settings-sheet .form-section-title{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#706c64;margin-bottom:7px}</style><style id="settings-profile-extra">.settings-profile-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;display:block}.settings-profile-icon{display:flex;align-items:center;justify-content:center}.settings-profile-card{width:100%;margin-top:28px;padding:15px;border:1px solid #dfdbd2;background:#fffdf8;border-radius:18px;display:grid;grid-template-columns:42px minmax(0,1fr) 24px;align-items:center;gap:12px;text-align:left;color:#171614;box-shadow:0 4px 14px rgba(0,0,0,.035)}.settings-profile-icon{width:42px;height:42px;border-radius:13px;background:#20201e;color:#fff;display:grid;place-items:center}.settings-profile-card strong{display:block;font-size:15px}.settings-profile-card small{display:block;margin-top:4px;color:#77736c;font-size:10.5px}.settings-profile-card>span{font-size:28px;color:#77736c}.profile-hours-grid{display:grid;gap:7px}.profile-hour-row{display:grid;grid-template-columns:68px 1fr 1fr;gap:7px;align-items:center}.profile-hour-row label{font-size:10px;font-weight:750;color:#4f4b45}.profile-hour-row input{height:40px;border:1px solid #d8d4cb;border-radius:10px;background:#fffdf8;padding:0 9px;font-size:11px;color:#222}.profile-edit-sheet .form-section{margin-top:13px}.profile-edit-sheet .form-section-title{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#706c64;margin-bottom:7px}</style>
 <style id="notification-settings-style">.settings-screen-inner{display:flex;flex-direction:column;gap:10px;overflow:auto}.notification-sheet .notification-list{display:grid;gap:8px;margin-top:4px}.notification-row{min-height:62px;background:#fffdf8;border:1px solid #ded9d1;border-radius:14px;padding:11px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px}.notification-row strong{display:block;font-size:12px;font-weight:800}.notification-row small{display:block;margin-top:4px;color:#7c7770;font-size:9.5px;line-height:1.35}.notification-subrow{display:grid;grid-template-columns:1fr 150px;gap:10px;align-items:center;padding:0 3px 4px}.notification-subrow label{font-size:10px;font-weight:750;color:#5d5952}.notification-subrow select,.notification-subrow input{height:38px;border:1px solid #d8d4cb;border-radius:10px;background:#fffdf8;padding:0 9px;font-size:10.5px;color:#222}.switch{position:relative;width:48px;height:28px;flex:0 0 auto}.switch input{opacity:0;width:0;height:0}.switch span{position:absolute;inset:0;border-radius:99px;background:#d6d2cb;transition:.18s}.switch span:before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.18);transition:.18s}.switch input:checked+span{background:#ed1c2b}.switch input:checked+span:before{transform:translateX(20px)}@media(max-width:380px){.notification-subrow{grid-template-columns:1fr 135px}}</style>
 <style id="backup-restore-confirm-style">
@@ -2043,7 +2043,47 @@ button.apollo-red-text-fixed svg *{
 }
 </style>
 </body></html>
-<style id="v166-ui-fix">
+<style id=
+<style id="v26-profile-form-overflow-fix">
+/* V2.6 — Profil & Stüdyo form alanlarının iPhone'da yatay taşmasını engelle */
+#profileEditBackdrop .profile-edit-sheet,
+#profileEditBackdrop .profile-edit-sheet .form-section,
+#profileEditBackdrop .profile-form-grid {
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  box-sizing:border-box;
+}
+#profileEditBackdrop .profile-form-grid {
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+}
+#profileEditBackdrop .profile-form-grid > .field {
+  min-width:0;
+  width:100%;
+  max-width:100%;
+  box-sizing:border-box;
+}
+#profileEditBackdrop .profile-form-grid > .field.full {
+  grid-column:1 / -1;
+}
+#profileEditBackdrop .profile-form-grid .field input,
+#profileEditBackdrop .profile-form-grid .field select,
+#profileEditBackdrop .profile-form-grid .field textarea {
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+}
+@media(max-width:380px){
+  #profileEditBackdrop .profile-form-grid {
+    grid-template-columns:minmax(0,1fr);
+  }
+  #profileEditBackdrop .profile-form-grid > .field.full {
+    grid-column:1;
+  }
+}
+</style>
+"v166-ui-fix">
 /* V166: üst çubuklarda geri/menü çakışmasını ve yatay hareketi düzelt */
 #assistantPanel .assistant-panel-back,
 #settingsScreen .settings-back{left:64px!important;z-index:520!important;}

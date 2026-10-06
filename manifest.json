@@ -6,6 +6,6 @@
   "background_color": "#2e3235",
   "theme_color": "#2e3235",
   "icons": [
-    {"src":"./app-icon.png?v=4.8","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+    {"src":"./app-icon.png?v=4.9","sizes":"512x512","type":"image/png","purpose":"any maskable"}
   ]
 }

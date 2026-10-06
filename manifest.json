@@ -1,13 +1,20 @@
 {
   "name": "Ink Artist Studio Assistant",
   "short_name": "Ink Artist",
-  "start_url": "./",
   "display": "standalone",
-  "background_color": "#f7f4ed",
-  "theme_color": "#f90004",
+  "start_url": "./index.html",
+  "scope": "./",
+  "background_color": "#2E2F33",
+  "theme_color": "#2E2F33",
   "icons": [
     {
-      "src": "./app-icon.png",
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
